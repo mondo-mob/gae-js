@@ -1,5 +1,4 @@
 {
-  "name": "@mlev/gae-js",
   "private": true,
   "scripts": {
     "bootstrap": "lerna bootstrap",

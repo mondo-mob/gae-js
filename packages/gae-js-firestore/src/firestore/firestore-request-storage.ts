@@ -1,4 +1,4 @@
-import { RequestStorageStore } from "@mlev/gae-js-core";
+import { RequestStorageStore } from "@dotrun/gae-js-core";
 import { FirestoreLoader } from "./firestore-loader";
 import { Firestore } from "@google-cloud/firestore";
 

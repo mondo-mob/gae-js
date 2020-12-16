@@ -1,5 +1,5 @@
 import { Firestore, Settings } from "@google-cloud/firestore";
-import { configurationStore, createLogger } from "@mlev/gae-js-core";
+import { configurationStore, createLogger } from "@dotrun/gae-js-core";
 import { GaeJsFirestoreConfiguration } from "../configuration";
 
 export const connectFirestore = (settings?: Settings): Firestore => {

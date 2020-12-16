@@ -3,7 +3,7 @@ import { Firestore } from "@google-cloud/firestore";
 import { connectFirestore, deleteCollection, RepositoryItem } from "./test-utils";
 import { runInTransaction, Transactional } from "./transactional";
 import { FirestoreRepository } from "./firestore-repository";
-import { runWithRequestStorage } from "@mlev/gae-js-core";
+import { runWithRequestStorage } from "@dotrun/gae-js-core";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 
 class TransactionalService {

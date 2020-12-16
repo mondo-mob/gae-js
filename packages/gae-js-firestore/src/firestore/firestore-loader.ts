@@ -9,7 +9,7 @@ import {
   Transaction,
   WriteBatch,
 } from "@google-cloud/firestore";
-import { createLogger } from "@mlev/gae-js-core";
+import { createLogger } from "@dotrun/gae-js-core";
 import { QueryOptions } from "./firestore-query";
 
 export interface FirestorePayload<T> {

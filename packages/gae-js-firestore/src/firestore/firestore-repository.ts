@@ -6,7 +6,7 @@ import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreClientRequestStorage, firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { isLeft } from "fp-ts/lib/Either";
 import { QueryOptions } from "./firestore-query";
-import { asArray, OneOrMany } from "@mlev/gae-js-core";
+import { asArray, OneOrMany } from "@dotrun/gae-js-core";
 
 export interface RepositoryOptions<T> {
   firestore?: Firestore;
