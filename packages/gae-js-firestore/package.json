@@ -1,6 +1,6 @@
 {
   "name": "@mlev/gae-js-firestore",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -17,7 +17,7 @@
   "license": "MIT",
   "homepage": "https://github.com/mlev/gae-js",
   "dependencies": {
-    "@mlev/gae-js-core": "^0.0.2",
+    "@mlev/gae-js-core": "^0.0.3",
     "dataloader": "2.0.0",
     "fp-ts": "2.8.2",
     "io-ts": "2.2.13",
