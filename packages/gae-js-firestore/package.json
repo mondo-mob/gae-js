@@ -10,6 +10,9 @@
     "test": "jest",
     "firestore:start": "gcloud beta emulators firestore start --host-port=localhost:8090"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "",
   "license": "MIT",
   "homepage": "https://github.com/mlev/gae-js",
