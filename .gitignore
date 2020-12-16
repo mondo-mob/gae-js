@@ -1,0 +1,10 @@
+node_modules
+.idea
+coverage
+dist
+
+# Output of 'npm pack'
+*.tgz
+
+# Logs
+*.log
