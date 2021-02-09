@@ -19,20 +19,20 @@
   "dependencies": {
     "@dotrun/gae-js-core": "^0.0.4",
     "dataloader": "2.0.0",
-    "fp-ts": "2.8.2",
-    "io-ts": "2.2.13",
+    "fp-ts": "2.9.5",
+    "io-ts": "2.2.14",
     "io-ts-reporters": "1.2.2",
     "lodash": "4.17.20",
-    "tslib": "2.0.3"
+    "tslib": "2.1.0"
   },
   "peerDependencies": {
-    "@google-cloud/firestore": "^4.8.0",
+    "@google-cloud/firestore": "^4.9.2",
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@google-cloud/firestore": "4.8.0",
-    "@types/express": "4.17.9",
-    "@types/lodash": "4.14.165",
+    "@google-cloud/firestore": "4.9.2",
+    "@types/express": "4.17.11",
+    "@types/lodash": "4.14.168",
     "express": "4.17.1"
   },
   "gitHead": "d1dbf4fb3f5407c44d305feb044a4fa4b6ed0949"

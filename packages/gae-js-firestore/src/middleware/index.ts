@@ -1,2 +1,2 @@
-export { firestoreClient } from "./firestoreClient";
-export { firestoreLoader } from "./firestoreLoader";
+export { firestoreClient } from "./firestore-client";
+export { firestoreLoader } from "./firestore-loader";

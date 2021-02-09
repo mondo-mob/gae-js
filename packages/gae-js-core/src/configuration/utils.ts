@@ -4,7 +4,7 @@ import { createLogger } from "../logging";
 import reporter from "io-ts-reporters";
 import { isLeft } from "fp-ts/Either";
 import { GaeJsCoreConfiguration } from "./schema";
-import { configurationStore } from "./configurationStore";
+import { configurationStore } from "./configuration-store";
 
 const LOCAL_DEV_ENVIRONMENT = "development";
 
