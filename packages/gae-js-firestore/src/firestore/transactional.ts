@@ -29,7 +29,7 @@ const applyInTransaction = (thisArg: any, original: AnyAsync, ...args: any[]): P
  */
 export function Transactional() {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<AnyAsync>
   ): TypedPropertyDescriptor<AnyAsync> {
