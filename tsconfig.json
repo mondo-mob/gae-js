@@ -9,7 +9,8 @@
     "incremental": true,
     "esModuleInterop": true,
     "outDir": "./dist",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*"

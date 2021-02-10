@@ -1,9 +1,5 @@
 import { CollectionReference, Firestore } from "@google-cloud/firestore";
-
-// TODO: where to define these?
-const projectId = "integration-tests";
-const host = "localhost";
-const port = 8090;
+import firebaseJson from "../../firebase.json";
 
 export interface RepositoryItem {
   id: string;
@@ -12,9 +8,9 @@ export interface RepositoryItem {
 
 export const connectFirestore = (): Firestore => {
   return new Firestore({
-    projectId,
-    host,
-    port,
+    projectId: "firestore-tests",
+    host: firebaseJson.emulators.firestore.host,
+    port: firebaseJson.emulators.firestore.port,
     ssl: false,
     credentials: { client_email: "test@example.com", private_key: "{}" },
   });

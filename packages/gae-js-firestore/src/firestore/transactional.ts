@@ -33,13 +33,12 @@ export function Transactional() {
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<AnyAsync>
   ): TypedPropertyDescriptor<AnyAsync> {
-    const value = descriptor.value;
-    if (!value) throw new Error("No descriptor value for Transactional annotation");
-
-    descriptor.value = async function (...args) {
-      return applyInTransaction(this, value, ...args);
-    };
-
+    const originalMethod = descriptor.value;
+    if (originalMethod) {
+      descriptor.value = async function (...args) {
+        return applyInTransaction(this, originalMethod, ...args);
+      };
+    }
     return descriptor;
   };
 }

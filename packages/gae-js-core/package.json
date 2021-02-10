@@ -5,9 +5,12 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "prepublish": "tsc",
+    "build": "npm run clean && tsc",
+    "clean": "rimraf dist/",
     "format": "prettier --write \"./src/**/*.ts\"",
-    "test": "jest"
+    "prepublish": "npm run build",
+    "test": "jest",
+    "test:ci": "jest"
   },
   "publishConfig": {
     "access": "public"
