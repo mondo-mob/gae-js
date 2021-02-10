@@ -1,6 +1,8 @@
 import {
   getRequestStorageValue,
   getRequestStorageValueOrDefault,
+  getRequestStorageValueRequired,
+  getRequestStore,
   runWithRequestStorage,
   setRequestStorageValue,
 } from "./request-storage";
@@ -55,6 +57,26 @@ describe("Request Storage", () => {
     });
   });
 
+  describe("getRequestStore", () => {
+    it("returns empty object when no keys set", () => {
+      runWithRequestStorage(() => {
+        expect(getRequestStore()).toEqual({});
+      });
+    });
+
+    it("returns store", () => {
+      runWithRequestStorage(() => {
+        setRequestStorageValue("my-key1", 1000);
+        setRequestStorageValue("my-key2", "testing");
+        expect(getRequestStore()).toEqual({ "my-key1": 1000, "my-key2": "testing" });
+      });
+    });
+
+    it("returns null when no active context exists", () => {
+      expect(getRequestStore()).toBeNull();
+    });
+  });
+
   describe("getRequestStorageValue", () => {
     it("returns typed value when value has been set", () => {
       runWithRequestStorage(() => {
@@ -84,6 +106,42 @@ describe("Request Storage", () => {
 
     it("returns null when no active context exists", () => {
       expect(getRequestStorageValue("does-not-exist")).toBeNull();
+    });
+  });
+
+  describe("getRequestStorageValueRequired", () => {
+    it("returns typed value when value has been set", () => {
+      runWithRequestStorage(() => {
+        setRequestStorageValue("my-key", 99);
+
+        const value: number | null = getRequestStorageValueRequired("my-key");
+
+        expect(value).toBe(99);
+      });
+    });
+
+    it("returns typed value when value has been set to falsy value", () => {
+      runWithRequestStorage(() => {
+        setRequestStorageValue("my-key", 0);
+
+        const value: number | null = getRequestStorageValueRequired("my-key");
+
+        expect(value).toBe(0);
+      });
+    });
+
+    it("throws when active context exists with no value for key", () => {
+      runWithRequestStorage(() => {
+        expect(() => getRequestStorageValueRequired("does-not-exist")).toThrow(
+          "No request storage value exists for key: does-not-exist"
+        );
+      });
+    });
+
+    it("throws when no active context exists", () => {
+      expect(() => getRequestStorageValueRequired("does-not-exist")).toThrow(
+        "No request storage value exists for key: does-not-exist"
+      );
     });
   });
 

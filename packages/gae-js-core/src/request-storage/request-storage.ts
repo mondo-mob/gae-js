@@ -18,12 +18,17 @@ export const runWithRequestStorage = <R>(fn: (...args: any[]) => R): R => {
   return requestLocalStorage.run({ ...requestLocalStorage.getStore() }, fn);
 };
 
-const getStoreOptional = (): RequestStore | null => {
+/**
+ * Returns the entire current request storage store or null if none found.
+ * Prefer setting/fetching values using the convenience methods
+ * e.g. getRequestStorageValue, setRequestStorageValue
+ */
+export const getRequestStore = (): RequestStore | null => {
   return requestLocalStorage.getStore() ?? null;
 };
 
-const getStoreRequired = (): RequestStore => {
-  const context = getStoreOptional();
+const getRequestStoreRequired = (): RequestStore => {
+  const context = getRequestStore();
   if (!context) {
     throw new Error("No request storage found");
   }
@@ -39,7 +44,7 @@ const getStoreRequired = (): RequestStore => {
  * @param defaultVal default value when request storage is not active, or when there is no value defined
  */
 export const getRequestStorageValueOrDefault = <T>(key: string, defaultVal: T): T => {
-  const store = getStoreOptional();
+  const store = getRequestStore();
   if (store) {
     const value = store[key];
     return value ?? defaultVal;
@@ -77,7 +82,7 @@ export const getRequestStorageValueRequired = <T>(key: string): T => {
  * @param value the value to set
  */
 export const setRequestStorageValue = <T>(key: string, value: T): T => {
-  const store = getStoreRequired();
+  const store = getRequestStoreRequired();
   store[key] = value;
   return value;
 };

@@ -1,4 +1,5 @@
 export {
+  getRequestStore,
   getRequestStorageValue,
   getRequestStorageValueOrDefault,
   setRequestStorageValue,
