@@ -1,18 +1,18 @@
-import { CollectionReference, Firestore } from "@google-cloud/firestore";
-import firebaseJson from "../../firebase.json";
+import { CollectionReference, Firestore, Settings } from "@google-cloud/firestore";
 
 export interface RepositoryItem {
   id: string;
   name: string;
 }
 
-export const connectFirestore = (): Firestore => {
+export const connectFirestore = (settings?: Settings): Firestore => {
   return new Firestore({
     projectId: "firestore-tests",
-    host: firebaseJson.emulators.firestore.host,
-    port: firebaseJson.emulators.firestore.port,
+    host: "localhost",
+    port: 9000,
     ssl: false,
     credentials: { client_email: "test@example.com", private_key: "{}" },
+    ...settings,
   });
 };
 
