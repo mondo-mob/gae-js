@@ -6,7 +6,7 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "build": "npm run clean && tsc",
-    "clean": "rimraf dist/",
+    "clean": "rm -rf dist/",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublish": "npm run build",
     "test": "jest",
