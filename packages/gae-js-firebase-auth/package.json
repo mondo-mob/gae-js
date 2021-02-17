@@ -1,0 +1,32 @@
+{
+  "name": "@dotrun/gae-js-firebase-auth",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "build": "npm run clean && tsc",
+    "clean": "rm -rf dist/",
+    "format": "prettier --write \"./src/**/*.ts\"",
+    "prepublish": "npm run build",
+    "test": "jest",
+    "test:ci": "jest"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "",
+  "license": "MIT",
+  "homepage": "https://github.com/mlev/gae-js",
+  "dependencies": {
+    "@dotrun/gae-js-core": "^0.0.7"
+  },
+  "peerDependencies": {
+    "firebase-admin": ">= 9.5.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.11",
+    "express": "4.17.1",
+    "firebase-admin": ">= 9.5.0"
+  }
+}
