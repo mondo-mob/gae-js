@@ -1,6 +1,6 @@
 {
   "name": "@dotrun/gae-js-firestore",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -20,7 +20,7 @@
   "license": "MIT",
   "homepage": "https://github.com/mlev/gae-js",
   "dependencies": {
-    "@dotrun/gae-js-core": "^0.0.7",
+    "@dotrun/gae-js-core": "^0.0.8",
     "dataloader": "2.0.0",
     "fp-ts": "2.9.5",
     "io-ts": "2.2.14",
