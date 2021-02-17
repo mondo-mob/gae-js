@@ -9,7 +9,7 @@ import {
   Transaction,
   WriteBatch,
 } from "@google-cloud/firestore";
-import { createLogger } from "@dotrun/gae-js-core";
+import { asArray, createLogger } from "@dotrun/gae-js-core";
 import { QueryOptions } from "./firestore-query";
 
 export interface FirestorePayload<T> {
@@ -80,10 +80,18 @@ export class FirestoreLoader {
     let query = this.firestore.collection(collectionPath) as Query;
 
     // TODO: Build other query options
-    // select
-    // sort
+    // startAt
+    // endAt
+    if (options.select) {
+      query = query.select(...options.select);
+    }
+
     if (options.filters) {
       options.filters.forEach((filter) => (query = query.where(filter.fieldPath, filter.opStr, filter.value)));
+    }
+
+    if (options.sort) {
+      asArray(options.sort).forEach((sort) => (query = query.orderBy(sort.property, sort.direction)));
     }
 
     if (options.limit) {

@@ -156,6 +156,22 @@ describe("FirestoreLoader", () => {
   });
 
   describe("query", () => {
+    it("selects specific fields", async () => {
+      await loader.create([
+        createUserPayload("123", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+        createUserPayload("234", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+      ]);
+
+      const results = await loader.executeQuery("users", {
+        select: ["prop1", "prop3"],
+      });
+
+      expect(results.size).toBe(2);
+      expect(results.docs[0].data().prop1).toEqual("prop1");
+      expect(results.docs[0].data().prop2).toBeUndefined();
+      expect(results.docs[0].data().prop3).toEqual("prop3");
+    });
+
     it("filters by exact match", async () => {
       await loader.create([
         createUserPayload("123", { message: "user1" }),
@@ -174,6 +190,109 @@ describe("FirestoreLoader", () => {
 
       expect(results.size).toBe(1);
       expect(results.docs[0].data().message).toEqual("user1");
+    });
+
+    describe("limit and offset", () => {
+      beforeEach(async () => {
+        await loader.create([
+          createUserPayload("123", { message: "user1" }),
+          createUserPayload("234", { message: "user2" }),
+          createUserPayload("345", { message: "user3" }),
+          createUserPayload("456", { message: "user4" }),
+          createUserPayload("567", { message: "user5" }),
+        ]);
+      });
+
+      it("applies limit", async () => {
+        const results = await loader.executeQuery("users", {
+          limit: 3,
+        });
+
+        expect(results.size).toBe(3);
+      });
+
+      it("applies offset", async () => {
+        const results = await loader.executeQuery("users", {
+          offset: 3,
+        });
+
+        expect(results.size).toBe(2);
+        expect(results.docs[0].id).toEqual("456");
+      });
+
+      it("applies limit and offset", async () => {
+        const results = await loader.executeQuery("users", {
+          limit: 2,
+          offset: 2,
+        });
+
+        expect(results.size).toBe(2);
+        expect(results.docs[0].id).toEqual("345");
+        expect(results.docs[1].id).toEqual("456");
+      });
+    });
+
+    describe("ordering", () => {
+      beforeEach(async () => {
+        await loader.create([
+          createUserPayload("123", { category1: "AA", category2: "XX" }),
+          createUserPayload("234", { category1: "BA", category2: "XX" }),
+          createUserPayload("345", { category1: "AB", category2: "ZZ" }),
+          createUserPayload("456", { category1: "BB", category2: "YY" }),
+          createUserPayload("567", { category1: "CA", category2: "XX" }),
+        ]);
+      });
+
+      it("orders results ascending", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: {
+            property: "category1",
+            direction: "asc",
+          },
+        });
+
+        expect(results.size).toBe(5);
+        expect(results.docs.map((doc) => doc.id)).toEqual(["123", "345", "234", "456", "567"]);
+      });
+
+      it("orders results descending", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: {
+            property: "category1",
+            direction: "desc",
+          },
+        });
+
+        expect(results.size).toBe(5);
+        expect(results.docs.map((doc) => doc.id)).toEqual(["567", "456", "234", "345", "123"]);
+      });
+
+      it("orders by multiple fields", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: [
+            {
+              property: "category2",
+              direction: "asc",
+            },
+            {
+              property: "category1",
+              direction: "desc",
+            },
+          ],
+        });
+
+        expect(results.size).toBe(5);
+        expect(results.docs.map((doc) => doc.id)).toEqual(["567", "234", "123", "456", "345"]);
+      });
+
+      it("orders results by id special key", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: [{ property: "category2" }, { property: "__name__" }],
+        });
+
+        expect(results.size).toBe(5);
+        expect(results.docs.map((doc) => doc.id)).toEqual(["123", "234", "567", "456", "345"]);
+      });
     });
   });
 

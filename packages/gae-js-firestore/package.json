@@ -6,8 +6,8 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "build": "npm run clean && tsc",
-    "clean": "rimraf dist/",
-    "firestore:start": "firebase emulators --project firestore-tests",
+    "clean": "rm -rf dist/",
+    "firestore:start": "firebase emulators:start --project firestore-tests",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublish": "npm run build",
     "test": "jest",
