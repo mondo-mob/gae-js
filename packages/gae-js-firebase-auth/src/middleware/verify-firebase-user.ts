@@ -1,5 +1,5 @@
 import { Handler } from "express";
-import { BaseUser, createLogger, setRequestStorageValue, UnauthorisedError } from "@dotrun/gae-js-core";
+import { BaseUser, createLogger, UnauthorisedError, userRequestStorage } from "@dotrun/gae-js-core";
 import * as firebaseAdmin from "firebase-admin";
 
 const convertIdTokenToUser = (idToken: firebaseAdmin.auth.DecodedIdToken): BaseUser => ({
@@ -8,11 +8,14 @@ const convertIdTokenToUser = (idToken: firebaseAdmin.auth.DecodedIdToken): BaseU
   roles: idToken.roles || [],
 });
 
-// TODO: Add config options:
-//       - Custom user mapping
-//       - Request storage key??
-export const verifyFirebaseUser = (firebaseAdmin: firebaseAdmin.app.App): Handler => {
+export interface VerifyOptions {
+  userConverter?: (idToken: firebaseAdmin.auth.DecodedIdToken) => BaseUser;
+}
+
+export const verifyFirebaseUser = (firebaseAdmin: firebaseAdmin.app.App, options?: VerifyOptions): Handler => {
   const logger = createLogger("firebaseAuthUser");
+
+  const userConverter = options?.userConverter || convertIdTokenToUser;
 
   return async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -20,9 +23,9 @@ export const verifyFirebaseUser = (firebaseAdmin: firebaseAdmin.app.App): Handle
       try {
         logger.debug("Verifying Bearer token from Authorization header");
         const idToken = await firebaseAdmin.auth().verifyIdToken(authHeader.substring(7));
-        const user = convertIdTokenToUser(idToken);
+        const user = userConverter(idToken);
         logger.info(`Verified firebase token for user ${user.id} with roles ${user.roles}`);
-        setRequestStorageValue("USER", user);
+        userRequestStorage.set(user);
       } catch (e) {
         next(new UnauthorisedError(`Error verifying token: ${e.message}`));
       }
