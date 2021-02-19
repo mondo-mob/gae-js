@@ -38,4 +38,4 @@ jobs:
         run: npx lerna bootstrap
 
       - name: Run tests
-        run: npx lerna run test:ci
+        run: npx lerna run --concurrency 1 test:ci
