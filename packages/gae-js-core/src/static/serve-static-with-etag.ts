@@ -17,11 +17,11 @@ const HASH_UNSET = "HASH_UNSET";
  * (https://cloud.google.com/appengine/docs/standard/nodejs/serving-static-files).
  *
  * @example
- * app.use(serveStaticWithEtag({ root: "public" })
+ * app.use(serveStaticWithEtag(`${__dirname}/public`))
  */
-export const serveStaticWithEtag = (options: { root: string }): Handler => {
+export const serveStaticWithEtag = (root: string): Handler => {
   const logger = createLogger("gaeServeStatic");
-  const rootFolder = `${__dirname}/${options.root}`;
+  const rootFolder = path.resolve(root);
   const validFiles: Record<string, string> = {};
 
   fetchFileList(rootFolder).then((allFiles) => {

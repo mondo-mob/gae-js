@@ -10,10 +10,10 @@ import { generateHash } from "./utils";
  * a single page app.
  *
  * @example
- * app.use("/*", serveFallbackWithEtag({ file: "public/index.html" })
+ * app.use("/*", serveFallbackWithEtag(`${__dirname}/public/index.html`))
  */
-export const serveFallbackWithEtag = (options: { file: string }): Handler => {
-  const fullFilePath = path.join(__dirname, options.file);
+export const serveFallbackWithEtag = (file: string): Handler => {
+  const fullFilePath = path.resolve(file);
   const hashPromise = generateHash(fullFilePath);
 
   return async (req, res, next) => {
