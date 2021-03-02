@@ -20,7 +20,7 @@ const HASH_UNSET = "HASH_UNSET";
  * app.use(serveStaticWithEtag(`${__dirname}/public`))
  */
 export const serveStaticWithEtag = (root: string): Handler => {
-  const logger = createLogger("gaeServeStatic");
+  const logger = createLogger("serveStaticWithEtag");
   const rootFolder = path.resolve(root);
   const validFiles: Record<string, string> = {};
 
