@@ -19,13 +19,13 @@
   "license": "MIT",
   "homepage": "https://github.com/mlev/gae-js",
   "dependencies": {
-    "@google-cloud/logging-bunyan": "3.0.1",
+    "@google-cloud/logging-bunyan": "3.0.2",
     "@types/bunyan": "1.8.6",
-    "bunyan": "^1.8.15",
-    "fp-ts": "^2.9.5",
-    "io-ts": "^2.2.14",
-    "io-ts-reporters": "^1.2.2",
-    "lodash": "4.17.20",
+    "bunyan": "1.8.15",
+    "fp-ts": "2.9.5",
+    "io-ts": "2.2.15",
+    "io-ts-reporters": "1.2.2",
+    "lodash": "4.17.21",
     "tslib": "2.1.0"
   },
   "peerDependencies": {
