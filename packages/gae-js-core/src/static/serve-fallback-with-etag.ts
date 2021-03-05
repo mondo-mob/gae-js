@@ -20,7 +20,7 @@ export const serveFallbackWithEtag = (file: string): Handler => {
 
   return async (req, res, next) => {
     if (!res.headersSent) {
-      const etag = await hashPromise;
+      const etag = `"${await hashPromise}"`;
       logger.info(`Sending file ${fullFilePath} with etag ${etag}`);
       return res.sendFile(fullFilePath, { headers: { etag } }, (err) => {
         return err ? next(err) : next();

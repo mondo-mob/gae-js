@@ -41,7 +41,7 @@ export const serveStaticWithEtag = (root: string, options?: { ignorePaths: strin
         validFiles[requestPath] = await generateHash(fullFilePath);
       }
 
-      const etag = validFiles[requestPath];
+      const etag = `"${validFiles[requestPath]}"`;
       logger.info(`Sending file ${fullFilePath} with etag ${etag}`);
       return res.sendFile(fullFilePath, { headers: { etag } }, (err) => {
         return err ? next(err) : next();
