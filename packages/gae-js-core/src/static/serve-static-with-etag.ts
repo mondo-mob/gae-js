@@ -19,13 +19,15 @@ const HASH_UNSET = "HASH_UNSET";
  * @example
  * app.use(serveStaticWithEtag(`${__dirname}/public`))
  */
-export const serveStaticWithEtag = (root: string): Handler => {
+export const serveStaticWithEtag = (root: string, options?: { ignorePaths: string[] }): Handler => {
   const logger = createLogger("serveStaticWithEtag");
   const rootFolder = path.resolve(root);
   const validFiles: Record<string, string> = {};
 
   fetchFileList(rootFolder).then((allFiles) => {
-    allFiles.forEach((file) => (validFiles[file] = HASH_UNSET));
+    allFiles
+      .filter((file) => !options?.ignorePaths?.some((path) => file.startsWith(path)))
+      .forEach((file) => (validFiles[file] = HASH_UNSET));
     logger.info("Serving static files: ", Object.keys(validFiles));
   });
 
@@ -39,8 +41,8 @@ export const serveStaticWithEtag = (root: string): Handler => {
         validFiles[requestPath] = await generateHash(fullFilePath);
       }
 
-      logger.info(`Sending file ${fullFilePath}`);
       const etag = validFiles[requestPath];
+      logger.info(`Sending file ${fullFilePath} with etag ${etag}`);
       return res.sendFile(fullFilePath, { headers: { etag } }, (err) => {
         return err ? next(err) : next();
       });
