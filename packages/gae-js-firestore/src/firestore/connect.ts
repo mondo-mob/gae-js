@@ -1,12 +1,12 @@
 import { Firestore, Settings } from "@google-cloud/firestore";
-import { configurationStore, createLogger } from "@dotrun/gae-js-core";
+import { configurationStore, createLogger, isGcpEnvironment } from "@dotrun/gae-js-core";
 import { GaeJsFirestoreConfiguration } from "../configuration";
 
 export const connectFirestore = (settings?: Settings): Firestore => {
   const logger = createLogger("connectFirestore");
   const configuration = configurationStore.get<GaeJsFirestoreConfiguration>();
 
-  if (process.env.APP_ENGINE_ENVIRONMENT) {
+  if (isGcpEnvironment()) {
     logger.info("Running in deployed environment");
     return new Firestore({
       projectId: configuration.firestoreProjectId || undefined,
