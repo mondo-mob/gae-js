@@ -1,6 +1,6 @@
 import { Handler } from "express";
 import { userRequestStorage } from "./user-request-storage";
-import { AccessDeniedError, UnauthorisedError } from "../error";
+import { ForbiddenError, UnauthorisedError } from "../error";
 
 /**
  * Middleware that checks the current authenticated user has a given role.
@@ -15,5 +15,5 @@ export const requiresRole = (role: string): Handler => (req, res, next) => {
     return next();
   }
 
-  next(new AccessDeniedError(`User does not have the required role ${role}`));
+  next(new ForbiddenError(`User does not have the required role ${role}`));
 };

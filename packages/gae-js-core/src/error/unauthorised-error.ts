@@ -1,6 +1,7 @@
-export class UnauthorisedError extends Error {
+import { HttpError } from "./http-error";
+
+export class UnauthorisedError extends HttpError {
   constructor(message?: string) {
-    super(message || "Unauthorised");
-    Object.setPrototypeOf(this, new.target.prototype);
+    super(401, message || "Unauthorised");
   }
 }
