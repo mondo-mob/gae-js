@@ -16,8 +16,10 @@ export interface QueryOptions<T> {
   filters: WhereFilter[];
   select: OneOrMany<keyof T & string>;
   sort: OneOrMany<PropertySort<T>>;
-  //     start: string;
-  //     end: string;
+  startAfter: any[];
+  startAt: any[];
+  endBefore: any[];
+  endAt: any[];
   offset: number;
   limit: number;
 }

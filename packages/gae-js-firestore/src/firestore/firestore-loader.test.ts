@@ -294,6 +294,92 @@ describe("FirestoreLoader", () => {
         expect(results.docs.map((doc) => doc.id)).toEqual(["123", "234", "567", "456", "345"]);
       });
     });
+
+    describe("cursors", () => {
+      beforeEach(async () => {
+        await loader.create([
+          createUserPayload("123", { message: "msg1" }),
+          createUserPayload("234", { message: "msg2" }),
+          createUserPayload("345", { message: "msg1" }),
+          createUserPayload("456", { message: "msg2" }),
+          createUserPayload("567", { message: "msg1" }),
+        ]);
+      });
+
+      // it("applies limit", async () => {
+      //   const results = await loader.executeQuery("users", {
+      //     limit: 3,
+      //   });
+      //
+      //   expect(results.size).toBe(3);
+      // });
+
+      it("applies startAfter", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: { property: "name" },
+          startAfter: ["Test User 234"],
+        });
+
+        expect(results.size).toBe(3);
+        expect(results.docs[0].id).toEqual("345");
+      });
+
+      it("applies startAt", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: { property: "name" },
+          startAt: ["Test User 345"],
+        });
+
+        expect(results.size).toBe(3);
+        expect(results.docs[0].id).toEqual("345");
+      });
+
+      it("applies endBefore", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: { property: "__name__" },
+          startAt: ["234"],
+          endBefore: ["567"],
+        });
+
+        expect(results.size).toBe(3);
+        expect(results.docs[2].id).toEqual("456");
+      });
+
+      it("applies endAt", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: { property: "__name__" },
+          startAfter: ["234"],
+          endAt: ["567"],
+        });
+
+        expect(results.size).toBe(3);
+        expect(results.docs[2].id).toEqual("567");
+      });
+
+      it("applies multiple properties", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: [{ property: "message" }, { property: "__name__" }],
+          startAfter: ["msg1", "345"],
+          limit: 2,
+        });
+
+        expect(results.size).toBe(2);
+        expect(results.docs[0].id).toEqual("567");
+        expect(results.docs[1].id).toEqual("234");
+      });
+
+      it("applies cursor and limit", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: { property: "__name__" },
+          startAfter: ["234"],
+          limit: 2,
+        });
+
+        expect(results.size).toBe(2);
+        expect(results.docs[0].id).toEqual("345");
+        expect(results.docs[1].id).toEqual("456");
+      });
+    });
   });
 
   // Firestore Emulator does not have deadlock handling so we can't test for it

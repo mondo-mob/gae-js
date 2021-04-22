@@ -79,9 +79,6 @@ export class FirestoreLoader {
   public async executeQuery<T>(collectionPath: string, options: Partial<QueryOptions<T>>): Promise<QuerySnapshot> {
     let query = this.firestore.collection(collectionPath) as Query;
 
-    // TODO: Build other query options
-    // startAt
-    // endAt
     if (options.select) {
       query = query.select(...options.select);
     }
@@ -97,6 +94,11 @@ export class FirestoreLoader {
     if (options.limit) {
       query = query.limit(options.limit);
     }
+
+    if (options.startAfter) query = query.startAfter(...options.startAfter);
+    if (options.startAt) query = query.startAt(...options.startAt);
+    if (options.endAt) query = query.endAt(...options.endAt);
+    if (options.endBefore) query = query.endBefore(...options.endBefore);
 
     if (options.offset) {
       query = query.offset(options.offset);
