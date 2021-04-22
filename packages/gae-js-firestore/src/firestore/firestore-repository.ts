@@ -74,13 +74,13 @@ export class FirestoreRepository<T extends { id: string }> {
   // async update(context: Context, entities: OneOrMany<T>): Promise<OneOrMany<T>> {
   //   return this.applyMutation(context, this.beforePersist(context, entities), (loader, e) => loader.update(e));
   // }
-  //
-  // async insert(context: Context, entities: T): Promise<T>;
-  // async insert(context: Context, entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
-  // async insert(context: Context, entities: OneOrMany<T>): Promise<OneOrMany<T>> {
-  //   return this.applyMutation(context, this.beforePersist(context, entities), (loader, e) => loader.insert(e));
-  // }
-  //
+
+  async insert(entities: T): Promise<T>;
+  async insert(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
+  async insert(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
+    return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.create(e));
+  }
+
   // async upsert(context: Context, entities: T): Promise<T>;
   // async upsert(context: Context, entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
   // async upsert(context: Context, entities: OneOrMany<T>): Promise<OneOrMany<T>> {
