@@ -45,7 +45,7 @@ export class FirestoreLoader {
       entities,
       (transaction, entity) => transaction.create(entity.ref, entity.data),
       (batch, entity) => batch.create(entity.ref, entity.data),
-      (loader, { ref, data }) => loader.prime(ref, data)
+      (loader, { ref, data }) => loader.clear(ref).prime(ref, data)
     );
   }
 
@@ -54,7 +54,7 @@ export class FirestoreLoader {
       entities,
       (transaction, entity) => transaction.set(entity.ref, entity.data),
       (batch, entity) => batch.set(entity.ref, entity.data),
-      (loader, { ref, data }) => loader.prime(ref, data)
+      (loader, { ref, data }) => loader.clear(ref).prime(ref, data)
     );
   }
 
@@ -63,7 +63,7 @@ export class FirestoreLoader {
       entities,
       (transaction, entity) => transaction.update(entity.ref, entity.data),
       (batch, entity) => batch.update(entity.ref, entity.data),
-      (loader, { ref, data }) => loader.prime(ref, data)
+      (loader, { ref, data }) => loader.clear(ref).prime(ref, data)
     );
   }
 
@@ -105,7 +105,10 @@ export class FirestoreLoader {
     }
 
     const querySnapshot = this.transaction ? await this.transaction.get(query) : await query.get();
-    querySnapshot.forEach((result) => this.loader.prime(result.ref, result));
+    if (!options.select) {
+      // Update cache only when query does not select specific fields
+      querySnapshot.forEach((result) => this.loader.clear(result.ref).prime(result.ref, result.data()));
+    }
     return querySnapshot;
   }
 
@@ -113,10 +116,17 @@ export class FirestoreLoader {
     if (this.isTransaction()) {
       return updateFunction(this);
     } else {
-      return this.firestore.runTransaction((transaction) => {
-        const loader = new FirestoreLoader(this.firestore, transaction);
-        return updateFunction(loader);
-      });
+      return this.firestore
+        .runTransaction((transaction) => {
+          const loader = new FirestoreLoader(this.firestore, transaction);
+          return updateFunction(loader);
+        })
+        .then((result) => {
+          // Maybe OTT to clear entire cache but seems safest to ensure all stale data is removed
+          // i.e. not as simple as merging the transaction cache into this one as need to track deletes too
+          this.loader.clearAll();
+          return result;
+        });
     }
   }
 
