@@ -4,6 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "build": "npm run clean && tsc",
     "clean": "rm -rf dist/",
