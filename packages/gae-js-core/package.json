@@ -23,8 +23,10 @@
   "homepage": "https://github.com/mlev/gae-js",
   "dependencies": {
     "@google-cloud/logging-bunyan": "3.0.2",
+    "@google-cloud/rcloadenv": "2.0.4",
     "@types/bunyan": "1.8.6",
     "bunyan": "1.8.15",
+    "config": "^3.3.6",
     "fp-ts": "2.9.5",
     "io-ts": "2.2.15",
     "io-ts-reporters": "1.2.2",
