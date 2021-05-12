@@ -24,6 +24,7 @@
   "dependencies": {
     "@google-cloud/logging-bunyan": "3.0.2",
     "@google-cloud/rcloadenv": "2.0.4",
+    "@google-cloud/secret-manager": "^3.6.0",
     "@types/bunyan": "1.8.6",
     "bunyan": "1.8.15",
     "config": "^3.3.6",

@@ -5,13 +5,27 @@ import reporter from "io-ts-reporters";
 import { isLeft } from "fp-ts/Either";
 import { GaeJsCoreConfiguration } from "./schema";
 import { configurationStore } from "./configuration-store";
+import { SecretsResolver } from "./secrets/secrets.resolver";
+import { SecretsClient } from "./secrets/secrets.client";
 
 const LOCAL_DEV_ENVIRONMENT = "development";
 
-export const initialiseConfiguration = <T extends GaeJsCoreConfiguration>(validator: t.Type<T>): T => {
+export const initialiseConfiguration = async <T extends GaeJsCoreConfiguration>(validator: t.Type<T>): Promise<T> => {
   const configuration = loadConfiguration(validator);
-  configurationStore.set(configuration);
-  return configuration;
+  const configWithSecrets = await resolveSecrets(configuration);
+  configurationStore.set(configWithSecrets);
+  return configWithSecrets;
+};
+
+export const resolveSecrets = async <T extends GaeJsCoreConfiguration>(config: T): Promise<T> => {
+  const logger = createLogger("resolveSecrets");
+  const secretsProjectId = config.secretsProjectId || config.projectId;
+  logger.info(`Using secrets projectId: ${secretsProjectId}`);
+  const secretsResolver = new SecretsResolver(new SecretsClient(secretsProjectId));
+  logger.info("Resolving all secrets ...");
+  const configWithSecrets = await secretsResolver.resolveSecrets(config);
+  logger.info("Secrets resolved");
+  return configWithSecrets;
 };
 
 export const loadConfiguration = <T extends GaeJsCoreConfiguration>(validator: t.Type<T>): T => {
