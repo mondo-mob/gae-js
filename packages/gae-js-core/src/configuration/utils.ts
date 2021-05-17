@@ -10,6 +10,12 @@ import { SecretsClient } from "./secrets/secrets.client";
 
 const LOCAL_DEV_ENVIRONMENT = "development";
 
+const getConfigurationEnvironment = () => {
+  if (process.env.NODE_CONFIG_ENV) return process.env.NODE_CONFIG_ENV;
+  if (process.env.GOOGLE_CLOUD_PROJECT) return _.last(process.env.GOOGLE_CLOUD_PROJECT.split("-"));
+  return LOCAL_DEV_ENVIRONMENT;
+};
+
 export const initialiseConfiguration = async <T extends GaeJsCoreConfiguration>(validator: t.Type<T>): Promise<T> => {
   const configuration = loadConfiguration(validator);
   const configWithSecrets = await resolveSecrets(configuration);
@@ -31,14 +37,9 @@ export const resolveSecrets = async <T extends GaeJsCoreConfiguration>(config: T
 export const loadConfiguration = <T extends GaeJsCoreConfiguration>(validator: t.Type<T>): T => {
   const logger = createLogger("loadConfiguration");
 
-  if (process.env.GOOGLE_CLOUD_PROJECT) {
-    const projectId = process.env.GOOGLE_CLOUD_PROJECT;
-    process.env.NODE_CONFIG_ENV = _.last(projectId.split("-"));
-  } else if (!process.env.NODE_CONFIG_ENV) {
-    process.env.NODE_CONFIG_ENV = LOCAL_DEV_ENVIRONMENT;
-  }
-
+  process.env.NODE_CONFIG_ENV = getConfigurationEnvironment();
   process.env.NODE_CONFIG_STRICT_MODE = "true";
+  logger.info(`Loading config for environment ${process.env.NODE_CONFIG_ENV}`);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const nodeConfig = require("config");
   const mergedConfig: Record<string, unknown> = {};
