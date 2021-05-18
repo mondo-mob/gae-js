@@ -23,7 +23,7 @@
   "license": "MIT",
   "homepage": "https://github.com/mlev/gae-js",
   "peerDependencies": {
-    "@dotrun/gae-js-core": "^0.0.9",
+    "@dotrun/gae-js-core": "^0.0.20",
     "firebase-admin": ">= 9.5.0"
   },
   "devDependencies": {

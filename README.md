@@ -66,7 +66,7 @@ is heavily tied to using Firestore in Datastore Mode and assumes you want to use
 a great fit if you only want to build a simple API with Firestore Native db.
 
 So the intention with this library was to offer a similar feature set but in a minimal way.
-i.e. almost everything is optional
+i.e. almost everything is optional. 
 
 ## Components
 
@@ -98,3 +98,15 @@ Middleware to protect your routes to authenticated users or specific user roles
 
 #### Other stuff
 A few other (hopefully) useful things to help you along the way and stop reinventing the wheel
+
+### gae-js-firestore ([documentation](./packages/gae-js-firestore/README.md))
+
+#### Use Firestore in Native mode
+Access your collections through typed repositories, backed by a DataLoader implentation to support GraphQL.
+
+#### Simple transaction support
+Use annotations on your methods to make them transactional
+
+### gae-js-firebase-auth ([documentation](./packages/gae-js-firebase-auth/README.md))
+#### Use Firebase Auth to authenticate your users
+Middleware to verify Firebase Auth tokens and set user into th erequest
