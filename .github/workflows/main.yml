@@ -28,12 +28,19 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '12'
-     
+
+      - name: Install Datastore emulator
+        run: |
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+          sudo apt-get update -y
+          sudo apt-get install -y google-cloud-sdk-datastore-emulator
+
       - name: Install root dependencies
         run: | 
           npm install
           npm install -g firebase-tools
-     
+
       - name: Bootstrap packages
         run: npx lerna bootstrap
 
