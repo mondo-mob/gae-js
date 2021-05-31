@@ -12,10 +12,7 @@ const repositoryItemSchema = t.type({
   name: t.string,
 });
 
-interface RepositoryItem {
-  id: string;
-  name: string;
-}
+type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
 
 // TODO: beforePersist hook
 

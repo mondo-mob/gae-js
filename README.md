@@ -17,7 +17,7 @@ npm install @dotrun/gae-js-firebase-auth
 ```
 
 ## Usage
-Here's an example Express app configuration that uses the core library as well as both firestore and firebase auth.
+Here's an example Express app configuration that uses the core library as well as both Firestore and Firebase Auth.
 
 ```
 // Create a request aware logger
@@ -99,14 +99,23 @@ Middleware to protect your routes to authenticated users or specific user roles
 #### Other stuff
 A few other (hopefully) useful things to help you along the way and stop reinventing the wheel
 
+### gae-js-datastore ([documentation](./packages/gae-js-datastore/README.md))
+
+#### Use Cloud Datastore (or Firestore in Datastore mode)
+Access your collections through typed repositories, backed by a DataLoader implementation to support GraphQL.
+
+#### Simple transaction support
+Use annotations on your methods to make them transactional
+
+
 ### gae-js-firestore ([documentation](./packages/gae-js-firestore/README.md))
 
 #### Use Firestore in Native mode
-Access your collections through typed repositories, backed by a DataLoader implentation to support GraphQL.
+Access your collections through typed repositories, backed by a DataLoader implementation to support GraphQL.
 
 #### Simple transaction support
 Use annotations on your methods to make them transactional
 
 ### gae-js-firebase-auth ([documentation](./packages/gae-js-firebase-auth/README.md))
 #### Use Firebase Auth to authenticate your users
-Middleware to verify Firebase Auth tokens and set user into th erequest
+Middleware to verify Firebase Auth tokens and set user into the request
