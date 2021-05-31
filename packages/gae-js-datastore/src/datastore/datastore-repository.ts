@@ -204,7 +204,7 @@ export class DatastoreRepository<T extends BaseEntity> {
 
   private async applyMutation(
     entities: OneOrMany<T>,
-    mutation: (loader: DatastoreLoader, entities: ReadonlyArray<DatastorePayload<T>>) => Promise<any>
+    mutation: (loader: DatastoreLoader, entities: ReadonlyArray<DatastorePayload>) => Promise<any>
   ): Promise<OneOrMany<T>> {
     const entitiesToSave = asArray(entities)
       .map((entity) => {
@@ -223,7 +223,7 @@ export class DatastoreRepository<T extends BaseEntity> {
           key: this.key(data.id),
           data: withoutId,
           excludeFromIndexes: buildExclusions(withoutId, this.options.index),
-        } as DatastorePayload<T>;
+        } as DatastorePayload;
       });
 
     await mutation(this.getLoader(), entitiesToSave);

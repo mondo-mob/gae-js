@@ -12,9 +12,9 @@ import {
 import { asArray, createLogger } from "@dotrun/gae-js-core";
 import { QueryOptions } from "./firestore-query";
 
-export interface FirestorePayload<T> {
-  ref: DocumentReference<T>;
-  data: T;
+export interface FirestorePayload {
+  ref: DocumentReference;
+  data: DocumentData;
 }
 
 export class FirestoreLoader {
@@ -40,7 +40,7 @@ export class FirestoreLoader {
     return results;
   }
 
-  public async create(entities: ReadonlyArray<FirestorePayload<any>>): Promise<void> {
+  public async create(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
     await this.applyOperation(
       entities,
       (transaction, entity) => transaction.create(entity.ref, entity.data),
@@ -49,7 +49,7 @@ export class FirestoreLoader {
     );
   }
 
-  public async set<T>(entities: ReadonlyArray<FirestorePayload<T>>): Promise<void> {
+  public async set(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
     await this.applyOperation(
       entities,
       (transaction, entity) => transaction.set(entity.ref, entity.data),
@@ -58,7 +58,7 @@ export class FirestoreLoader {
     );
   }
 
-  public async update<T>(entities: ReadonlyArray<FirestorePayload<T>>): Promise<void> {
+  public async update(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
     await this.applyOperation(
       entities,
       (transaction, entity) => transaction.update(entity.ref, entity.data),

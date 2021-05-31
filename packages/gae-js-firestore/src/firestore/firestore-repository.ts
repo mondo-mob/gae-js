@@ -113,7 +113,7 @@ export class FirestoreRepository<T extends { id: string }> {
 
   private async applyMutation(
     entities: OneOrMany<T>,
-    mutation: (loader: FirestoreLoader, entities: ReadonlyArray<FirestorePayload<T>>) => Promise<any>
+    mutation: (loader: FirestoreLoader, entities: ReadonlyArray<FirestorePayload>) => Promise<any>
   ): Promise<OneOrMany<T>> {
     const entitiesToSave = asArray(entities)
       .map(this.validateSave)
@@ -122,7 +122,7 @@ export class FirestoreRepository<T extends { id: string }> {
         return {
           ref: this.documentRef(data.id),
           data: withoutId,
-        } as FirestorePayload<T>;
+        } as FirestorePayload;
       });
 
     await mutation(this.getLoader(), entitiesToSave);

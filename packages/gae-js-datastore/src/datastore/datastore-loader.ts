@@ -31,9 +31,9 @@ export interface QueryOptions<T> {
 
 export type DocumentData = { [field: string]: any };
 
-export interface DatastorePayload<T = any> {
+export interface DatastorePayload {
   key: Entity.Key;
-  data: T | DocumentData;
+  data: DocumentData;
   excludeFromIndexes?: string[];
 }
 
@@ -74,7 +74,7 @@ export class DatastoreLoader {
    *
    * @param entities The entities to persist
    */
-  public async save(entities: ReadonlyArray<DatastorePayload<any>>): Promise<void> {
+  public async save(entities: ReadonlyArray<DatastorePayload>): Promise<void> {
     await this.applyBatched(
       entities,
       (datastore, chunk) => datastore.save(chunk),
@@ -90,7 +90,7 @@ export class DatastoreLoader {
     );
   }
 
-  public async update(entities: ReadonlyArray<DatastorePayload<any>>): Promise<void> {
+  public async update(entities: ReadonlyArray<DatastorePayload>): Promise<void> {
     await this.applyBatched(
       entities,
       (datastore, chunk) => datastore.update(chunk),
@@ -98,7 +98,7 @@ export class DatastoreLoader {
     );
   }
 
-  // public async upsert(entities: ReadonlyArray<DatastorePayload<any>>): Promise<void> {
+  // public async upsert(entities: ReadonlyArray<DatastorePayload>): Promise<void> {
   //   await this.applyBatched(
   //     entities,
   //     (datastore, chunk) => datastore.upsert(chunk),
@@ -106,7 +106,7 @@ export class DatastoreLoader {
   //   );
   // }
 
-  public async insert(entities: ReadonlyArray<DatastorePayload<any>>): Promise<void> {
+  public async insert(entities: ReadonlyArray<DatastorePayload>): Promise<void> {
     await this.applyBatched(
       entities,
       (datastore, chunk) => datastore.insert(chunk),
