@@ -1,0 +1,14 @@
+{
+  "emulators": {
+    "storage": {
+      "host": "localhost",
+      "port": 9199
+    },
+    "ui": {
+      "port": 4000
+    }
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}
