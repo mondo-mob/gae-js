@@ -30,7 +30,8 @@ const app = express();
 app.use(gaeJsApp);
 
 // Add firestore support (with dataloader for graphql support)
-app.use(firestoreLoader(connectFirestore()));
+firestoreProvider.init();
+app.use(firestoreLoader());
 
 // Add firebase auth support
 const firebaseAdmin = admin.initializeApp({ projectId: <my-gcp-project-id> });

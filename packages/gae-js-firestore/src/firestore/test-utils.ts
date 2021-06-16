@@ -1,9 +1,26 @@
 import { CollectionReference, Firestore, Settings } from "@google-cloud/firestore";
+import { initialiseConfiguration } from "@dotrun/gae-js-core";
+import { GaeJsFirestoreConfiguration, gaeJsFirestoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
   id: string;
   name: string;
 }
+
+export const initTestConfig = async (
+  config?: Partial<GaeJsFirestoreConfiguration>
+): Promise<GaeJsFirestoreConfiguration> => {
+  process.env.NODE_CONFIG = JSON.stringify({
+    projectId: "firestore-tests",
+    host: "localhost",
+    location: "local",
+    firestoreProjectId: "firestore-tests",
+    firestoreHost: "0.0.0.0",
+    firestorePort: 9000,
+    ...config,
+  });
+  return initialiseConfiguration(gaeJsFirestoreConfigurationSchema);
+};
 
 export const connectFirestore = (settings?: Settings): Firestore => {
   return new Firestore({

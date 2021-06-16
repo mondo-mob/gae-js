@@ -10,10 +10,28 @@ npm install @dotrun/gae-js-firestore
 
 ## Components
 
+### FirestoreProvider
+Initialise Firestore to be accessed elsewhere in your app.
+
+```
+// On app startup
+firestoreProvider.init();
+
+// Anywhere else in your app
+const firestore = firestoreProvider.get();
+const doc = await firestore.doc('my-items/id123').get();
+```
+
+### FirestoreLoader
+Dataloader implementation to help batch and cache db requests. Used internally by FirestoreRepository
+
+```
+// Apply middleware to create a new dataloader on each request
+app.use(firestoreLoader());
+```
+
 ### FirestoreRepository
 Access your collections through typed repositories.
-
-Step 1: Define your entity
 
 ```
 // Define your class entity

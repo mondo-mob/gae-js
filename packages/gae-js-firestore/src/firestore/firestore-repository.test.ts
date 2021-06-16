@@ -3,9 +3,10 @@ import { FirestoreRepository } from "./firestore-repository";
 import { connectFirestore, deleteCollection } from "./test-utils";
 import { runInTransaction } from "./transactional";
 import { runWithRequestStorage } from "@dotrun/gae-js-core";
-import { firestoreClientRequestStorage, firestoreLoaderRequestStorage } from "./firestore-request-storage";
+import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { FirestoreLoader } from "./firestore-loader";
 import * as t from "io-ts";
+import { firestoreProvider } from "./firestore-provider";
 
 const repositoryItemSchema = t.type({
   id: t.string,
@@ -88,8 +89,9 @@ describe("FirestoreRepository", () => {
       });
     });
 
-    describe("with firestore client in request storage", () => {
+    describe("with firestore client in provider", () => {
       beforeEach(() => {
+        firestoreProvider.set(firestore);
         repository = new FirestoreRepository<RepositoryItem>(collection);
       });
 
@@ -98,15 +100,11 @@ describe("FirestoreRepository", () => {
           name: "test123",
         });
 
-        await runWithRequestStorage(async () => {
-          firestoreClientRequestStorage.set(firestore);
+        const document = await repository.get("123");
 
-          const document = await repository.get("123");
-
-          expect(document).toEqual({
-            id: "123",
-            name: "test123",
-          });
+        expect(document).toEqual({
+          id: "123",
+          name: "test123",
         });
       });
     });

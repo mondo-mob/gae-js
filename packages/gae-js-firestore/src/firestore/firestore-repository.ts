@@ -3,11 +3,12 @@ import reporter from "io-ts-reporters";
 import * as _ from "lodash";
 import { Firestore, DocumentReference } from "@google-cloud/firestore";
 import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
-import { firestoreClientRequestStorage, firestoreLoaderRequestStorage } from "./firestore-request-storage";
+import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { isLeft } from "fp-ts/lib/Either";
 import { QueryOptions } from "./firestore-query";
 import { asArray, OneOrMany } from "@dotrun/gae-js-core";
 import { RepositoryError } from "./repository-error";
+import { firestoreProvider } from "./firestore-provider";
 
 export interface RepositoryOptions<T> {
   firestore?: Firestore;
@@ -150,7 +151,7 @@ export class FirestoreRepository<T extends { id: string }> {
   };
 
   private getFirestore = (): Firestore => {
-    return this.firestore ?? firestoreClientRequestStorage.getRequired();
+    return this.firestore ?? firestoreProvider.get();
   };
 
   private getLoader = (): FirestoreLoader => {
