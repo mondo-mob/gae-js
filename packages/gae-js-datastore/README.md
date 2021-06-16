@@ -11,6 +11,27 @@ npm install @dotrun/gae-js-datastore
 
 ## Components
 
+### DatastoreProvider
+Initialise Datastore to be accessed elsewhere in your app.
+
+```
+// On app startup
+datastoreProvider.init();
+
+// Anywhere else in your app
+const datastore = datastoreProvider.get();
+const key = datastore.key(["MyItem", "id123"]);
+const [doc] = await datastore.get(key);
+```
+
+### DatastoreLoader
+Dataloader implementation to help batch and cache db requests. Used internally by DatastoreRepository
+
+```
+// Apply middleware to create a new dataloader on each request
+app.use(datastoreLoader());
+```
+
 ### DatastoreRepository
 Access your collections through typed repositories.
 

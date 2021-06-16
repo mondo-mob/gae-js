@@ -3,9 +3,10 @@ import { DatastoreRepository } from "./datastore-repository";
 import { connectDatastore, deleteKind } from "./test-utils";
 import { runInTransaction } from "./transactional";
 import { runWithRequestStorage } from "@dotrun/gae-js-core";
-import { datastoreClientRequestStorage, datastoreLoaderRequestStorage } from "./datastore-request-storage";
+import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { DatastoreLoader } from "./datastore-loader";
 import * as t from "io-ts";
+import { datastoreProvider } from "./datastore-provider";
 
 const repositoryItemSchema = t.type({
   id: t.string,
@@ -88,23 +89,20 @@ describe("DatastoreRepository", () => {
       });
     });
 
-    describe("with datastore client in request storage", () => {
+    describe("with datastore client in provider", () => {
       beforeEach(() => {
+        datastoreProvider.set(datastore);
         repository = new DatastoreRepository<RepositoryItem>(collection, { validator: repositoryItemSchema });
       });
 
       it("fetches document that exists and matches schema", async () => {
         await insertItem("123");
 
-        await runWithRequestStorage(async () => {
-          datastoreClientRequestStorage.set(datastore);
+        const document = await repository.get("123");
 
-          const document = await repository.get("123");
-
-          expect(document).toEqual({
-            id: "123",
-            name: "test123",
-          });
+        expect(document).toEqual({
+          id: "123",
+          name: "test123",
         });
       });
     });

@@ -7,7 +7,8 @@ import { isLeft } from "fp-ts/lib/Either";
 import * as _ from "lodash";
 import { asArray, OneOrMany } from "@dotrun/gae-js-core";
 import { DatastoreLoader, Index, QueryOptions, DatastorePayload } from "./datastore-loader";
-import { datastoreClientRequestStorage, datastoreLoaderRequestStorage } from "./datastore-request-storage";
+import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
+import { datastoreProvider } from "./datastore-provider";
 
 export interface RepositoryOptions<T extends { id: any }> {
   datastore?: Datastore;
@@ -232,7 +233,7 @@ export class DatastoreRepository<T extends BaseEntity> {
   }
 
   private getDatastore = (): Datastore => {
-    return this.datastore ?? datastoreClientRequestStorage.getRequired();
+    return this.datastore ?? datastoreProvider.get();
   };
 
   private getLoader = (): DatastoreLoader => {

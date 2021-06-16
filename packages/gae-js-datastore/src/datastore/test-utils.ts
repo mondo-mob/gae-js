@@ -1,5 +1,7 @@
 import { Datastore, DatastoreOptions } from "@google-cloud/datastore";
 import * as t from "io-ts";
+import { initialiseConfiguration } from "@dotrun/gae-js-core";
+import { GaeJsDatastoreConfiguration, gaeJsDatastoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
   id: string;
@@ -10,6 +12,20 @@ export const repositoryItemSchema = t.type({
   id: t.string,
   name: t.string,
 });
+
+export const initTestConfig = async (
+  config?: Partial<GaeJsDatastoreConfiguration>
+): Promise<GaeJsDatastoreConfiguration> => {
+  process.env.NODE_CONFIG = JSON.stringify({
+    projectId: "datastore-tests",
+    host: "localhost",
+    location: "local",
+    datastoreProjectId: "datastore-tests",
+    datastoreApiEndpoint: "localhost:8081",
+    ...config,
+  });
+  return initialiseConfiguration(gaeJsDatastoreConfigurationSchema);
+};
 
 export const connectDatastore = (settings?: DatastoreOptions): Datastore => {
   return new Datastore({
