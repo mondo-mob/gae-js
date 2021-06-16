@@ -40,6 +40,7 @@
   "devDependencies": {
     "@types/express": "^4.17.11",
     "@types/lodash": "4.14.168",
+    "@types/node": "12.20.4",
     "express": "4.17.1"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"
