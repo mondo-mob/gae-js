@@ -98,13 +98,13 @@ export class DatastoreLoader {
     );
   }
 
-  // public async upsert(entities: ReadonlyArray<DatastorePayload>): Promise<void> {
-  //   await this.applyBatched(
-  //     entities,
-  //     (datastore, chunk) => datastore.upsert(chunk),
-  //     (loader, { key, data }) => this.resetDataloaderCache(loader, key, data)
-  //   );
-  // }
+  public async upsert(entities: ReadonlyArray<DatastorePayload>): Promise<void> {
+    await this.applyBatched(
+      entities,
+      (datastore, chunk) => datastore.upsert(chunk),
+      (loader, { key, data }) => DatastoreLoader.resetDataloaderCache(loader, key, data)
+    );
+  }
 
   public async insert(entities: ReadonlyArray<DatastorePayload>): Promise<void> {
     await this.applyBatched(

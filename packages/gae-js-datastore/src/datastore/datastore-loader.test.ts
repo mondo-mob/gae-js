@@ -191,6 +191,73 @@ describe("DatastoreLoader", () => {
     });
   });
 
+  describe("upsert", () => {
+    it("should update existing documents outside of transaction", async () => {
+      await loader.insert([
+        createUserPayload("123", { message: "insert" }),
+        createUserPayload("234", { message: "insert" }),
+      ]);
+      await loader.upsert([
+        createUserPayload("123", { message: "upsert" }),
+        createUserPayload("234", { message: "upsert" }),
+      ]);
+
+      const fetched = await fetchDirect(["123", "234"]);
+      expect(fetched.length).toBe(2);
+      expect(fetched[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+      expect(fetched[1]).toEqual({ name: `Test User 234`, message: "upsert" });
+    });
+
+    it("should update documents in transaction", async () => {
+      await loader.insert([
+        createUserPayload("123", { message: "insert" }),
+        createUserPayload("234", { message: "insert" }),
+      ]);
+      await loader.inTransaction(async (txnLoader) => {
+        await txnLoader.upsert([
+          createUserPayload("123", { message: "upsert" }),
+          createUserPayload("234", { message: "upsert" }),
+        ]);
+      });
+
+      const fetched = await fetchDirect(["123", "234"]);
+      expect(fetched.length).toBe(2);
+      expect(fetched[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+      expect(fetched[1]).toEqual({ name: `Test User 234`, message: "upsert" });
+    });
+
+    it("creates document that doesn't exist", async () => {
+      await loader.upsert([createUserPayload("123", { message: "upsert" })]);
+
+      const fetched = await fetchDirect(["123"]);
+      expect(fetched[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+    });
+
+    it("updates document and updates cache", async () => {
+      await loader.insert([createUserPayload("123", { message: "insert" })]);
+      await loader.upsert([createUserPayload("123", { message: "upsert" })]);
+
+      const fetchedDirect = await fetchDirect(["123"]);
+      expect(fetchedDirect[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+
+      const fetchedCache = await fetchLoader(["123"]);
+      expect(fetchedCache[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+    });
+
+    it("clears stale cache value after transaction completes", async () => {
+      await loader.insert([createUserPayload("123", { message: "insert" })]);
+      await loader.inTransaction(async (txnLoader) => {
+        await txnLoader.upsert([createUserPayload("123", { message: "upsert" })]);
+      });
+
+      const fetchedDirect = await fetchDirect(["123"]);
+      expect(fetchedDirect[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+
+      const fetchedLoader = await fetchLoader(["123"]);
+      expect(fetchedLoader[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+    });
+  });
+
   describe("delete", () => {
     it("deletes a document outside of transaction", async () => {
       await loader.insert([createUserPayload("123")]);

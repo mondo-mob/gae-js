@@ -16,6 +16,8 @@ const repositoryItemSchema = t.type({
 type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
 
 // TODO: beforePersist hook
+// TODO: update
+// TODO: upsert
 
 describe("DatastoreRepository", () => {
   const collection = "repository-items";

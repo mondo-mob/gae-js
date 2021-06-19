@@ -5,7 +5,7 @@ import * as t from "io-ts";
 import reporter from "io-ts-reporters";
 import { isLeft } from "fp-ts/lib/Either";
 import * as _ from "lodash";
-import { asArray, OneOrMany } from "@dotrun/gae-js-core";
+import { asArray, BaseEntity, OneOrMany, Repository } from "@dotrun/gae-js-core";
 import { DatastoreLoader, Index, QueryOptions, DatastorePayload } from "./datastore-loader";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { datastoreProvider } from "./datastore-provider";
@@ -70,11 +70,7 @@ class SaveError extends Error {
   }
 }
 
-export interface BaseEntity {
-  id: string;
-}
-
-export class DatastoreRepository<T extends BaseEntity> {
+export class DatastoreRepository<T extends BaseEntity> implements Repository<T> {
   private readonly validator: t.Type<T>;
   private readonly datastore?: Datastore;
 
@@ -142,11 +138,11 @@ export class DatastoreRepository<T extends BaseEntity> {
     return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.insert(e));
   }
 
-  // async upsert(entities: T): Promise<T>;
-  // async upsert(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
-  // async upsert(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
-  //   return this.applyMutation(this.beforePersist(context, entities), (loader, e) => loader.upsert(e));
-  // }
+  async upsert(entities: T): Promise<T>;
+  async upsert(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
+  async upsert(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
+    return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.upsert(e));
+  }
 
   /**
    * Common hook to allow sub-classes to do any transformations necessary before insert/update/save/upsert.
