@@ -6,7 +6,7 @@ import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { isLeft } from "fp-ts/lib/Either";
 import { QueryOptions } from "./firestore-query";
-import { asArray, OneOrMany } from "@dotrun/gae-js-core";
+import { asArray, BaseEntity, OneOrMany, Repository } from "@dotrun/gae-js-core";
 import { RepositoryError } from "./repository-error";
 import { firestoreProvider } from "./firestore-provider";
 
@@ -15,7 +15,7 @@ export interface RepositoryOptions<T> {
   validator?: t.Type<T>;
 }
 
-export class FirestoreRepository<T extends { id: string }> {
+export class FirestoreRepository<T extends BaseEntity> implements Repository<T> {
   private readonly validator?: t.Type<T>;
   private readonly firestore?: Firestore;
 
@@ -70,11 +70,11 @@ export class FirestoreRepository<T extends { id: string }> {
     return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.set(e));
   }
 
-  // async update(context: Context, entities: T): Promise<T>;
-  // async update(context: Context, entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
-  // async update(context: Context, entities: OneOrMany<T>): Promise<OneOrMany<T>> {
-  //   return this.applyMutation(context, this.beforePersist(context, entities), (loader, e) => loader.update(e));
-  // }
+  async update(entities: T): Promise<T>;
+  async update(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
+  async update(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
+    return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.update(e));
+  }
 
   async insert(entities: T): Promise<T>;
   async insert(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
@@ -82,11 +82,11 @@ export class FirestoreRepository<T extends { id: string }> {
     return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.create(e));
   }
 
-  // async upsert(context: Context, entities: T): Promise<T>;
-  // async upsert(context: Context, entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
-  // async upsert(context: Context, entities: OneOrMany<T>): Promise<OneOrMany<T>> {
-  //   return this.applyMutation(context, this.beforePersist(context, entities), (loader, e) => loader.upsert(e));
-  // }
+  async upsert(entities: T): Promise<T>;
+  async upsert(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
+  async upsert(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
+    throw new Error("Not implemented");
+  }
 
   /**
    * Common hook to allow sub-classes to do any transformations necessary before insert/update/save/upsert.
@@ -102,6 +102,11 @@ export class FirestoreRepository<T extends { id: string }> {
   async delete(...ids: string[]): Promise<void> {
     const allIds = ids.map((id) => this.documentRef(id));
     await this.getLoader().delete(allIds);
+  }
+
+  async deleteAll(): Promise<void> {
+    // TODO: Implement it
+    throw new Error("Not implemented");
   }
 
   documentRef = (name: string): DocumentReference => {
