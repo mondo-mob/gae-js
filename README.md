@@ -97,6 +97,9 @@ Serve static assets with strong etags to workaround GAE build wiping out your fi
 #### Authentication/Authorization
 Middleware to protect your routes to authenticated users or specific user roles
 
+#### Search
+Framework for adding search capability to your data layer
+
 #### Other stuff
 A few other (hopefully) useful things to help you along the way and stop reinventing the wheel
 
@@ -120,3 +123,11 @@ Use annotations on your methods to make them transactional
 ### gae-js-firebase-auth ([documentation](./packages/gae-js-firebase-auth/README.md))
 #### Use Firebase Auth to authenticate your users
 Middleware to verify Firebase Auth tokens and set user into the request
+
+### gae-js-gae-search ([documentation](./packages/gae-js-gae-search/README.md))
+#### Search service implementation for GAE Search API
+Use GAE Search API to index and search your repository data
+
+### gae-js-storage ([documentation](./packages/gae-js-storage/README.md))
+#### Use Cloud Storage in your app
+Simplifies client initialisation and common storage tasks
