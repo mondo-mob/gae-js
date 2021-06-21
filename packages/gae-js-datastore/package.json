@@ -31,7 +31,7 @@
     "tslib": "2.1.0"
   },
   "peerDependencies": {
-    "@dotrun/gae-js-core": "^0.0.20",
+    "@dotrun/gae-js-core": "^0.1.0",
     "@google-cloud/datastore": "^6.4.0",
     "express": ">= 4.17.1"
   },

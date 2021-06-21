@@ -27,7 +27,7 @@
     "node-fetch": "2.6.1"
   },
   "peerDependencies": {
-    "@dotrun/gae-js-core": "^0.0.20"
+    "@dotrun/gae-js-core": "^0.1.0"
   },
   "devDependencies": {
     "@dotrun/gae-js-core": "^0.1.0",

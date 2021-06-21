@@ -27,7 +27,7 @@
     "io-ts": "2.2.15"
   },
   "peerDependencies": {
-    "@dotrun/gae-js-core": "^0.0.20",
+    "@dotrun/gae-js-core": "^0.1.0",
     "@google-cloud/storage": "^5.8.5",
     "express": ">= 4.17.1"
   },
