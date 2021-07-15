@@ -58,12 +58,6 @@ export class GaeSearchService extends SearchService {
   }
 
   async query(entityName: string, fields: SearchFields, sort?: Sort, page?: Page): Promise<QueryResults> {
-    console.log("abc", {
-      entityName,
-      fields: this.normaliseFields(fields),
-      sort,
-      page,
-    });
     const resp = await this.post("/query", {
       entityName,
       fields: this.normaliseFields(fields),
