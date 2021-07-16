@@ -1,6 +1,6 @@
 import { DatastoreLoader } from "./datastore-loader";
 import { Datastore } from "@google-cloud/datastore";
-import { connectDatastore, deleteKind, RepositoryItem, repositoryItemSchema } from "./test-utils";
+import { connectDatastoreEmulator, deleteKind, RepositoryItem, repositoryItemSchema } from "./test-utils";
 import { runInTransaction, Transactional } from "./transactional";
 import { DatastoreRepository } from "./datastore-repository";
 import { runWithRequestStorage } from "@dotrun/gae-js-core";
@@ -43,7 +43,7 @@ describe("Transactional", () => {
   let repository2: DatastoreRepository<RepositoryItem>;
   let service: TransactionalService;
 
-  beforeAll(async () => (datastore = connectDatastore()));
+  beforeAll(async () => (datastore = connectDatastoreEmulator()));
   beforeEach(async () => {
     await deleteKind(datastore, collection1);
     await deleteKind(datastore, collection2);

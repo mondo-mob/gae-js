@@ -7,7 +7,7 @@ export class DatastoreProvider extends Provider<Datastore> {
     if (datastoreOrOptions instanceof Datastore) {
       this.set(datastoreOrOptions);
     } else {
-      this.set(connectDatastore(datastoreOrOptions));
+      this.set(connectDatastore({ datastoreOptions: datastoreOrOptions }));
     }
   }
 }

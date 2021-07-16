@@ -1,5 +1,5 @@
 import { DatastoreLoader, DatastorePayload } from "./datastore-loader";
-import { connectDatastore, deleteKind } from "./test-utils";
+import { connectDatastoreEmulator, deleteKind } from "./test-utils";
 import { Datastore, Key } from "@google-cloud/datastore";
 import _ from "lodash";
 
@@ -14,7 +14,7 @@ describe("DatastoreLoader", () => {
   let loader: DatastoreLoader;
 
   beforeAll(async () => {
-    datastore = connectDatastore();
+    datastore = connectDatastoreEmulator();
   }, 30000);
   beforeEach(async () => {
     await deleteKind(datastore, "users");

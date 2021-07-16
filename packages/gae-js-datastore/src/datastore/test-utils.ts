@@ -27,7 +27,7 @@ export const initTestConfig = async (
   return initialiseConfiguration(gaeJsDatastoreConfigurationSchema);
 };
 
-export const connectDatastore = (settings?: DatastoreOptions): Datastore => {
+export const connectDatastoreEmulator = (settings?: DatastoreOptions): Datastore => {
   return new Datastore({
     projectId: "datastore-tests",
     apiEndpoint: "localhost:8081",

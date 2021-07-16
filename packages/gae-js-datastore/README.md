@@ -53,7 +53,7 @@ const repository = new DatastoreRepository<DemoItem>("demo-items", {validator: d
 // OR define a custom class first
 class DemoItemRepository extends DatastoreRepository<DemoItem> {
   constructor() {
-    super("demo-items", demoItemSchema);
+    super("demo-items", { validator: demoItemSchema });
   }
 }
 const repository = new DemoItemsRepository();

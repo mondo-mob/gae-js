@@ -1,6 +1,6 @@
 import { Datastore, Key } from "@google-cloud/datastore";
 import { DatastoreRepository } from "./datastore-repository";
-import { connectDatastore, deleteKind } from "./test-utils";
+import { connectDatastoreEmulator, deleteKind } from "./test-utils";
 import { runInTransaction } from "./transactional";
 import { runWithRequestStorage } from "@dotrun/gae-js-core";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
@@ -24,7 +24,7 @@ describe("DatastoreRepository", () => {
   let datastore: Datastore;
   let repository: DatastoreRepository<RepositoryItem>;
 
-  beforeAll(async () => (datastore = connectDatastore()));
+  beforeAll(async () => (datastore = connectDatastoreEmulator()));
   beforeEach(async () => {
     await deleteKind(datastore, collection);
     repository = new DatastoreRepository<RepositoryItem>(collection, { datastore, validator: repositoryItemSchema });
