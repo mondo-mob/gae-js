@@ -110,7 +110,10 @@ export const configSchema = t.intersection([
 ]);
 
 // Initialise the config
-const config = initialiseConfiguration(configSchema);
+const config = await initialiseConfiguration(configSchema);
+
+// Optionally set into global provider for use elsewhere
+configurationProvider.set(config);
 ```
 
 ### Configuration Secrets

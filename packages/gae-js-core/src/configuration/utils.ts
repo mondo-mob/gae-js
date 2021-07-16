@@ -4,7 +4,6 @@ import { createLogger } from "../logging";
 import reporter from "io-ts-reporters";
 import { isLeft } from "fp-ts/Either";
 import { GaeJsCoreConfiguration } from "./schema";
-import { configurationStore } from "./configuration-store";
 import { SecretsResolver } from "./secrets/secrets.resolver";
 import { SecretsClient } from "./secrets/secrets.client";
 
@@ -19,7 +18,6 @@ const getConfigurationEnvironment = () => {
 export const initialiseConfiguration = async <T extends GaeJsCoreConfiguration>(validator: t.Type<T>): Promise<T> => {
   const configuration = loadConfiguration(validator);
   const configWithSecrets = await resolveSecrets(configuration);
-  configurationStore.set(configWithSecrets);
   return configWithSecrets;
 };
 
