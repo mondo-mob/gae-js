@@ -1,5 +1,5 @@
 import { Datastore, DatastoreOptions } from "@google-cloud/datastore";
-import { configurationStore, createLogger, isGcpEnvironment } from "@dotrun/gae-js-core";
+import { configurationProvider, createLogger, isGcpEnvironment } from "@dotrun/gae-js-core";
 import { GaeJsDatastoreConfiguration } from "../configuration";
 
 export interface DatastoreConnectOptions {
@@ -9,7 +9,7 @@ export interface DatastoreConnectOptions {
 
 export const connectDatastore = (options?: DatastoreConnectOptions): Datastore => {
   const logger = createLogger("connectDatastore");
-  const configuration = options?.configuration || configurationStore.get<GaeJsDatastoreConfiguration>();
+  const configuration = options?.configuration || configurationProvider.get<GaeJsDatastoreConfiguration>();
 
   if (isGcpEnvironment()) {
     logger.info("Running in deployed environment");

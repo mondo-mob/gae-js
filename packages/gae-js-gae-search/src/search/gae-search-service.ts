@@ -1,6 +1,6 @@
 import fetch, { Response } from "node-fetch";
 import {
-  configurationStore,
+  configurationProvider,
   createLogger,
   IndexEntry,
   isPredicate,
@@ -18,6 +18,10 @@ export interface SearchPredicate extends Predicate {
   field: string;
 }
 
+export interface GaeSearchServiceOptions {
+  configuration?: GaeJsGaeSearchConfiguration;
+}
+
 /**
  * SearchService implementation that uses the GAE Search API via the
  * https://github.com/mondo-mob/gae-search-service GAE Search Service proxy.
@@ -26,9 +30,9 @@ export class GaeSearchService extends SearchService {
   private logger = createLogger("gae-search-service");
   private readonly searchServiceEndpoint: string;
 
-  constructor() {
+  constructor(options?: GaeSearchServiceOptions) {
     super();
-    const configuration = configurationStore.get<GaeJsGaeSearchConfiguration>();
+    const configuration = options?.configuration || configurationProvider.get<GaeJsGaeSearchConfiguration>();
     if (!configuration.searchServiceEndpoint) {
       throw new Error("searchServiceEndpoint must be configured in order to use the SearchService");
     }

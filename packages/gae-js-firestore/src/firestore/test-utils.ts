@@ -1,5 +1,5 @@
 import { CollectionReference, Firestore, Settings } from "@google-cloud/firestore";
-import { initialiseConfiguration } from "@dotrun/gae-js-core";
+import { configurationProvider } from "@dotrun/gae-js-core";
 import { GaeJsFirestoreConfiguration, gaeJsFirestoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
@@ -19,7 +19,8 @@ export const initTestConfig = async (
     firestorePort: 9000,
     ...config,
   });
-  return initialiseConfiguration(gaeJsFirestoreConfigurationSchema);
+  await configurationProvider.init(gaeJsFirestoreConfigurationSchema);
+  return configurationProvider.get<GaeJsFirestoreConfiguration>();
 };
 
 export const connectFirestore = (settings?: Settings): Firestore => {

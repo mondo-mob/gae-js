@@ -1,6 +1,6 @@
 import { Storage, StorageOptions } from "@google-cloud/storage";
-import { initialiseConfiguration } from "@dotrun/gae-js-core";
 import { GaeJsStorageConfiguration, gaeJsStorageConfigurationSchema } from "../configuration";
+import { configurationProvider } from "@dotrun/gae-js-core/dist";
 
 export const initTestConfig = async (
   config?: Partial<GaeJsStorageConfiguration>
@@ -14,7 +14,7 @@ export const initTestConfig = async (
     storageApiEndpoint: "http://localhost:9199",
     ...config,
   });
-  return initialiseConfiguration(gaeJsStorageConfigurationSchema);
+  return configurationProvider.init(gaeJsStorageConfigurationSchema);
 };
 
 export const connectEmulatorStorage = (settings?: StorageOptions): Storage => {

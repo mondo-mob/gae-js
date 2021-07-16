@@ -1,6 +1,6 @@
 import { Datastore, DatastoreOptions } from "@google-cloud/datastore";
 import * as t from "io-ts";
-import { initialiseConfiguration } from "@dotrun/gae-js-core";
+import { configurationProvider } from "@dotrun/gae-js-core";
 import { GaeJsDatastoreConfiguration, gaeJsDatastoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
@@ -24,7 +24,8 @@ export const initTestConfig = async (
     datastoreApiEndpoint: "localhost:8081",
     ...config,
   });
-  return initialiseConfiguration(gaeJsDatastoreConfigurationSchema);
+  await configurationProvider.init(gaeJsDatastoreConfigurationSchema);
+  return configurationProvider.get<GaeJsDatastoreConfiguration>();
 };
 
 export const connectDatastoreEmulator = (settings?: DatastoreOptions): Datastore => {

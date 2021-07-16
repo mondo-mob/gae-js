@@ -7,7 +7,7 @@ class StorageProvider extends Provider<Storage> {
     if (storageOrOptions instanceof Storage) {
       this.set(storageOrOptions);
     } else {
-      this.set(connectStorage(storageOrOptions));
+      this.set(connectStorage({ storageOptions: storageOrOptions }));
     }
   }
 }

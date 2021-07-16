@@ -1,5 +1,5 @@
 import * as t from "io-ts";
-import { gaeJsCoreConfigurationSchema, initialiseConfiguration } from "@dotrun/gae-js-core";
+import { configurationProvider, gaeJsCoreConfigurationSchema } from "@dotrun/gae-js-core";
 import { GaeJsGaeSearchConfiguration, gaeJsGaeSearchConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
@@ -23,5 +23,6 @@ export const initTestConfig = async (
     searchServiceEndpoint: "http://localhost:9999",
     ...config,
   });
-  return initialiseConfiguration(schema);
+  await configurationProvider.init(schema);
+  return configurationProvider.get<GaeJsGaeSearchConfiguration>();
 };

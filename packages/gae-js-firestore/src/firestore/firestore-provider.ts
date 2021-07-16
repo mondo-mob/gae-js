@@ -7,7 +7,7 @@ export class FirestoreProvider extends Provider<Firestore> {
     if (firestoreOrSettings instanceof Firestore) {
       this.set(firestoreOrSettings);
     } else {
-      this.set(connectFirestore(firestoreOrSettings));
+      this.set(connectFirestore({ firestoreSettings: firestoreOrSettings }));
     }
   }
 }
