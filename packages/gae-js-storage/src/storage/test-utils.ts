@@ -10,8 +10,7 @@ export const initTestConfig = async (
     host: "localhost",
     location: "local",
     storageDefaultBucket: "test-bucket",
-    storageProjectId: "storage-tests",
-    storageApiEndpoint: "http://localhost:9199",
+    emulatorHost: "http://localhost:9199",
     ...config,
   });
   return configurationProvider.init(gaeJsStorageConfigurationSchema);

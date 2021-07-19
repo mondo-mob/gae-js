@@ -7,8 +7,10 @@ export const gaeJsStorageConfigurationSchema = t.intersection([
     storageDefaultBucket: t.string,
   }),
   t.partial({
-    storageProjectId: t.string,
     storageApiEndpoint: t.string,
+    // Emulator host is separate from the api endpoint because to connect to Firebase storage emulator
+    // you need to set the STORAGE_EMULATOR_HOST environment variable instead
+    emulatorHost: t.string,
   }),
 ]);
 
