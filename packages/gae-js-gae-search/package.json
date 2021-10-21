@@ -25,12 +25,12 @@
     "node-fetch": "2.6.1"
   },
   "peerDependencies": {
-    "@dotrun/gae-js-core": "^0.1.0"
+    "@dotrun/gae-js-core": "^0.1.2"
   },
   "devDependencies": {
-    "@dotrun/gae-js-core": "^0.1.2",
-    "@types/node": "12.20.4",
-    "@types/node-fetch": "^2.5.10",
-    "nock": "^13.1.0"
+    "@dotrun/gae-js-core": "0.1.2",
+    "@types/node": "14.17.27",
+    "@types/node-fetch": "2.5.10",
+    "nock": "13.1.4"
   }
 }
