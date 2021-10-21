@@ -24,7 +24,7 @@ export const serveStaticWithEtag = (root: string, options?: { ignorePaths: strin
   const rootFolder = path.resolve(root);
   const validFiles: Record<string, string> = {};
 
-  fetchFileList(rootFolder).then((allFiles) => {
+  const initFilesPromise = fetchFileList(rootFolder).then((allFiles) => {
     allFiles
       .filter((file) => !options?.ignorePaths?.some((path) => file.startsWith(path)))
       .forEach((file) => (validFiles[file] = HASH_UNSET));
@@ -32,6 +32,7 @@ export const serveStaticWithEtag = (root: string, options?: { ignorePaths: strin
   });
 
   return async (req, res, next) => {
+    await initFilesPromise;
     const requestPath = path.join(req.baseUrl, req.path);
     const fullFilePath = path.join(rootFolder, requestPath);
 
@@ -43,7 +44,7 @@ export const serveStaticWithEtag = (root: string, options?: { ignorePaths: strin
 
       const etag = `"${validFiles[requestPath]}"`;
       logger.info(`Sending file ${fullFilePath} with etag ${etag}`);
-      return res.sendFile(fullFilePath, { headers: { etag } }, (err) => {
+      return res.sendFile(fullFilePath, { headers: { etag }, lastModified: false }, (err) => {
         return err ? next(err) : next();
       });
     }
