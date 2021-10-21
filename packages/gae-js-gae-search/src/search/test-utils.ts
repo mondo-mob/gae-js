@@ -1,5 +1,4 @@
-import * as t from "io-ts";
-import { configurationProvider, gaeJsCoreConfigurationSchema } from "@dotrun/gae-js-core";
+import { configurationProvider, iots as t, gaeJsCoreConfigurationSchema } from "@dotrun/gae-js-core";
 import { GaeJsGaeSearchConfiguration, gaeJsGaeSearchConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {

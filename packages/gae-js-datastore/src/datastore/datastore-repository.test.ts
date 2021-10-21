@@ -2,10 +2,9 @@ import { Datastore, Key } from "@google-cloud/datastore";
 import { DatastoreRepository } from "./datastore-repository";
 import { connectDatastoreEmulator, deleteKind } from "./test-utils";
 import { runInTransaction } from "./transactional";
-import { runWithRequestStorage } from "@dotrun/gae-js-core";
+import { iots as t, runWithRequestStorage } from "@dotrun/gae-js-core";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { DatastoreLoader } from "./datastore-loader";
-import * as t from "io-ts";
 import { datastoreProvider } from "./datastore-provider";
 
 const repositoryItemSchema = t.type({

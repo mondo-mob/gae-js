@@ -22,8 +22,6 @@
   "license": "MIT",
   "homepage": "https://github.com/mlev/gae-js",
   "dependencies": {
-    "fp-ts": "2.9.5",
-    "io-ts": "2.2.15",
     "node-fetch": "2.6.1"
   },
   "peerDependencies": {

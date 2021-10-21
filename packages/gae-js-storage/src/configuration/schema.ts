@@ -1,5 +1,4 @@
-import * as t from "io-ts";
-import { gaeJsCoreConfigurationSchema } from "@dotrun/gae-js-core";
+import { gaeJsCoreConfigurationSchema, iots as t } from "@dotrun/gae-js-core";
 
 export const gaeJsStorageConfigurationSchema = t.intersection([
   gaeJsCoreConfigurationSchema,

@@ -1,11 +1,16 @@
 import { Datastore } from "@google-cloud/datastore";
 import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
 import { RunQueryInfo } from "@google-cloud/datastore/build/src/query";
-import * as t from "io-ts";
-import reporter from "io-ts-reporters";
-import { isLeft } from "fp-ts/lib/Either";
 import * as _ from "lodash";
-import { asArray, BaseEntity, OneOrMany, Repository } from "@dotrun/gae-js-core";
+import {
+  asArray,
+  iots as t,
+  iotsReporter as reporter,
+  isLeft,
+  BaseEntity,
+  OneOrMany,
+  Repository,
+} from "@dotrun/gae-js-core";
 import { DatastoreLoader, Index, QueryOptions, DatastorePayload } from "./datastore-loader";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { datastoreProvider } from "./datastore-provider";

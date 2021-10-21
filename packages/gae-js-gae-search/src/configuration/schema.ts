@@ -1,5 +1,4 @@
-import * as t from "io-ts";
-import { GaeJsCoreConfiguration } from "@dotrun/gae-js-core";
+import { iots as t, GaeJsCoreConfiguration } from "@dotrun/gae-js-core";
 
 export const gaeJsGaeSearchConfigurationSchema = t.type({
   searchServiceEndpoint: t.string,

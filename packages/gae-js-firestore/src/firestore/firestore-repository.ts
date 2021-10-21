@@ -1,12 +1,17 @@
-import * as t from "io-ts";
-import reporter from "io-ts-reporters";
 import * as _ from "lodash";
 import { Firestore, DocumentReference } from "@google-cloud/firestore";
 import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
-import { isLeft } from "fp-ts/lib/Either";
 import { QueryOptions } from "./firestore-query";
-import { asArray, BaseEntity, OneOrMany, Repository } from "@dotrun/gae-js-core";
+import {
+  asArray,
+  iots as t,
+  iotsReporter as reporter,
+  isLeft,
+  BaseEntity,
+  OneOrMany,
+  Repository,
+} from "@dotrun/gae-js-core";
 import { RepositoryError } from "./repository-error";
 import { firestoreProvider } from "./firestore-provider";
 

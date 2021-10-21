@@ -24,9 +24,6 @@
   "homepage": "https://github.com/mlev/gae-js",
   "dependencies": {
     "dataloader": "2.0.0",
-    "fp-ts": "2.9.5",
-    "io-ts": "2.2.15",
-    "io-ts-reporters": "1.2.2",
     "lodash": "4.17.21",
     "tslib": "2.1.0"
   },

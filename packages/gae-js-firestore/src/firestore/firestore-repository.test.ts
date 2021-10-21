@@ -2,10 +2,9 @@ import { Firestore } from "@google-cloud/firestore";
 import { FirestoreRepository } from "./firestore-repository";
 import { connectFirestore, deleteCollection } from "./test-utils";
 import { runInTransaction } from "./transactional";
-import { runWithRequestStorage } from "@dotrun/gae-js-core";
+import { iots as t, runWithRequestStorage } from "@dotrun/gae-js-core";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { FirestoreLoader } from "./firestore-loader";
-import * as t from "io-ts";
 import { firestoreProvider } from "./firestore-provider";
 
 const repositoryItemSchema = t.type({
