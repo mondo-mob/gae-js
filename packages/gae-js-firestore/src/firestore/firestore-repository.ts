@@ -87,9 +87,9 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T> 
     return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.create(e));
   }
 
-  async upsert(entities: T): Promise<T>;
-  async upsert(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
-  async upsert(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
+  async upsert(_entities: T): Promise<T>;
+  async upsert(_entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
+  async upsert(_entities: OneOrMany<T>): Promise<OneOrMany<T>> {
     throw new Error("Not implemented");
   }
 
