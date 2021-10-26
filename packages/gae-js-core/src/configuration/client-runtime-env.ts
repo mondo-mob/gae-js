@@ -1,6 +1,6 @@
 import { Handler } from "express";
 import * as rcloadenv from "@google-cloud/rcloadenv";
-import { isGcpEnvironment } from "../util";
+import { runningOnGcp } from "../util";
 
 /**
  * Middleware to provide runtime configuration for static clients such as create-react-app SPAs.
@@ -22,10 +22,10 @@ import { isGcpEnvironment } from "../util";
  * @param configName the name of the runtime configuration available in Runtime Config API
  */
 export const clientRuntimeEnv = (configName: string): Handler => {
-  const loadPromise = isGcpEnvironment() ? rcloadenv.getAndApply(configName, {}) : Promise.resolve({});
+  const loadPromise = runningOnGcp() ? rcloadenv.getAndApply(configName, {}) : Promise.resolve({});
 
   return async (req, res, next) => {
-    if (isGcpEnvironment()) {
+    if (runningOnGcp()) {
       try {
         const variables = await loadPromise;
         res.set("Content-Type", "application/javascript");

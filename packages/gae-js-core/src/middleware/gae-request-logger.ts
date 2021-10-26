@@ -1,7 +1,7 @@
 import { Handler } from "express";
 import * as lb from "@google-cloud/logging-bunyan";
 import { defaultLogger } from "../logging/logging";
-import { isGcpEnvironment } from "../util/environment";
+import { runningOnGcp } from "../util/environment";
 
 const localLoggingMiddleware = (): Handler => {
   const localLogger = defaultLogger;
@@ -13,7 +13,7 @@ const localLoggingMiddleware = (): Handler => {
 };
 
 const createMiddleware = (): Promise<Handler> => {
-  if (isGcpEnvironment()) {
+  if (runningOnGcp()) {
     return lb.express.middleware({ level: "info" }).then((result) => result.mw);
   } else {
     return Promise.resolve(localLoggingMiddleware());

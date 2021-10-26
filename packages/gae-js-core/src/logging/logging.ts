@@ -2,7 +2,7 @@ import { Logger } from "./logger/logger";
 import { RequestStorageLogger } from "./logger/request-storage-logger";
 import * as BunyanLogger from "bunyan";
 import { LoggingBunyan } from "@google-cloud/logging-bunyan";
-import { isGcpEnvironment } from "../util/environment";
+import { runningOnGcp } from "../util/environment";
 
 /**
  * The internal default bunyan logger that will be used whenever the
@@ -11,7 +11,7 @@ import { isGcpEnvironment } from "../util/environment";
 export const defaultLogger: BunyanLogger = BunyanLogger.createLogger({
   name: "service",
   level: "info",
-  streams: isGcpEnvironment()
+  streams: runningOnGcp()
     ? [new LoggingBunyan().stream("info")]
     : [
         {

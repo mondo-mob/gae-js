@@ -15,10 +15,10 @@ There are a few conventions that must be followed for the library to function co
   of the environment they represent. e.g. `my-project-dev` implies this is the "dev" environment and
   configuration will be loaded from the dev.json config file.
 * To help the library know what environment it is executing in you must define an environment
-  variable called GCP_ENVIRONMENT. e.g. for appengine in your `app.yaml` file:
+  variable called GAEJS_ENVIRONMENT. e.g. for appengine in your `app.yaml` file:
     ```yaml
     env_variables:
-      GCP_ENVIRONMENT: appengine
+      GAEJS_ENVIRONMENT: appengine
     ```
 
 ## Components
