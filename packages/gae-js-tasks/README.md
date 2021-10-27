@@ -28,3 +28,15 @@ const taskService = new TaskQueueService({queueName: "default"});
 // Enqueue a task on queue `default` to call endpoint `/tasks/poll-status` with provided payload
 await taskService.enqueue("poll-status", {jobId: "1234"});
 ```
+
+### verifyTask Middleware
+Use this on your task handlers to ensure they are only called by genuine Cloud Tasks requests.
+
+```
+// Apply middleware however you normally would
+app.use("/tasks", verifyTask);
+
+// Now any matching routes will be protected
+app.post("/tasks/start-job", (req, res) => res.send("OK"));
+app.post("/tasks/poll-status", (req, res) => res.send("OK"));
+```

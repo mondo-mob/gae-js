@@ -228,10 +228,16 @@ Middleware to protect your routes to authenticated users or specific user roles
 
 ```typescript
 // Require that a user must exist for this request
-app.use("/needs-user", requiresUser(), (req, res) => {});
+app.get("/needs-user", requiresUser(), (req, res) => {});
 
 // Require that a user with a specific role must exist for this request
-app.user("/needs-user-with-role", requiresRole("ADMIN"), (req, res) => {});
+app.get("/needs-user-with-role", requiresRole("ADMIN"), (req, res) => {});
+
+// Require that the request has a specific header
+app.get("/needs-header", requiresHeader("x-special-header"), (req, res) => {});
+
+// Verify that the request is a valid Appengine Cron request
+app.get("/cron-handler", verifyCron, (req, res) => {});
 ```
 
 
