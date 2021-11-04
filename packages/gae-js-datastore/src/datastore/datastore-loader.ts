@@ -29,6 +29,8 @@ export interface QueryOptions<T> {
   limit: number;
 }
 
+export type QueryResponse<T> = [ReadonlyArray<T>, RunQueryInfo];
+
 export type DocumentData = { [field: string]: any };
 
 export interface DatastorePayload {

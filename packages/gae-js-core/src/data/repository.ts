@@ -4,7 +4,7 @@ export interface BaseEntity {
   id: string;
 }
 
-export interface Repository<T extends BaseEntity> {
+export interface Repository<T extends BaseEntity, Q = any, QR = any> {
   get(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T | null>>;
 
   save(entities: OneOrMany<T>): Promise<OneOrMany<T>>;
@@ -18,4 +18,6 @@ export interface Repository<T extends BaseEntity> {
   delete(...ids: string[]): Promise<void>;
 
   deleteAll(): Promise<void>;
+
+  query(options: Partial<Q>): Promise<QR>;
 }

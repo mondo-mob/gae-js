@@ -35,4 +35,9 @@ export class MockRepository<T extends BaseEntity> implements Repository<T> {
   async deleteAll(): Promise<void> {
     this.store = {};
   }
+
+  async query(_options: Partial<any>): Promise<ReadonlyArray<T>> {
+    // Querying is implementation specific so always return everything for now
+    return Object.values(this.store);
+  }
 }

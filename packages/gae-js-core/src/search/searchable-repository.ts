@@ -19,7 +19,7 @@ export interface SearchableRepositoryOptions<T extends { id: any }> {
   searchService?: SearchService;
 }
 
-export class SearchableRepository<T extends BaseEntity> implements Repository<T> {
+export class SearchableRepository<T extends BaseEntity, Q = any, QR = any> implements Repository<T, Q, QR> {
   private logger = createLogger("searchable-repository");
 
   constructor(
@@ -84,6 +84,10 @@ export class SearchableRepository<T extends BaseEntity> implements Repository<T>
       offset: queryResults.offset,
       results: requests,
     };
+  }
+
+  async query(options: Partial<Q>): Promise<QR> {
+    return this.repository.query(options);
   }
 
   /**

@@ -1,17 +1,16 @@
 import { Datastore } from "@google-cloud/datastore";
 import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
-import { RunQueryInfo } from "@google-cloud/datastore/build/src/query";
 import * as _ from "lodash";
 import {
   asArray,
+  BaseEntity,
   iots as t,
   iotsReporter as reporter,
   isLeft,
-  BaseEntity,
   OneOrMany,
   Repository,
 } from "@dotrun/gae-js-core";
-import { DatastoreLoader, Index, QueryOptions, DatastorePayload } from "./datastore-loader";
+import { DatastoreLoader, DatastorePayload, Index, QueryOptions, QueryResponse } from "./datastore-loader";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { datastoreProvider } from "./datastore-provider";
 
@@ -75,7 +74,7 @@ class SaveError extends Error {
   }
 }
 
-export class DatastoreRepository<T extends BaseEntity> implements Repository<T> {
+export class DatastoreRepository<T extends BaseEntity> implements Repository<T, QueryOptions<T>, QueryResponse<T>> {
   private readonly validator: t.Type<T>;
   private readonly datastore?: Datastore;
 
@@ -115,7 +114,7 @@ export class DatastoreRepository<T extends BaseEntity> implements Repository<T> 
     }
   }
 
-  async query(options: Partial<QueryOptions<T>> = {}): Promise<[ReadonlyArray<T>, RunQueryInfo]> {
+  async query(options: Partial<QueryOptions<T>> = {}): Promise<QueryResponse<T>> {
     const [results, queryInfo] = await this.getLoader().executeQuery<T>(this.kind, options);
 
     return [

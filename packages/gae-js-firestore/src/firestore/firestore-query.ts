@@ -23,3 +23,5 @@ export interface QueryOptions<T> {
   offset: number;
   limit: number;
 }
+
+export type QueryResponse<T> = ReadonlyArray<T>;

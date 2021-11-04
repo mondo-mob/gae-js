@@ -2,7 +2,7 @@ import * as _ from "lodash";
 import { Firestore, DocumentReference } from "@google-cloud/firestore";
 import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
-import { QueryOptions } from "./firestore-query";
+import { QueryOptions, QueryResponse } from "./firestore-query";
 import {
   asArray,
   iots as t,
@@ -20,7 +20,7 @@ export interface RepositoryOptions<T> {
   validator?: t.Type<T>;
 }
 
-export class FirestoreRepository<T extends BaseEntity> implements Repository<T> {
+export class FirestoreRepository<T extends BaseEntity> implements Repository<T, QueryOptions<T>, QueryResponse<T>> {
   private readonly validator?: t.Type<T>;
   private readonly firestore?: Firestore;
 
@@ -60,7 +60,7 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T> 
     }
   }
 
-  async query(options: Partial<QueryOptions<T>> = {}): Promise<ReadonlyArray<T>> {
+  async query(options: Partial<QueryOptions<T>> = {}): Promise<QueryResponse<T>> {
     const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, options);
 
     return querySnapshot.docs.map((snapshot) => {
