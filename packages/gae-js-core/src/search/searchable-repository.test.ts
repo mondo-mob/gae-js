@@ -180,4 +180,12 @@ describe("SearchableRepository", () => {
       });
     });
   });
+
+  describe("query", () => {
+    it("passes through query to repository", async () => {
+      await searchableRepository.save(createItem("item1"));
+      const results = await searchableRepository.query();
+      expect(results).toEqual(expect.arrayContaining([expect.objectContaining({ id: "item1" })]));
+    });
+  });
 });

@@ -86,7 +86,7 @@ export class SearchableRepository<T extends BaseEntity, Q = any, QR = any> imple
     };
   }
 
-  async query(options: Partial<Q>): Promise<QR> {
+  async query(options: Partial<Q> = {}): Promise<QR> {
     return this.repository.query(options);
   }
 
