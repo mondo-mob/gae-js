@@ -1,6 +1,6 @@
 {
   "name": "@dotrun/gae-js-gae-search",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Use Appengine Search Service",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -28,7 +28,7 @@
     "@dotrun/gae-js-core": "^0.1.2"
   },
   "devDependencies": {
-    "@dotrun/gae-js-core": "^0.4.1",
+    "@dotrun/gae-js-core": "^0.4.2",
     "@types/node": "14.17.27",
     "@types/node-fetch": "2.5.10",
     "nock": "13.1.4"
