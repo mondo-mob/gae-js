@@ -1,6 +1,7 @@
 import express, { Handler } from "express";
 import request from "supertest";
 import { requestTimeoutMinutes, requestTimeoutSeconds } from "./request-timeout";
+import { handleAsync } from "./handle-async";
 
 const sendTimeoutValue: Handler = (req, res) => {
   return res.json({ timeout: (req as any).socket.timeout });
@@ -11,9 +12,11 @@ const initApp = () => {
   app.get("/default", sendTimeoutValue);
   app.get("/secs", requestTimeoutSeconds(10), sendTimeoutValue);
   app.get("/mins", requestTimeoutMinutes(10), sendTimeoutValue);
-  app.get("/tooslow", requestTimeoutSeconds(0.01), (req, res) => {
-    setTimeout(() => res.send("Shouldn't get this"), 200);
-  });
+  app.get(
+    "/tooslow",
+    requestTimeoutSeconds(0.01),
+    handleAsync(() => new Promise((res) => setTimeout(res, 200)))
+  );
   return app;
 };
 
@@ -21,6 +24,7 @@ describe("requestTimeout", () => {
   const app = initApp();
 
   it("doesn't affect default", async () => {
+    // Node12 used to specifically set the timeout of 120s on the socket but Node14 leaves it undefined
     await request(app).get("/default").expect(200, {});
   });
 
