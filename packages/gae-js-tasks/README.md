@@ -29,8 +29,24 @@ const taskService = new TaskQueueService({queueName: "default"});
 await taskService.enqueue("poll-status", {jobId: "1234"});
 ```
 
+### gaeJsTask Middleware
+A convenience middleware collection for your task endpoints to:
+
+a) verify the request is a genuine Cloud Tasks request (see verifyTask middleware) and
+b) extend the NodeJS request timeout to 10 minutes (the default is 120s)
+
+```
+// Apply middleware however you normally would
+app.use("/tasks", gaeJsTask);
+
+// Now any matching routes will be protected and timeout extended
+app.post("/tasks/start-job", (req, res) => res.send("OK"));
+app.post("/tasks/poll-status", (req, res) => res.send("OK"));
+```
+
 ### verifyTask Middleware
 Use this on your task handlers to ensure they are only called by genuine Cloud Tasks requests.
+NOTE: This is already part of the gaeJsTask middleware so no need to apply again if using that.
 
 ```
 // Apply middleware however you normally would
