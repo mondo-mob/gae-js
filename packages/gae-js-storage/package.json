@@ -8,7 +8,7 @@
     "/dist"
   ],
   "scripts": {
-    "build": "npm run clean && tsc",
+    "build": "tsc --build --verbose",
     "clean": "rm -rf dist/",
     "emulator:start": "firebase emulators:start --project storage-tests",
     "format": "prettier --write \"./src/**/*.ts\"",

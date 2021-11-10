@@ -11,9 +11,10 @@
     "outDir": "./dist",
     "experimentalDecorators": true,
     "resolveJsonModule": true,
+    "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@dotrun/*": ["packages/*"]
+      "@dotrun/*": ["packages/*/src"]
     }
   },
   "include": [
@@ -24,5 +25,5 @@
     "dist",
     "**/*.spec.ts",
     "**/*.test.ts"
-  ]
+  ],
 }
