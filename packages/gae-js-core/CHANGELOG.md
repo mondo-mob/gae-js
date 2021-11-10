@@ -1,5 +1,11 @@
 # @dotrun/gae-js-core
 
+## 0.4.5
+
+### Patch Changes
+
+- 023ec3f: Change build to use Typescript project references
+
 ## 0.4.4
 
 ### Patch Changes

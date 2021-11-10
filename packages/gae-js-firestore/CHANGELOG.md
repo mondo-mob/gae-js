@@ -1,5 +1,13 @@
 # @dotrun/gae-js-firestore
 
+## 0.4.6
+
+### Patch Changes
+
+- 023ec3f: Change build to use Typescript project references
+- Updated dependencies [023ec3f]
+  - @dotrun/gae-js-core@0.4.5
+
 ## 0.4.5
 
 ### Patch Changes
