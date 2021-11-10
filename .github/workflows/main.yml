@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: '14'
 
+      - name: Update npm
+        run: npm i -g npm@8
+
       - name: Install Datastore emulator
         run: |
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
@@ -41,8 +44,5 @@ jobs:
           npm install
           npm install -g firebase-tools
 
-      - name: Bootstrap packages
-        run: npx lerna bootstrap
-
       - name: Run tests
-        run: npx lerna run --concurrency 1 test:ci
+        run: npm run test:ci -ws
