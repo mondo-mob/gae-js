@@ -26,7 +26,7 @@ export const verifyFirebaseUser = (firebaseAdmin: firebaseAdmin.app.App, options
         const user = userConverter(idToken);
         logger.info(`Verified firebase token for user ${user.id} with roles ${user.roles}`);
         userRequestStorage.set(user);
-      } catch (e) {
+      } catch (e: any) {
         next(new UnauthorisedError(`Error verifying token: ${e.message}`));
       }
     } else {
