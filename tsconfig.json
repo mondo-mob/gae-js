@@ -10,7 +10,11 @@
     "esModuleInterop": true,
     "outDir": "./dist",
     "experimentalDecorators": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@dotrun/*": ["packages/*"]
+    }
   },
   "include": [
     "src/**/*"

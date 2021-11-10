@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "build": "npm run build --workspaces",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest"
   },
