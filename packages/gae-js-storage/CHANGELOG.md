@@ -1,5 +1,13 @@
 # @dotrun/gae-js-storage
 
+## 0.4.6
+
+### Patch Changes
+
+- Another patch release to test changeset build
+- Updated dependencies
+  - @dotrun/gae-js-core@0.4.6
+
 ## 0.4.5
 
 ### Patch Changes

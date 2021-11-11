@@ -1,5 +1,11 @@
 # @dotrun/gae-js-core
 
+## 0.4.6
+
+### Patch Changes
+
+- Another patch release to test changeset build
+
 ## 0.4.5
 
 ### Patch Changes

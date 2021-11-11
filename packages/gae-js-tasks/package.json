@@ -1,6 +1,6 @@
 {
   "name": "@dotrun/gae-js-tasks",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Tools for Google Cloud Tasks",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -26,12 +26,12 @@
     "node-fetch": "2.6.1"
   },
   "peerDependencies": {
-    "@dotrun/gae-js-core": "^0.4.5",
+    "@dotrun/gae-js-core": "^0.4.6",
     "@google-cloud/tasks": "^2.4.2",
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@dotrun/gae-js-core": "0.4.5",
+    "@dotrun/gae-js-core": "0.4.6",
     "@google-cloud/tasks": "2.4.2",
     "@types/express": "4.17.13",
     "@types/node-fetch": "2.5.10",
