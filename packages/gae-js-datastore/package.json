@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc --build --verbose",
-    "clean": "rm -rf dist/",
+    "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "datastore:start": "gcloud beta emulators datastore start --consistency 1.0",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",

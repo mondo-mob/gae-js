@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc --build --verbose",
-    "clean": "rm -rf dist/",
+    "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "firebase:start": "firebase emulators:start --project auth-tests",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",
