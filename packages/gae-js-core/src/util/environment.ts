@@ -1,11 +1,16 @@
 /**
- * @deprecated Use runningOnGcp() instead
+ * This checks for the cloud function reserved environment variables K_SERVICE and K_REVISION
+ * These are set in the cloud environment so make sure you don't set these locally
  */
-export const isGcpEnvironment = (): boolean => runningOnGcp();
+const onCloudFunctions = (): boolean => !!process.env.K_SERVICE && !!process.env.K_REVISION;
+
+const onAppEngine = (): boolean => process.env.GAEJS_ENVIRONMENT === "appengine";
 
 /**
  * Determines whether the code is running on GCP (vs locally).
- * For this to work consumers must set the GAEJS_ENVIRONMENT variable in deployed GCP environments.
+ *
+ * Cloud Functions: Checks for existence of K_SERVICE and K_REVISION reserved env variables
+ * AppEngine: Consumers must set the GAEJS_ENVIRONMENT variable in deployed GCP environments.
  * e.g. for GAE add this in app.yaml
  *
  * @example
@@ -13,12 +18,5 @@ export const isGcpEnvironment = (): boolean => runningOnGcp();
  *   GAEJS_ENVIRONMENT: appengine
  */
 export const runningOnGcp = (): boolean => {
-  const onGcp = process.env.GAEJS_ENVIRONMENT === "appengine";
-
-  if (!onGcp && !!process.env.GCP_ENVIRONMENT) {
-    console.warn("Usage of GCP_ENVIRONMENT variable deprecated. Please use GAEJS_ENVIRONMENT instead.");
-    return true;
-  }
-
-  return onGcp;
+  return onAppEngine() || onCloudFunctions();
 };

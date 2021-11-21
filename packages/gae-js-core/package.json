@@ -8,7 +8,7 @@
     "/dist"
   ],
   "scripts": {
-    "build": "tsc --build --verbose",
+    "build": "tsc --build --verbose --project tsconfig.prod.json",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",
