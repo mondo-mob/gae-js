@@ -8,8 +8,8 @@
     "/dist"
   ],
   "scripts": {
-    "build": "tsc --build --verbose",
-    "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
+    "build": "tsc --build --verbose tsconfig.prod.json",
+    "clean": "rm -rf dist/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
     "firestore:start": "firebase emulators:start --project firestore-tests",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",

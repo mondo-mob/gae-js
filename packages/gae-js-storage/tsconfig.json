@@ -5,8 +5,7 @@
     "rootDir": "src",
   },
   "include": ["src/**/*"],
-  "exclude": ["**/*.test.ts"],
   "references": [
-    { "path": "../gae-js-core" }
+    { "path": "../gae-js-core/tsconfig.prod.json" }
   ]
 }
