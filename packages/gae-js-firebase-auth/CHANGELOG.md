@@ -1,5 +1,17 @@
 # @dotrun/gae-js-firebase-auth
 
+## 1.0.0
+
+### Major Changes
+
+- 08206d9: Bump all packages to v1.0.0 release. This is mainly to get better semver support - i.e. with versions 0.x.x a minor is considered a major for consumers.
+
+### Patch Changes
+
+- Updated dependencies [6ed9213]
+- Updated dependencies [08206d9]
+  - @dotrun/gae-js-core@1.0.0
+
 ## 0.4.6
 
 ### Patch Changes
