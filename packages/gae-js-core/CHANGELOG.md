@@ -1,5 +1,11 @@
 # @dotrun/gae-js-core
 
+## 1.0.2
+
+### Patch Changes
+
+- d6bd90d: Fix export of AsyncHandler type
+
 ## 1.0.1
 
 ### Patch Changes
