@@ -1,5 +1,11 @@
 # @dotrun/gae-js-core
 
+## 1.0.1
+
+### Patch Changes
+
+- 8bead9e: Update handleAsync typings to be compatible with Express Handler type
+
 ## 1.0.0
 
 ### Major Changes
