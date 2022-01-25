@@ -22,14 +22,14 @@
   "license": "MIT",
   "homepage": "https://github.com/mlev/gae-js",
   "dependencies": {
-    "node-fetch": "2.6.1"
+    "node-fetch": "2.6.7"
   },
   "peerDependencies": {
     "@dotrun/gae-js-core": "^1.0.0"
   },
   "devDependencies": {
-    "@dotrun/gae-js-core": "^1.0.0",
-    "@types/node-fetch": "2.5.10",
-    "nock": "13.1.4"
+    "@dotrun/gae-js-core": "1.0.2",
+    "@types/node-fetch": "2.5.12",
+    "nock": "13.2.2"
   }
 }
