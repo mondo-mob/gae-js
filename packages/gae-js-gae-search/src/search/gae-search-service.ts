@@ -11,7 +11,7 @@ import {
   SearchFields,
   SearchService,
   Sort,
-} from "@dotrun/gae-js-core";
+} from "@mondomob/gae-js-core";
 import { GaeJsGaeSearchConfiguration } from "../configuration";
 
 export interface SearchPredicate extends Predicate {

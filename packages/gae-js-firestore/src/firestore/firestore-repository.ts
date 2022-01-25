@@ -11,7 +11,7 @@ import {
   BaseEntity,
   OneOrMany,
   Repository,
-} from "@dotrun/gae-js-core";
+} from "@mondomob/gae-js-core";
 import { RepositoryError } from "./repository-error";
 import { firestoreProvider } from "./firestore-provider";
 

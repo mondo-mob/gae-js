@@ -2,7 +2,7 @@ import express, { ErrorRequestHandler, Handler } from "express";
 import admin from "firebase-admin";
 import { verifyFirebaseUser, VerifyOptions } from "./verify-firebase-user";
 import request from "supertest";
-import { getRequestStore, requestAsyncStorage, UnauthorisedError, userRequestStorage } from "@dotrun/gae-js-core";
+import { getRequestStore, requestAsyncStorage, UnauthorisedError, userRequestStorage } from "@mondomob/gae-js-core";
 
 const emulatorSignup = async (email: string): Promise<any> => {
   const emulatorResponse = await request("http://localhost:9099")

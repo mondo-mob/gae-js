@@ -1,4 +1,4 @@
-import { configurationProvider, iots as t, gaeJsCoreConfigurationSchema } from "@dotrun/gae-js-core";
+import { configurationProvider, iots as t, gaeJsCoreConfigurationSchema } from "@mondomob/gae-js-core";
 import { GaeJsGaeSearchConfiguration, gaeJsGaeSearchConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {

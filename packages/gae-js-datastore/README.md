@@ -6,7 +6,7 @@ and request level caching.
 ## Installation
 
 ```sh
-npm install @dotrun/gae-js-datastore
+npm install @mondomob/gae-js-datastore
 ```
 
 ## Components

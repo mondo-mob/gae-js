@@ -1,5 +1,5 @@
 import { Firestore, Settings } from "@google-cloud/firestore";
-import { Provider } from "@dotrun/gae-js-core";
+import { Provider } from "@mondomob/gae-js-core";
 import { connectFirestore } from "./connect";
 
 export class FirestoreProvider extends Provider<Firestore> {

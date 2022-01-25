@@ -1,5 +1,5 @@
 import { Datastore, DatastoreOptions } from "@google-cloud/datastore";
-import { configurationProvider, createLogger, runningOnGcp } from "@dotrun/gae-js-core";
+import { configurationProvider, createLogger, runningOnGcp } from "@mondomob/gae-js-core";
 import { GaeJsDatastoreConfiguration } from "../configuration";
 
 export interface DatastoreConnectOptions {

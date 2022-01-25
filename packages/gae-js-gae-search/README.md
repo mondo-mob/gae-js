@@ -9,7 +9,7 @@ and then search against your stored entities.
 ## Installation
 
 ```sh
-npm install @dotrun/gae-js-storage
+npm install @mondomob/gae-js-storage
 ```
 
 ## Components

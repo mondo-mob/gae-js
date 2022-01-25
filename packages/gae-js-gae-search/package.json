@@ -1,5 +1,5 @@
 {
-  "name": "@dotrun/gae-js-gae-search",
+  "name": "@mondomob/gae-js-gae-search",
   "version": "1.0.1",
   "description": "Use Appengine Search Service",
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc --build --verbose tsconfig.prod.json",
-    "clean": "rm -rf dist/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
+    "clean": "rm -rf dist/ coverage/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",
     "test": "jest",
@@ -25,10 +25,10 @@
     "node-fetch": "2.6.7"
   },
   "peerDependencies": {
-    "@dotrun/gae-js-core": "^1.0.0"
+    "@mondomob/gae-js-core": "^1.0.0"
   },
   "devDependencies": {
-    "@dotrun/gae-js-core": "1.0.3",
+    "@mondomob/gae-js-core": "1.0.3",
     "@types/node-fetch": "2.5.12",
     "nock": "13.2.2"
   }

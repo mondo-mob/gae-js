@@ -1,5 +1,5 @@
 {
-  "name": "@dotrun/gae-js-core",
+  "name": "@mondomob/gae-js-core",
   "version": "1.0.3",
   "description": "",
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc --build --verbose tsconfig.prod.json",
-    "clean": "rm -rf dist/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
+    "clean": "rm -rf dist/ coverage/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",
     "test": "jest",

@@ -1,5 +1,5 @@
 import { Handler } from "express";
-import { requiresHeader } from "@dotrun/gae-js-core";
+import { requiresHeader } from "@mondomob/gae-js-core";
 
 /**
  * Middleware that verifies request is a valid App Engine Task request.

@@ -9,7 +9,7 @@ import {
   isLeft,
   OneOrMany,
   Repository,
-} from "@dotrun/gae-js-core";
+} from "@mondomob/gae-js-core";
 import { DatastoreLoader, DatastorePayload, Index, QueryOptions, QueryResponse } from "./datastore-loader";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { datastoreProvider } from "./datastore-provider";

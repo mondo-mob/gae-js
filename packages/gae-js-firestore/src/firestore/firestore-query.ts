@@ -1,5 +1,5 @@
 import { FieldPath, OrderByDirection, WhereFilterOp } from "@google-cloud/firestore";
-import { OneOrMany } from "@dotrun/gae-js-core";
+import { OneOrMany } from "@mondomob/gae-js-core";
 
 export interface WhereFilter {
   fieldPath: string | FieldPath;

@@ -5,7 +5,7 @@ The core stuff needed for most apps.
 ## Installation
 
 ```sh
-npm install @dotrun/gae-js-core
+npm install @mondomob/gae-js-core
 ```
 
 ## Conventions

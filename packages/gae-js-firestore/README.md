@@ -5,7 +5,7 @@ Use Firestore in Native mode as your app db including [DataLoader](https://githu
 ## Installation
 
 ```sh
-npm install @dotrun/gae-js-firestore
+npm install @mondomob/gae-js-firestore
 ```
 
 ## Components

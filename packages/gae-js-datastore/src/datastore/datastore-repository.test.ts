@@ -2,7 +2,7 @@ import { Datastore, Key } from "@google-cloud/datastore";
 import { DatastoreRepository } from "./datastore-repository";
 import { connectDatastoreEmulator, deleteKind } from "./test-utils";
 import { runInTransaction } from "./transactional";
-import { iots as t, runWithRequestStorage } from "@dotrun/gae-js-core";
+import { iots as t, runWithRequestStorage } from "@mondomob/gae-js-core";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { DatastoreLoader } from "./datastore-loader";
 import { datastoreProvider } from "./datastore-provider";
@@ -192,7 +192,7 @@ describe("DatastoreRepository", () => {
       });
 
       it("throws for document that doesn't match schema", async () => {
-        const abc = ({ id: "123", message: "no name" } as any) as RepositoryItem;
+        const abc = { id: "123", message: "no name" } as any as RepositoryItem;
         await expect(repository.save(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
       });
     });
@@ -233,7 +233,7 @@ describe("DatastoreRepository", () => {
       });
 
       it("throws for document that doesn't match schema", async () => {
-        const abc = ({ id: "123", message: "no name" } as any) as RepositoryItem;
+        const abc = { id: "123", message: "no name" } as any as RepositoryItem;
         await expect(repository.insert(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
       });
     });

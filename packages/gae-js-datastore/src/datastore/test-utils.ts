@@ -1,5 +1,5 @@
 import { Datastore, DatastoreOptions } from "@google-cloud/datastore";
-import { iots as t, configurationProvider } from "@dotrun/gae-js-core";
+import { iots as t, configurationProvider } from "@mondomob/gae-js-core";
 import { GaeJsDatastoreConfiguration, gaeJsDatastoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {

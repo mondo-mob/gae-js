@@ -1,6 +1,6 @@
 import { Storage, StorageOptions } from "@google-cloud/storage";
 import { GaeJsStorageConfiguration, gaeJsStorageConfigurationSchema } from "../configuration";
-import { configurationProvider } from "@dotrun/gae-js-core/dist";
+import { configurationProvider } from "@mondomob/gae-js-core/dist";
 
 export const initTestConfig = async (
   config?: Partial<GaeJsStorageConfiguration>

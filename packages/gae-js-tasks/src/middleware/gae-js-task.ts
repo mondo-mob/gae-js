@@ -1,4 +1,4 @@
-import { requestTimeoutMinutes } from "@dotrun/gae-js-core";
+import { requestTimeoutMinutes } from "@mondomob/gae-js-core";
 import { verifyTask } from "./verify-task";
 
 /**

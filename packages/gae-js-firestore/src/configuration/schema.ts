@@ -1,4 +1,4 @@
-import { iots as t, gaeJsCoreConfigurationSchema } from "@dotrun/gae-js-core";
+import { iots as t, gaeJsCoreConfigurationSchema } from "@mondomob/gae-js-core";
 
 export const gaeJsFirestoreConfigurationSchema = t.intersection([
   gaeJsCoreConfigurationSchema,

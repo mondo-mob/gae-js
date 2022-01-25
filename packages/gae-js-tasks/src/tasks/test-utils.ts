@@ -1,4 +1,4 @@
-import { configurationProvider, iots as t, gaeJsCoreConfigurationSchema } from "@dotrun/gae-js-core";
+import { configurationProvider, iots as t, gaeJsCoreConfigurationSchema } from "@mondomob/gae-js-core";
 import { GaeJsTasksConfiguration, gaeJsTasksConfigurationSchema } from "../configuration";
 
 export const initTestConfig = async (config?: Partial<GaeJsTasksConfiguration>): Promise<GaeJsTasksConfiguration> => {

@@ -1,6 +1,6 @@
 import { CloudTasksClient } from "@google-cloud/tasks";
 import fetch from "node-fetch";
-import { configurationProvider, createLogger, runningOnGcp } from "@dotrun/gae-js-core";
+import { configurationProvider, createLogger, runningOnGcp } from "@mondomob/gae-js-core";
 import { GaeJsTasksConfiguration } from "../configuration";
 
 export interface TaskQueueServiceOptions {

@@ -1,5 +1,5 @@
 import { Firestore, Settings } from "@google-cloud/firestore";
-import { configurationProvider, createLogger, runningOnGcp } from "@dotrun/gae-js-core";
+import { configurationProvider, createLogger, runningOnGcp } from "@mondomob/gae-js-core";
 import { GaeJsFirestoreConfiguration } from "../configuration";
 
 export interface FirestoreConnectOptions {

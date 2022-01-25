@@ -2,7 +2,7 @@ import { Firestore } from "@google-cloud/firestore";
 import { FirestoreRepository } from "./firestore-repository";
 import { connectFirestore, deleteCollection } from "./test-utils";
 import { runInTransaction } from "./transactional";
-import { iots as t, runWithRequestStorage } from "@dotrun/gae-js-core";
+import { iots as t, runWithRequestStorage } from "@mondomob/gae-js-core";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { FirestoreLoader } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
@@ -203,7 +203,7 @@ describe("FirestoreRepository", () => {
       });
 
       it("throws for document that doesn't match schema", async () => {
-        const abc = ({ id: "123", message: "no name" } as any) as RepositoryItem;
+        const abc = { id: "123", message: "no name" } as any as RepositoryItem;
         await expect(repository.save(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
       });
     });
@@ -251,7 +251,7 @@ describe("FirestoreRepository", () => {
       });
 
       it("throws for document that doesn't match schema", async () => {
-        const abc = ({ id: "123", message: "no name" } as any) as RepositoryItem;
+        const abc = { id: "123", message: "no name" } as any as RepositoryItem;
         await expect(repository.insert(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
       });
     });

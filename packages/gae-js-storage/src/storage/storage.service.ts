@@ -1,5 +1,5 @@
 import { Bucket, Storage } from "@google-cloud/storage";
-import { configurationProvider, createLogger } from "@dotrun/gae-js-core";
+import { configurationProvider, createLogger } from "@mondomob/gae-js-core";
 import { GaeJsStorageConfiguration } from "../configuration";
 import { storageProvider } from "./storage-provider";
 

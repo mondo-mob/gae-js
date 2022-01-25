@@ -5,7 +5,7 @@ Use Cloud Tasks to call task handler endpoints in your app.
 ## Installation
 
 ```sh
-npm install @dotrun/gae-js-tasks
+npm install @mondomob/gae-js-tasks
 ```
 
 ## Components

@@ -5,7 +5,7 @@ Use Cloud Storage in your app.
 ## Installation
 
 ```sh
-npm install @dotrun/gae-js-storage
+npm install @mondomob/gae-js-storage
 ```
 
 ## Components

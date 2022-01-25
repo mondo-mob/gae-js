@@ -3,7 +3,7 @@ import { Datastore } from "@google-cloud/datastore";
 import { connectDatastoreEmulator, deleteKind, RepositoryItem, repositoryItemSchema } from "./test-utils";
 import { runInTransaction, Transactional } from "./transactional";
 import { DatastoreRepository } from "./datastore-repository";
-import { runWithRequestStorage } from "@dotrun/gae-js-core";
+import { runWithRequestStorage } from "@mondomob/gae-js-core";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 
 class TransactionalService {

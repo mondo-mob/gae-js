@@ -5,7 +5,7 @@ Use Firebase Auth to authenticate your users
 ## Installation
 
 ```sh
-npm install @dotrun/gae-js-firebase-auth
+npm install @mondomob/gae-js-firebase-auth
 ```
 
 ## Usage

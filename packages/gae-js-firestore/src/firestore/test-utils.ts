@@ -1,5 +1,5 @@
 import { CollectionReference, Firestore, Settings } from "@google-cloud/firestore";
-import { configurationProvider } from "@dotrun/gae-js-core";
+import { configurationProvider } from "@mondomob/gae-js-core";
 import { GaeJsFirestoreConfiguration, gaeJsFirestoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {

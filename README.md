@@ -6,14 +6,14 @@ Simplify building NodeJS applications on Google App Engine (GAE)
 
 Install the core component:
 ```sh
-npm install @dotrun/gae-js-core
+npm install @mondomob/gae-js-core
 ```
 
 Then depending on your use case install the components you want to use. e.g.
 
 ```sh
-npm install @dotrun/gae-js-firestore
-npm install @dotrun/gae-js-firebase-auth
+npm install @mondomob/gae-js-firestore
+npm install @mondomob/gae-js-firebase-auth
 ```
 
 ## Usage

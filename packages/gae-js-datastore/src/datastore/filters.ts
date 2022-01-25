@@ -1,4 +1,4 @@
-import { asArray, OneOrMany } from "@dotrun/gae-js-core";
+import { asArray, OneOrMany } from "@mondomob/gae-js-core";
 import { Operator } from "@google-cloud/datastore/build/src/query";
 
 export type Filter<T> = OneOrMany<T | ComplexFilter<T>>;

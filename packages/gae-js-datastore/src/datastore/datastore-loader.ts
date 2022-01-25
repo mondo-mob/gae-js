@@ -4,7 +4,7 @@ import { OrderOptions, RunQueryInfo } from "@google-cloud/datastore/build/src/qu
 import DataLoader from "dataloader";
 import * as _ from "lodash";
 import { buildFilters, Filters } from "./filters";
-import { asArray, createLogger, Logger, NonFatalError, OneOrMany } from "@dotrun/gae-js-core";
+import { asArray, createLogger, Logger, NonFatalError, OneOrMany } from "@mondomob/gae-js-core";
 
 const keysEqual = (key1: Entity.Key, key2: Entity.Key) => {
   return _.isEqual(key1.path, key2.path);

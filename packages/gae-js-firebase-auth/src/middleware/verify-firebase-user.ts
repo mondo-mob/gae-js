@@ -1,5 +1,5 @@
 import { Handler } from "express";
-import { BaseUser, createLogger, UnauthorisedError, userRequestStorage } from "@dotrun/gae-js-core";
+import { BaseUser, createLogger, UnauthorisedError, userRequestStorage } from "@mondomob/gae-js-core";
 import * as firebaseAdmin from "firebase-admin";
 
 const convertIdTokenToUser = (idToken: firebaseAdmin.auth.DecodedIdToken): BaseUser => ({
