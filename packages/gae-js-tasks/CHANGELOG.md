@@ -1,5 +1,11 @@
 # @dotrun/gae-js-tasks
 
+## 1.0.1
+
+### Patch Changes
+
+- 552ecd2: Update dependencies
+
 ## 1.0.0
 
 ### Major Changes

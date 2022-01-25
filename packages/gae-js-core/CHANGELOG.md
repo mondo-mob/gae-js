@@ -1,5 +1,11 @@
 # @dotrun/gae-js-core
 
+## 1.0.3
+
+### Patch Changes
+
+- 552ecd2: Update dependencies
+
 ## 1.0.2
 
 ### Patch Changes
