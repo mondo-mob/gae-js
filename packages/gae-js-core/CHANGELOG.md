@@ -1,5 +1,11 @@
 # @dotrun/gae-js-core
 
+## 1.0.4
+
+### Patch Changes
+
+- 2e4b89a: Try reverting fp-ts version to fix deployment issue
+
 ## 1.0.3
 
 ### Patch Changes
