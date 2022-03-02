@@ -1,5 +1,11 @@
 # @dotrun/gae-js-firestore
 
+## 1.0.3
+
+### Patch Changes
+
+- f328e50: Be more lenient with firestore client peer dependency version
+
 ## 1.0.1
 
 ### Patch Changes
