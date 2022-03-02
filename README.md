@@ -173,4 +173,5 @@ Would be nice if this was done from CI but for now we do this locally.
 ```
 npm run clean -ws
 npx changeset publish
+git push --follow-tags
 ```
