@@ -2,4 +2,7 @@
   "extends": "./tsconfig.json",
   "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts"],
+  "references": [
+    { "path": "../gae-js-core/tsconfig.prod.json" }
+  ]
 }

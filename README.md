@@ -171,6 +171,6 @@ Would be nice if this was done from CI but for now we do this locally.
 - Build and publish
 
 ```
-npm run clean
+npm run clean -ws
 npx changeset publish
 ```
