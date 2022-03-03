@@ -121,7 +121,7 @@ Seamlessly load secrets stored in "Google Cloud Secret Manager" from references 
 
 Step 1: Enable Secret Manager API (`secretmanager.googleapis.com`) in the target project and create any secrets you require. e.g. API_PASSWORD
 
-Step 2: Add the `Secret Accessor` role to the App Engine service account
+Step 2: Add the `Secret Accessor` role (`roles/secretmanager.secretAccessor`) to the App Engine service account
 
 Step 3: Update your config files to include secret references
 
