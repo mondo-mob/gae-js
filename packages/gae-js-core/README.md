@@ -119,7 +119,7 @@ configurationProvider.set(config);
 ### Configuration Secrets
 Seamlessly load secrets stored in "Google Cloud Secret Manager" from references in your application configuration.
 
-Step 1: Enable Secret Manager API in the target project and create any secrets you require. e.g. API_PASSWORD
+Step 1: Enable Secret Manager API (`secretmanager.googleapis.com`) in the target project and create any secrets you require. e.g. API_PASSWORD
 
 Step 2: Add the `Secret Accessor` role to the App Engine service account
 
