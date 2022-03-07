@@ -61,6 +61,26 @@ const item = await repository.get("id123");
 const list = await demoItemsRepository.query();
 ```
 
+### TimestampedRepository
+Convenience Repository type to auto-populate createdAt/updatedAt timestamps on insert/save/update
+
+```
+// Define your class entity
+interface DemoItem extends TimestampedEntity {
+  name: string;
+}
+
+// Initialise repository
+const repository = new TimestampedRepository<DemoItem>("demo-items");
+
+// Create a new item with helper method
+await repository.save({ ...newTimestampedEntity("id123"), name: "test item" });
+
+// Save an item and updatedAt will get set to current time
+const item = await repository.get("id123");
+await repository.save({ ...item, name: "updated item" });
+```
+
 ### @Transactional
 
 Annotate functions to make them transactional.
