@@ -1,5 +1,11 @@
 # @dotrun/gae-js-firestore
 
+## 1.0.5
+
+### Patch Changes
+
+- Remember to export TimestampedRepository components
+
 ## 1.0.4
 
 ### Patch Changes
