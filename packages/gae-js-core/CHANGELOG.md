@@ -1,5 +1,11 @@
 # @dotrun/gae-js-core
 
+## 1.0.6
+
+### Patch Changes
+
+- 410af47: Add isReadonlyArray type guard
+
 ## 1.0.4
 
 ### Patch Changes

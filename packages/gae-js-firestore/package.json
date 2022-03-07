@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-firestore",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -28,12 +28,12 @@
     "tslib": "2.3.1"
   },
   "peerDependencies": {
-    "@mondomob/gae-js-core": "^1.0.0",
+    "@mondomob/gae-js-core": "^1.0.6",
     "@google-cloud/firestore": ">= 4.15.1",
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "1.0.5",
+    "@mondomob/gae-js-core": "1.0.6",
     "@google-cloud/firestore": "5.0.2",
     "@types/express": "4.17.13",
     "@types/lodash": "4.14.179",

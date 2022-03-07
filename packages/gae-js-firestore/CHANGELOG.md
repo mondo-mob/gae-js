@@ -1,5 +1,11 @@
 # @dotrun/gae-js-firestore
 
+## 1.0.4
+
+### Patch Changes
+
+- 241f0d7: Add TimestampedRepository to auto-update entity timestamps on mutation
+
 ## 1.0.3
 
 ### Patch Changes
