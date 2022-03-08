@@ -128,13 +128,13 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
   ): Promise<OneOrMany<T>> {
     const entitiesToSave = asArray(entities)
       .map(this.validateSave)
-      .map((data: T) => {
-        const withoutId = _.omit(data, "id");
-        return {
-          ref: this.documentRef(data.id),
-          data: withoutId,
-        } as FirestorePayload;
-      });
+      .map(
+        (data: T) =>
+          ({
+            ref: this.documentRef(data.id),
+            data,
+          } as FirestorePayload)
+      );
 
     await mutation(this.getLoader(), entitiesToSave);
 
