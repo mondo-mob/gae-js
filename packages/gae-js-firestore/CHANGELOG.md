@@ -1,5 +1,11 @@
 # @dotrun/gae-js-firestore
 
+## 1.0.6
+
+### Patch Changes
+
+- d85c5c6: Store ID as a field on documents as well as the document ref
+
 ## 1.0.5
 
 ### Patch Changes
