@@ -1,5 +1,13 @@
 # @dotrun/gae-js-firestore
 
+## 1.0.7
+
+### Patch Changes
+
+- 5da774e: Clone documents added to and returned from DataLoader cache. This prevents polluting the
+  cache if a caller mutates either the original documents passed to the loader or any document
+  returned from the cache.
+
 ## 1.0.6
 
 ### Patch Changes
