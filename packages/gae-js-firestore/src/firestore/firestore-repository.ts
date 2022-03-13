@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import { Firestore, DocumentReference } from "@google-cloud/firestore";
 import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";

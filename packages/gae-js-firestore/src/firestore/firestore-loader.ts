@@ -3,6 +3,7 @@ import _ from "lodash";
 import {
   DocumentData,
   DocumentReference,
+  DocumentSnapshot,
   Firestore,
   Query,
   QuerySnapshot,
@@ -16,6 +17,32 @@ export interface FirestorePayload {
   ref: DocumentReference;
   data: DocumentData;
 }
+
+const cloneDocument = (data: DocumentData | null) => _.cloneDeep(data);
+
+/**
+ * Updates loader cache value with given data.
+ * This includes deep cloning the data to prevent possible pollution of the cache by
+ * updating the original copy of the document.
+ */
+const setCacheFromData = (
+  loader: DataLoader<DocumentReference, DocumentData | null>,
+  ref: DocumentReference,
+  data: DocumentData | null
+) => {
+  loader.clear(ref).prime(ref, cloneDocument(data));
+};
+
+/**
+ * Updates loader cache value with given document snapshot
+ * This does not require cloning because the snapshot.data() call does this for us.
+ */
+const setCacheFromSnapshot = (
+  loader: DataLoader<DocumentReference, DocumentData | null>,
+  snapshot: DocumentSnapshot
+) => {
+  loader.clear(snapshot.ref).prime(snapshot.ref, snapshot.data() || null);
+};
 
 export class FirestoreLoader {
   private readonly loader: DataLoader<DocumentReference, DocumentData | null>;
@@ -37,7 +64,8 @@ export class FirestoreLoader {
     if (firstError) {
       throw firstError;
     }
-    return results;
+    // Clone results to prevent polluting the cache if the caller mutates the returned document(s)
+    return results?.map(cloneDocument);
   }
 
   public async create(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
@@ -45,7 +73,7 @@ export class FirestoreLoader {
       entities,
       (transaction, entity) => transaction.create(entity.ref, entity.data),
       (batch, entity) => batch.create(entity.ref, entity.data),
-      (loader, { ref, data }) => loader.clear(ref).prime(ref, data)
+      (loader, { ref, data }) => setCacheFromData(loader, ref, data)
     );
   }
 
@@ -54,7 +82,7 @@ export class FirestoreLoader {
       entities,
       (transaction, entity) => transaction.set(entity.ref, entity.data),
       (batch, entity) => batch.set(entity.ref, entity.data),
-      (loader, { ref, data }) => loader.clear(ref).prime(ref, data)
+      (loader, { ref, data }) => setCacheFromData(loader, ref, data)
     );
   }
 
@@ -63,7 +91,7 @@ export class FirestoreLoader {
       entities,
       (transaction, entity) => transaction.update(entity.ref, entity.data),
       (batch, entity) => batch.update(entity.ref, entity.data),
-      (loader, { ref, data }) => loader.clear(ref).prime(ref, data)
+      (loader, { ref, data }) => setCacheFromData(loader, ref, data)
     );
   }
 
@@ -107,7 +135,7 @@ export class FirestoreLoader {
     const querySnapshot = this.transaction ? await this.transaction.get(query) : await query.get();
     if (!options.select) {
       // Update cache only when query does not select specific fields
-      querySnapshot.forEach((result) => this.loader.clear(result.ref).prime(result.ref, result.data()));
+      querySnapshot.forEach((result) => setCacheFromSnapshot(this.loader, result));
     }
     return querySnapshot;
   }

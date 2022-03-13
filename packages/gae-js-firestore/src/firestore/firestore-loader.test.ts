@@ -1,6 +1,7 @@
 import { FirestoreLoader } from "./firestore-loader";
 import { Firestore } from "@google-cloud/firestore";
 import { connectFirestore, deleteCollection } from "./test-utils";
+import assert from "assert";
 
 // For transaction tests when emulator supports it
 // const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -16,25 +17,29 @@ describe("FirestoreLoader", () => {
     jest.clearAllMocks();
   });
 
-  const createUserPayload = (id: string, data?: Record<string, unknown>) => {
-    return {
-      ref: firestore.doc(`/users/${id}`),
-      data: {
-        name: `Test User ${id}`,
-        ...data,
-      },
-    };
-  };
+  const createUserData = (id: string, data?: Record<string, unknown>) => ({
+    name: `Test User ${id}`,
+    ...data,
+  });
+
+  const createUserPayload = (id: string, data?: Record<string, unknown>) => ({
+    ref: firestore.doc(`/users/${id}`),
+    data: createUserData(id, data),
+  });
 
   describe("get", () => {
     it("fetches from firestore on first request", async () => {
+      await firestore.doc("/users/123").create(createUserData("123"));
       const getAllSpy = jest.spyOn(firestore, "getAll");
       const ref = firestore.doc("/users/123");
+
       await loader.get([ref]);
+
       expect(getAllSpy).toBeCalledTimes(1);
     });
 
     it("should fetch data from cache", async () => {
+      await firestore.doc("/users/123").create(createUserData("123"));
       const getAllSpy = jest.spyOn(firestore, "getAll");
       const ref = firestore.doc("/users/123");
 
@@ -43,6 +48,21 @@ describe("FirestoreLoader", () => {
 
       expect(doc1).toEqual(doc2);
       expect(getAllSpy).toBeCalledTimes(1);
+    });
+
+    it("should return copy of data when loading from cache", async () => {
+      await firestore.doc("/users/123").create(createUserData("123"));
+      const getAllSpy = jest.spyOn(firestore, "getAll");
+      const ref = firestore.doc("/users/123");
+
+      const [doc1] = await loader.get([ref]);
+      assert.ok(doc1);
+      // If we change a property on the returned document it should not affect the cached version
+      doc1.name = "Changed name";
+      const [doc2] = await loader.get([ref]);
+
+      expect(getAllSpy).toBeCalledTimes(1);
+      expect(doc2).toEqual({ name: "Test User 123" });
     });
   });
 
@@ -68,6 +88,31 @@ describe("FirestoreLoader", () => {
       await loader.create([createUserPayload("123")]);
       await expect(loader.create([createUserPayload("123")])).rejects.toThrow("ALREADY_EXISTS");
     });
+
+    it("populates cache", async () => {
+      const original = createUserPayload("123");
+      const getAllSpy = jest.spyOn(firestore, "getAll");
+
+      await loader.create([original]);
+      const [doc1] = await loader.get([original.ref]);
+
+      expect(doc1).toEqual(original.data);
+      expect(getAllSpy).toBeCalledTimes(0);
+    });
+
+    it("should not pollute cache when changing original document", async () => {
+      const original = createUserPayload("123");
+      const getAllSpy = jest.spyOn(firestore, "getAll");
+
+      await loader.create([original]);
+      // If we change a property on the original it should not change cache
+      original.data.name = "Changed name";
+
+      const [doc1] = await loader.get([original.ref]);
+      assert.ok(doc1);
+      expect(getAllSpy).toBeCalledTimes(0);
+      expect(doc1).toEqual({ name: `Test User 123` });
+    });
   });
 
   describe("set", () => {
@@ -86,6 +131,17 @@ describe("FirestoreLoader", () => {
       const fetched = await firestore.getAll(firestore.doc("/users/456"), firestore.doc("/users/789"));
       expect(fetched.length).toBe(2);
       expect(fetched[0].data()).toEqual({ name: `Test User 456` });
+    });
+
+    it("populates cache", async () => {
+      const original = createUserPayload("123");
+      const getAllSpy = jest.spyOn(firestore, "getAll");
+
+      await loader.set([original]);
+      const [doc1] = await loader.get([original.ref]);
+
+      expect(doc1).toEqual(original.data);
+      expect(getAllSpy).toBeCalledTimes(0);
     });
 
     it("overwrites document that already exists and updates cache", async () => {
@@ -110,6 +166,19 @@ describe("FirestoreLoader", () => {
 
       const fetchedLoader = await loader.get([firestore.doc("/users/123")]);
       expect(fetchedLoader[0]).toEqual({ name: `Test User 123`, message: "set" });
+    });
+
+    it("should not pollute cache when changing original document", async () => {
+      const original = createUserPayload("123");
+      const getAllSpy = jest.spyOn(firestore, "getAll");
+
+      await loader.set([original]);
+      // If we change a property on the original it should not change cache
+      original.data.name = "Changed name";
+
+      const [doc1] = await loader.get([original.ref]);
+      expect(getAllSpy).toBeCalledTimes(0);
+      expect(doc1).toEqual({ name: "Test User 123" });
     });
   });
 
@@ -152,6 +221,8 @@ describe("FirestoreLoader", () => {
     });
 
     it("updates document and updates cache", async () => {
+      const getAllSpy = jest.spyOn(firestore, "getAll");
+
       await loader.create([createUserPayload("123", { message: "create" })]);
       await loader.update([createUserPayload("123", { message: "update" })]);
 
@@ -160,6 +231,7 @@ describe("FirestoreLoader", () => {
 
       const fetchedCache = await loader.get([firestore.doc("/users/123")]);
       expect(fetchedCache[0]).toEqual({ name: `Test User 123`, message: "update" });
+      expect(getAllSpy).toBeCalledTimes(1);
     });
 
     it("clears stale cache value after transaction completes", async () => {
@@ -173,6 +245,21 @@ describe("FirestoreLoader", () => {
 
       const fetchedLoader = await loader.get([firestore.doc("/users/123")]);
       expect(fetchedLoader[0]).toEqual({ name: `Test User 123`, message: "update" });
+    });
+
+    it("should not pollute cache when changing original document", async () => {
+      await loader.create([createUserPayload("123", { message: "create" })]);
+      const getAllSpy = jest.spyOn(firestore, "getAll");
+
+      const original = createUserPayload("123", { message: "update" });
+      await loader.update([original]);
+
+      // If we change a property on the original it should not change cached version
+      original.data.name = "Changed name";
+
+      const [doc1] = await loader.get([original.ref]);
+      expect(getAllSpy).toBeCalledTimes(0);
+      expect(doc1).toEqual({ name: `Test User 123`, message: "update" });
     });
   });
 
@@ -257,6 +344,21 @@ describe("FirestoreLoader", () => {
       expect(results.docs[0].data()).toEqual({ prop1: "prop1", prop3: "prop3" });
       expect(doc[0]).toEqual({ prop1: "prop1", prop2: "prop2", prop3: "prop3" });
       expect(getAllSpy).toBeCalledTimes(1);
+    });
+
+    it("should not pollute cache when changing original document", async () => {
+      const getAllSpy = jest.spyOn(firestore, "getAll");
+      const ref = firestore.doc("/users/123");
+      await ref.create({ name: "Original name" });
+
+      const results = await loader.executeQuery("users", {});
+      const doc1 = results.docs[0].data();
+      // If we change a property on the returned document it should not affect the cached version
+      doc1.name = "Changed name";
+      const [doc2] = await loader.get([ref]);
+
+      expect(getAllSpy).toBeCalledTimes(0);
+      expect(doc2).toEqual({ name: "Original name" });
     });
 
     it("filters by exact match", async () => {
