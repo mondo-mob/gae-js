@@ -17,37 +17,57 @@ describe("TimestampedRepository", () => {
   const collection = "timestamped-items";
   let firestore: Firestore;
   let repository: TimestampedRepository<TimestampedItem>;
+  let startTime: Date;
 
   beforeAll(async () => (firestore = connectFirestore()));
   beforeEach(async () => {
     await deleteCollection(firestore.collection(collection));
     repository = new TimestampedRepository<TimestampedItem>(collection, { firestore });
     jest.clearAllMocks();
+    startTime = new Date();
   });
 
   const fixedTime = "2022-03-01T12:13:14.000Z";
 
-  const createItem = (id: string): TimestampedItem => {
-    return {
-      ...newTimestampedEntity(id),
-      name: `Test Item ${id}`,
-      createdAt: fixedTime,
-      updatedAt: fixedTime,
-    };
+  const createItem = (id: string): TimestampedItem => ({
+    ...newTimestampedEntity(id),
+    name: `Test Item ${id}`,
+  });
+
+  const createItemFixedTime = (id: string): TimestampedItem => ({
+    ...newTimestampedEntity(id),
+    name: `Test Item ${id}`,
+    createdAt: fixedTime,
+    updatedAt: fixedTime,
+  });
+
+  const expectNewTimestamp = (actual: string) => {
+    expect(new Date(actual) >= startTime).toBeTruthy();
   };
 
   describe("insert", () => {
-    it("adds createdAt and updatedAt if not set", async () => {
-      const item = {
+    it("adds createdAt and updatedAt if not set on existing", async () => {
+      await repository.insert({
         id: "123",
         name: "Test Item 123",
-      } as TimestampedItem;
-      await repository.insert(item);
+      } as TimestampedItem);
 
       const inserted = await repository.getRequired("123");
 
-      expect(inserted.createdAt).toBeTruthy();
-      expect(inserted.updatedAt).toBeTruthy();
+      expect(inserted.createdAt).toEqual(inserted.updatedAt);
+      expectNewTimestamp(inserted.createdAt);
+      expectNewTimestamp(inserted.updatedAt);
+    });
+
+    it("adds createdAt and updatedAt if generate flag set", async () => {
+      const item = createItem("123");
+
+      await repository.insert(item);
+      const inserted = await repository.getRequired("123");
+
+      expect(inserted.createdAt).toEqual(inserted.updatedAt);
+      expectNewTimestamp(inserted.createdAt);
+      expectNewTimestamp(inserted.updatedAt);
     });
   });
 
@@ -63,35 +83,37 @@ describe("TimestampedRepository", () => {
 
       await repository.save(fetched);
       const updated = await repository.getRequired("123");
-      expect(updated.createdAt).toBeTruthy();
-      expect(updated.updatedAt).toBeTruthy();
+      expect(updated.createdAt).toEqual(updated.updatedAt);
+      expectNewTimestamp(updated.createdAt);
+      expectNewTimestamp(updated.updatedAt);
     });
 
     it("updates a single item", async () => {
-      const item = createItem("123");
+      const item = createItemFixedTime("123");
+      await firestore.doc(`${collection}/123`).create(item);
 
       await repository.save(item);
 
       const updated = await repository.getRequired("123");
       expect(updated.createdAt).toEqual(fixedTime);
-      expect(new Date(updated.updatedAt) > new Date(fixedTime)).toBeTruthy();
+      expectNewTimestamp(updated.updatedAt);
     });
 
     it("updates array of items", async () => {
-      const item1 = createItem("123");
+      const item1 = createItemFixedTime("123");
       const item2 = createItem("234");
 
       await repository.save([item1, item2]);
 
       const updated = await repository.get(["123", "234"]);
       expect(updated[0].createdAt).toEqual(fixedTime);
-      expect(updated[1].createdAt).toEqual(fixedTime);
-      expect(new Date(updated[0].updatedAt) > new Date(fixedTime)).toBeTruthy();
-      expect(new Date(updated[1].updatedAt) > new Date(fixedTime)).toBeTruthy();
+      expectNewTimestamp(updated[1].createdAt);
+      expectNewTimestamp(updated[0].updatedAt);
+      expectNewTimestamp(updated[1].updatedAt);
     });
 
     it("skips update if flag set", async () => {
-      const item = createItem("123");
+      const item = createItemFixedTime("123");
 
       await runWithRequestStorage(async () => {
         setRequestStorageValue(DISABLE_TIMESTAMP_UPDATE, true);
@@ -116,23 +138,24 @@ describe("TimestampedRepository", () => {
 
       await repository.update(fetched);
       const updated = await repository.getRequired("123");
-      expect(updated.createdAt).toBeTruthy();
-      expect(updated.updatedAt).toBeTruthy();
+      expect(updated.createdAt).toEqual(updated.updatedAt);
+      expectNewTimestamp(updated.createdAt);
+      expectNewTimestamp(updated.updatedAt);
     });
 
     it("updates single item", async () => {
-      const item = createItem("123");
+      const item = createItemFixedTime("123");
       await firestore.doc(`${collection}/123`).create(item);
 
       await repository.update(item);
 
       const updated = await repository.getRequired("123");
       expect(updated.createdAt).toEqual(fixedTime);
-      expect(new Date(updated.updatedAt) > new Date(fixedTime)).toBeTruthy();
+      expectNewTimestamp(updated.updatedAt);
     });
 
     it("updates array of items", async () => {
-      const item1 = createItem("123");
+      const item1 = createItemFixedTime("123");
       const item2 = createItem("234");
       await firestore.doc(`${collection}/123`).create(item1);
       await firestore.doc(`${collection}/234`).create(item2);
@@ -141,13 +164,13 @@ describe("TimestampedRepository", () => {
 
       const updated = await repository.get(["123", "234"]);
       expect(updated[0].createdAt).toEqual(fixedTime);
-      expect(updated[1].createdAt).toEqual(fixedTime);
-      expect(new Date(updated[0].updatedAt) > new Date(fixedTime)).toBeTruthy();
-      expect(new Date(updated[1].updatedAt) > new Date(fixedTime)).toBeTruthy();
+      expectNewTimestamp(updated[1].createdAt);
+      expectNewTimestamp(updated[0].updatedAt);
+      expectNewTimestamp(updated[1].updatedAt);
     });
 
     it("skips update if flag set", async () => {
-      const item = createItem("123");
+      const item = createItemFixedTime("123");
       await firestore.doc(`${collection}/123`).create(item);
 
       await runWithRequestStorage(async () => {

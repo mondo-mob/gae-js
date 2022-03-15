@@ -12,12 +12,13 @@ export interface TimestampedEntity extends BaseEntity {
   updatedAt: string;
 }
 
+const GENERATE_FLAG = "GENERATE";
+
 export const newTimestampedEntity = (id: string): TimestampedEntity => {
-  const updateTime = new Date().toISOString();
   return {
     id,
-    createdAt: updateTime,
-    updatedAt: updateTime,
+    createdAt: GENERATE_FLAG,
+    updatedAt: GENERATE_FLAG,
   };
 };
 
@@ -44,7 +45,7 @@ export class TimestampedRepository<T extends TimestampedEntity> extends Firestor
     }
 
     const updateTime = new Date().toISOString();
-    if (!entity.createdAt) entity.createdAt = updateTime;
+    if (!entity.createdAt || entity.createdAt === GENERATE_FLAG) entity.createdAt = updateTime;
     entity.updatedAt = updateTime;
     return entity;
   }
