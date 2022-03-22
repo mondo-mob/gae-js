@@ -1,5 +1,11 @@
 # @dotrun/gae-js-datastore
 
+## 1.1.0
+
+### Minor Changes
+
+- d55b7d9: Add exists() function implemenntation to match repository interface update
+
 ## 1.0.1
 
 ### Patch Changes
