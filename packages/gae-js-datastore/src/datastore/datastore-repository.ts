@@ -1,6 +1,6 @@
 import { Datastore } from "@google-cloud/datastore";
 import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
-import * as _ from "lodash";
+import { chain, first, flatMap, omit } from "lodash";
 import {
   asArray,
   BaseEntity,
@@ -26,7 +26,7 @@ export function buildExclusions<T>(input: T, schema: Index<T> = {}, path = ""): 
   if (schema === true) {
     return [];
   } else if (Array.isArray(input)) {
-    return _.chain(input)
+    return chain(input)
       .flatMap((value) => {
         return buildExclusions(value, schema, `${path}[]`);
       })
@@ -34,7 +34,7 @@ export function buildExclusions<T>(input: T, schema: Index<T> = {}, path = ""): 
       .uniq()
       .value();
   } else if (typeof input === "object") {
-    const paths = _.flatMap<Record<string, unknown>, string>(input as any, (value, key) => {
+    const paths = flatMap<Record<string, unknown>, string>(input as any, (value, key) => {
       return buildExclusions(value, (schema as any)[key], `${path}${path.length > 0 ? "." : ""}${key}`);
     });
 
@@ -91,6 +91,11 @@ export class DatastoreRepository<T extends BaseEntity> implements Repository<T, 
     return result;
   }
 
+  async exists(id: string): Promise<boolean> {
+    const results = await this.getLoader().get([this.key(id)]);
+    return first(results) !== null;
+  }
+
   async get(id: string): Promise<T | null>;
   async get(id: ReadonlyArray<string>): Promise<ReadonlyArray<T>>;
   async get(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T | null>> {
@@ -119,7 +124,7 @@ export class DatastoreRepository<T extends BaseEntity> implements Repository<T, 
 
     return [
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      results.map<any>((value) => this.validate(value[Entity.KEY_SYMBOL].name!, _.omit(value, Datastore.KEY))),
+      results.map<any>((value) => this.validate(value[Entity.KEY_SYMBOL].name!, omit(value, Datastore.KEY))),
       queryInfo,
     ];
   }
@@ -219,7 +224,7 @@ export class DatastoreRepository<T extends BaseEntity> implements Repository<T, 
         return validation.right;
       })
       .map((data) => {
-        const withoutId = _.omit(data, "id");
+        const withoutId = omit(data, "id");
         return {
           key: this.key(data.id),
           data: withoutId,

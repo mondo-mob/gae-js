@@ -49,6 +49,17 @@ describe("DatastoreRepository", () => {
     });
   };
 
+  describe("exists", () => {
+    it("returns true when a document exists", async () => {
+      await insertItem("123");
+      expect(await repository.exists("123")).toBe(true);
+    });
+
+    it("returns false when a document does not exist", async () => {
+      expect(await repository.exists("does-not-exist-123")).toBe(false);
+    });
+  });
+
   describe("get", () => {
     it("fetches document that exists", async () => {
       await insertItem("123");
