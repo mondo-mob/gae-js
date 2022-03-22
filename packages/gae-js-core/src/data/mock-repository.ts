@@ -4,6 +4,10 @@ import { BaseEntity, Repository } from "./repository";
 export class MockRepository<T extends BaseEntity> implements Repository<T> {
   public store: Record<string, T> = {};
 
+  async exists(id: string): Promise<boolean> {
+    return !!this.store[id];
+  }
+
   async get(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T | null>> {
     return asArray(ids).reduce((entities, id) => {
       if (this.store[id]) entities.push(this.store[id]);

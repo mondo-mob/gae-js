@@ -188,4 +188,12 @@ describe("SearchableRepository", () => {
       expect(results).toEqual(expect.arrayContaining([expect.objectContaining({ id: "item1" })]));
     });
   });
+
+  describe("exists", () => {
+    it("passes through exists to repository", async () => {
+      await searchableRepository.save(createItem("item1"));
+      expect(await searchableRepository.exists("item1")).toBe(true);
+      expect(await searchableRepository.exists("item-unknown")).toBe(false);
+    });
+  });
 });

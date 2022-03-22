@@ -1,11 +1,11 @@
 import { Firestore } from "@google-cloud/firestore";
-import { FirestoreRepository } from "./firestore-repository";
-import { connectFirestore, deleteCollection } from "./test-utils";
-import { runInTransaction } from "./transactional";
 import { iots as t, runWithRequestStorage } from "@mondomob/gae-js-core";
-import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { FirestoreLoader } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
+import { FirestoreRepository } from "./firestore-repository";
+import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
+import { connectFirestore, deleteCollection } from "./test-utils";
+import { runInTransaction } from "./transactional";
 
 const repositoryItemSchema = t.type({
   id: t.string,
@@ -39,6 +39,20 @@ describe("FirestoreRepository", () => {
       ...data,
     };
   };
+
+  describe("exists", () => {
+    it("returns true when document exists", async () => {
+      await firestore.doc(`${collection}/123`).create({
+        name: "test123",
+      });
+
+      expect(await repository.exists("123")).toBe(true);
+    });
+
+    it("returns false when document does not exist", async () => {
+      expect(await repository.exists("does-not-exist-123")).toBe(false);
+    });
+  });
 
   describe("get", () => {
     it("fetches document that exists", async () => {

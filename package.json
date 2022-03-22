@@ -4,7 +4,8 @@
     "build": "npm run build --workspaces",
     "build:watch": "tsc --build --verbose --watch tsconfig.packages.json",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "test": "jest"
+    "test": "jest",
+    "test:ci": "npm run test:ci --workspaces"
   },
   "workspaces": [
     "./packages/*"

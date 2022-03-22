@@ -5,6 +5,8 @@ export interface BaseEntity {
 }
 
 export interface Repository<T extends BaseEntity, Q = any, QR = any> {
+  exists(id: string): Promise<boolean>;
+
   get(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T | null>>;
 
   save(entities: OneOrMany<T>): Promise<OneOrMany<T>>;

@@ -11,6 +11,7 @@ import {
   OneOrMany,
   Repository,
 } from "@mondomob/gae-js-core";
+import { first } from "lodash";
 import { RepositoryError } from "./repository-error";
 import { firestoreProvider } from "./firestore-provider";
 
@@ -34,6 +35,11 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
       throw new RepositoryError("load", this.collectionPath, id, ["invalid id"]);
     }
     return result;
+  }
+
+  async exists(id: string): Promise<boolean> {
+    const results = await this.getLoader().get([this.documentRef(id)]);
+    return first(results) !== null;
   }
 
   async get(id: string): Promise<T | null>;

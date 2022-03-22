@@ -27,6 +27,10 @@ export class SearchableRepository<T extends BaseEntity, Q = any, QR = any> imple
     protected readonly options: SearchableRepositoryOptions<T>
   ) {}
 
+  async exists(id: string): Promise<boolean> {
+    return this.repository.exists(id);
+  }
+
   async get(id: string): Promise<T | null>;
   async get(id: ReadonlyArray<string>): Promise<ReadonlyArray<T>>;
   async get(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T | null>> {

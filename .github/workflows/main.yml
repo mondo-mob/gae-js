@@ -48,4 +48,4 @@ jobs:
         run: npm run build
 
       - name: Run tests
-        run: npm run test:ci -ws
+        run: npm run test:ci
