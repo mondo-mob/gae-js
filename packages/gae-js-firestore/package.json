@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-firestore",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -33,7 +33,7 @@
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "1.0.6",
+    "@mondomob/gae-js-core": "1.1.0",
     "@google-cloud/firestore": "5.0.2",
     "@types/express": "4.17.13",
     "@types/lodash": "4.14.179",

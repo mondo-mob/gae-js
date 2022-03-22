@@ -1,5 +1,11 @@
 # @dotrun/gae-js-core
 
+## 1.1.0
+
+### Minor Changes
+
+- 3a62199: Add exists() function to repositories to allow simple detection of whether document exists by id
+
 ## 1.0.6
 
 ### Patch Changes
