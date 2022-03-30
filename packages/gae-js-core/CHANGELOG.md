@@ -1,4 +1,4 @@
-# @dotrun/gae-js-core
+# @mondomob/gae-js-core
 
 ## 1.1.0
 

@@ -1,4 +1,4 @@
-# @dotrun/gae-js-firestore
+# @mondomob/gae-js-firestore
 
 ## 1.1.0
 
@@ -62,7 +62,7 @@
 
 - Updated dependencies [6ed9213]
 - Updated dependencies [08206d9]
-  - @dotrun/gae-js-core@1.0.0
+  - @mondomob/gae-js-core@1.0.0
 
 ## 0.4.7
 
@@ -70,7 +70,7 @@
 
 - Another patch release to test changeset build
 - Updated dependencies
-  - @dotrun/gae-js-core@0.4.6
+  - @mondomob/gae-js-core@0.4.6
 
 ## 0.4.6
 
@@ -78,7 +78,7 @@
 
 - 023ec3f: Change build to use Typescript project references
 - Updated dependencies [023ec3f]
-  - @dotrun/gae-js-core@0.4.5
+  - @mondomob/gae-js-core@0.4.5
 
 ## 0.4.5
 
@@ -86,7 +86,7 @@
 
 - 6ec98bd: Use `prepublishOnly` script to trigger build instead of `prepublish` which is no longer run during publish lifecycle in npm 7+
 - Updated dependencies [6ec98bd]
-  - @dotrun/gae-js-core@0.4.4
+  - @mondomob/gae-js-core@0.4.4
 
 ## 0.4.4
 
@@ -94,4 +94,4 @@
 
 - Removed lerna and replaced with npm workspace and changesets
 - Updated dependencies
-  - @dotrun/gae-js-core@0.4.3
+  - @mondomob/gae-js-core@0.4.3
