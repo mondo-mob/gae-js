@@ -6,3 +6,4 @@ export * from "./firestore-repository";
 export * from "./firestore-request-storage";
 export * from "./timestamped-repository";
 export * from "./transactional";
+export * from "./firestore-errors";

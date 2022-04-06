@@ -1,5 +1,7 @@
 import { Firestore } from "@google-cloud/firestore";
+import { StatusCode } from "@google-cloud/firestore/build/src/status-code";
 import { iots as t, runWithRequestStorage } from "@mondomob/gae-js-core";
+import { isFirestoreError } from "./firestore-errors";
 import { FirestoreLoader } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
 import { FirestoreRepository } from "./firestore-repository";
@@ -246,6 +248,16 @@ describe("FirestoreRepository", () => {
     it("throws inserting document with id that already exists", async () => {
       await repository.insert(createItem("123", { message: "insert" }));
       await expect(repository.insert(createItem("123", { message: "insert again" }))).rejects.toThrow("ALREADY_EXISTS");
+    });
+
+    it("throws inserting document with id that already exists, matching error expectation", async () => {
+      await repository.insert(createItem("123", { message: "insert" }));
+      try {
+        await repository.insert(createItem("123", { message: "insert again" }));
+        fail("Expected error");
+      } catch (err) {
+        expect(isFirestoreError(err, StatusCode.ALREADY_EXISTS)).toBe(true);
+      }
     });
 
     describe("with schema", () => {
