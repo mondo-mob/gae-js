@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 1.2.0
+
+### Minor Changes
+
+- d48ab4c: Add utility function to help detect certain firestore errors (e.g. ALREADY_EXISTS when doing an insert)
+
 ## 1.1.0
 
 ### Minor Changes
