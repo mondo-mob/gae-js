@@ -13,7 +13,7 @@ export class ProxyLogger implements Logger {
   debug(obj: Object, ...params: any[]): void;
   debug(format: any, ...params: any[]): void;
   debug(formatOrObjOrErr?: any, ...params: any[]): boolean | void {
-    this.logWithLevel("debug", formatOrObjOrErr, params);
+    this.logWithLevel("debug", formatOrObjOrErr, ...params);
   }
 
   error(): boolean;
@@ -21,7 +21,7 @@ export class ProxyLogger implements Logger {
   error(obj: Object, ...params: any[]): void;
   error(format: any, ...params: any[]): void;
   error(formatOrObjOrErr?: any, ...params: any[]): boolean | void {
-    this.logWithLevel("error", formatOrObjOrErr, params);
+    this.logWithLevel("error", formatOrObjOrErr, ...params);
   }
 
   fatal(): boolean;
@@ -29,7 +29,7 @@ export class ProxyLogger implements Logger {
   fatal(obj: Object, ...params: any[]): void;
   fatal(format: any, ...params: any[]): void;
   fatal(formatOrObjOrErr?: any, ...params: any[]): boolean | void {
-    this.logWithLevel("fatal", formatOrObjOrErr, params);
+    this.logWithLevel("fatal", formatOrObjOrErr, ...params);
   }
 
   info(): boolean;
@@ -37,7 +37,7 @@ export class ProxyLogger implements Logger {
   info(obj: Object, ...params: any[]): void;
   info(format: any, ...params: any[]): void;
   info(formatOrObjOrErr?: any, ...params: any[]): boolean | void {
-    this.logWithLevel("info", formatOrObjOrErr, params);
+    this.logWithLevel("info", formatOrObjOrErr, ...params);
   }
 
   trace(): boolean;
@@ -45,7 +45,7 @@ export class ProxyLogger implements Logger {
   trace(obj: Object, ...params: any[]): void;
   trace(format: any, ...params: any[]): void;
   trace(formatOrObjOrErr?: any, ...params: any[]): boolean | void {
-    this.logWithLevel("trace", formatOrObjOrErr, params);
+    this.logWithLevel("trace", formatOrObjOrErr, ...params);
   }
 
   warn(): boolean;
@@ -53,7 +53,7 @@ export class ProxyLogger implements Logger {
   warn(obj: Object, ...params: any[]): void;
   warn(format: any, ...params: any[]): void;
   warn(formatOrObjOrErr?: any, ...params: any[]): boolean | void {
-    this.logWithLevel("warn", formatOrObjOrErr, params);
+    this.logWithLevel("warn", formatOrObjOrErr, ...params);
   }
 
   private logWithLevel<L extends keyof Logger>(level: L, formatOrObjOrErr?: any, ...params: any[]) {
