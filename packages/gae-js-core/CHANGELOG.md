@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 1.1.1
+
+### Patch Changes
+
+- 4cf13bd: fix usage of array spread operator in proxy logger to fix empty array being appended to all log messages
+
 ## 1.1.0
 
 ### Minor Changes
