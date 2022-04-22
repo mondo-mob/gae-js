@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 1.1.0
+
+### Minor Changes
+
+- implement getDefaultBucketSignedDownloadUrl in storage service
+
 ## 1.0.1
 
 ### Patch Changes
