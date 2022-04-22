@@ -4,6 +4,7 @@ import { initTestConfig } from "./test-utils";
 
 // TODO: This connects to the storage emulator but this currently only supports firebase functionality and
 //       so can't be used for most gcloud related functions. Hopefully will be improved soon...
+//       NOTE: Ignored test for getDefaultBucketSignedDownloadUrl due to https://github.com/firebase/firebase-tools/issues/3400
 describe("StorageService", () => {
   let service: StorageService;
 

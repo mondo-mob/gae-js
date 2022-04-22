@@ -36,4 +36,13 @@ export class StorageService {
     });
     return urls[0];
   }
+
+  async getDefaultBucketSignedDownloadUrl(fileId: string, expiryInMs: number): Promise<string> {
+    const gcsFile = this._defaultBucket.file(fileId);
+    const urls = await gcsFile.getSignedUrl({
+      action: "read",
+      expires: Date.now() + expiryInMs
+    });
+    return urls[0];
+  }
 }
