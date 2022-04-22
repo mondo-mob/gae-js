@@ -115,8 +115,8 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
   }
 
   async deleteAll(): Promise<void> {
-    // TODO: Implement it
-    throw new Error("Not implemented");
+    const collectionRef = this.getFirestore().collection(this.collectionPath);
+    return this.getFirestore().recursiveDelete(collectionRef);
   }
 
   documentRef = (name: string): DocumentReference => {

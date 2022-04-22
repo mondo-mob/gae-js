@@ -311,6 +311,33 @@ describe("FirestoreRepository", () => {
     });
   });
 
+  describe("deleteAll", () => {
+    it("deletes all documents within a collection outside of transaction", async () => {
+      await firestore.doc(`${collection}/123`).create({ name: "test123" });
+      await firestore.doc(`${collection}/234`).create({ name: "test234" });
+
+      expect((await firestore.collection(collection).get()).size).toBe(2);
+
+      await repository.deleteAll();
+
+      expect((await firestore.collection(collection).get()).size).toBe(0);
+    });
+
+    it("deletes all documents within a collection in transaction", async () => {
+      await firestore.doc(`${collection}/123`).create({ name: "test123" });
+      await firestore.doc(`${collection}/234`).create({ name: "test234" });
+
+      expect((await firestore.collection(collection).get()).size).toBe(2);
+
+      await runWithRequestStorage(async () => {
+        firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
+        return runInTransaction(() => repository.deleteAll());
+      });
+
+      expect((await firestore.collection(collection).get()).size).toBe(0);
+    });
+  });
+
   describe("query", () => {
     // TODO: selects specific fields
     // TODO: limit and offset
