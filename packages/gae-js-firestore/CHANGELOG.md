@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 1.3.0
+
+### Minor Changes
+
+- 279ddb0: implement deleteAll on firestore repository
+
 ## 1.2.0
 
 ### Minor Changes
