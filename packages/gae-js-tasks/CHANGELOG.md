@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 1.0.2
+
+### Patch Changes
+
+- 0f37d07: Minor audit fix for security vulnerabilities. May not even impact bundle, but releasing to be sure.
+
 ## 1.0.1
 
 ### Patch Changes
