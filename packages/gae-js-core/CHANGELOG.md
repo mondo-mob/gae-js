@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 1.2.0
+
+### Minor Changes
+
+- 46ff773: Add gaeJsCron middleware to verify headers and set timeout to 10 mins (like the task one does)
+
 ## 1.1.1
 
 ### Patch Changes
