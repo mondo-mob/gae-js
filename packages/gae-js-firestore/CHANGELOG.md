@@ -1,5 +1,14 @@
 # @mondomob/gae-js-firestore
 
+## 1.4.0
+
+### Minor Changes
+
+- 6dd5b3b: Firestore repository improvements
+
+  - getRequired() can accept array of ids to return array of required entities (failing if any not resolved)
+  - Fix typing for get(ids: string[]) as entries within can also be null
+
 ## 1.3.1
 
 ### Patch Changes
