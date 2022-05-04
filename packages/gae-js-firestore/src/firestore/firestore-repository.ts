@@ -29,12 +29,17 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
     this.firestore = options?.firestore;
   }
 
-  async getRequired(id: string): Promise<T> {
-    const result = await this.get(id);
-    if (!result) {
-      throw new RepositoryError("load", this.collectionPath, id, ["invalid id"]);
+  async getRequired(id: string): Promise<T>;
+  async getRequired(ids: ReadonlyArray<string>): Promise<T[]>;
+  async getRequired(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T>> {
+    const isArrayParam = Array.isArray(ids);
+    const idsArray = isArrayParam ? ids : [ids];
+    const results = await this.get(idsArray);
+    const nullIndex = results.indexOf(null);
+    if (nullIndex >= 0) {
+      throw new RepositoryError("load", this.collectionPath, idsArray[nullIndex], ["invalid id"]);
     }
-    return result;
+    return isArrayParam ? (results as ReadonlyArray<T>) : (results[0] as T);
   }
 
   async exists(id: string): Promise<boolean> {
@@ -43,7 +48,7 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
   }
 
   async get(id: string): Promise<T | null>;
-  async get(ids: ReadonlyArray<string>): Promise<ReadonlyArray<T>>;
+  async get(ids: ReadonlyArray<string>): Promise<ReadonlyArray<T | null>>;
   async get(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T | null>> {
     const idArray = asArray(ids);
     const allKeys = idArray.map(this.documentRef);

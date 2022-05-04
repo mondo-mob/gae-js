@@ -76,6 +76,47 @@ describe("FirestoreRepository", () => {
       expect(document).toBe(null);
     });
 
+    describe("with array", () => {
+      it("returns array with items in same order", async () => {
+        await firestore.doc(`${collection}/123`).create({
+          name: "test123",
+        });
+        await firestore.doc(`${collection}/234`).create({
+          name: "test234",
+        });
+
+        const results = await repository.get(["123", "234"]);
+
+        expect(results).toEqual([
+          {
+            id: "123",
+            name: "test123",
+          },
+          {
+            id: "234",
+            name: "test234",
+          },
+        ]);
+      });
+
+      it("returns array null entries for docs that don't exist", async () => {
+        await firestore.doc(`${collection}/123`).create({
+          name: "test123",
+        });
+
+        const results = await repository.get(["not-exists-1", "123", "not-exists-2"]);
+
+        expect(results).toEqual([
+          null,
+          {
+            id: "123",
+            name: "test123",
+          },
+          null,
+        ]);
+      });
+    });
+
     describe("with schema", () => {
       beforeEach(() => {
         repository = new FirestoreRepository<RepositoryItem>(collection, {
@@ -142,6 +183,40 @@ describe("FirestoreRepository", () => {
 
     it("throws for document that doesn't exist", async () => {
       await expect(repository.getRequired("123")).rejects.toThrow("invalid id");
+    });
+
+    describe("with array", () => {
+      it("fetches documents that exist", async () => {
+        await firestore.doc(`${collection}/123`).create({
+          name: "test123",
+        });
+        await firestore.doc(`${collection}/234`).create({
+          name: "test234",
+        });
+
+        const results = await repository.getRequired(["123", "234"]);
+
+        expect(results).toEqual([
+          {
+            id: "123",
+            name: "test123",
+          },
+          {
+            id: "234",
+            name: "test234",
+          },
+        ]);
+      });
+
+      it("throws for any document that doesn't exist", async () => {
+        await firestore.doc(`${collection}/123`).create({
+          name: "test123",
+        });
+
+        await expect(repository.getRequired(["123", "does-not-exist", "also-does-not-exist"])).rejects.toThrow(
+          '"repository-items" with id "does-not-exist" failed to load'
+        );
+      });
     });
 
     describe("with schema", () => {
