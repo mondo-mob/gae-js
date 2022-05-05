@@ -105,7 +105,7 @@ describe("TimestampedRepository", () => {
 
       await repository.save([item1, item2]);
 
-      const updated = await repository.get(["123", "234"]);
+      const updated = await repository.getRequired(["123", "234"]);
       expect(updated[0].createdAt).toEqual(fixedTime);
       expectNewTimestamp(updated[1].createdAt);
       expectNewTimestamp(updated[0].updatedAt);
@@ -162,7 +162,7 @@ describe("TimestampedRepository", () => {
 
       await repository.update([item1, item2]);
 
-      const updated = await repository.get(["123", "234"]);
+      const updated = await repository.getRequired(["123", "234"]);
       expect(updated[0].createdAt).toEqual(fixedTime);
       expectNewTimestamp(updated[1].createdAt);
       expectNewTimestamp(updated[0].updatedAt);

@@ -3,9 +3,6 @@ import { Firestore } from "@google-cloud/firestore";
 import { connectFirestore, deleteCollection } from "./test-utils";
 import assert from "assert";
 
-// For transaction tests when emulator supports it
-// const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
 describe("FirestoreLoader", () => {
   let firestore: Firestore;
   let loader: FirestoreLoader;
@@ -563,8 +560,9 @@ describe("FirestoreLoader", () => {
     });
   });
 
-  // Firestore Emulator does not have deadlock handling so we can't test for it yet
   describe("inTransaction", () => {
+    const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
     it("continues existing transaction for nested call", async () => {
       const runTransactionSpy = jest.spyOn(firestore, "runTransaction");
       await loader.create([
@@ -585,78 +583,28 @@ describe("FirestoreLoader", () => {
       expect(fetched[1].data()).toEqual({ name: `Test User 234`, message: "updateNested" });
       expect(runTransactionSpy).toBeCalledTimes(1);
     });
-    //   it("should run transaction", async () => {
-    //     const ref = firestore.doc("/users/123");
-    //
-    //     // const txn1 = firestore
-    //     //   .runTransaction(async (txn) => {
-    //     //     console.log("start txn1");
-    //     //     const doc = await txn.get(ref);
-    //     //     console.log("fetched txn1 doc");
-    //     //     await txn.set(ref, { ...doc.data(), owner: "txn1" });
-    //     //     console.log("set txn1");
-    //     //     await sleep(1000);
-    //     //   })
-    //     //   .then(() => {
-    //     //     console.log("end txn1");
-    //     //   })
-    //     //   .catch((e) => {
-    //     //     console.log("error txn1", e);
-    //     //   });
-    //
-    //     // const txn2 = firestore
-    //     //   .runTransaction(async (txn) => {
-    //     //     await sleep(500);
-    //     //     console.log("start txn2");
-    //     //     const doc = await txn.get(ref);
-    //     //     console.log("fetched txn2 doc");
-    //     //     await txn.set(ref, { ...doc.data(), owner: "txn2" });
-    //     //     console.log("set txn2");
-    //     //   })
-    //     //   .then(() => {
-    //     //     console.log("end txn2");
-    //     //   })
-    //     //   .catch((e) => {
-    //     //     console.log("error txn2", e);
-    //     //   });
-    //
-    //     const txn1 = loader
-    //       .inTransaction(async (txnLoader) => {
-    //         console.log("start txn1");
-    //         const docs = await txnLoader.get([ref]);
-    //         console.log("fetched txn1", docs);
-    //         await txnLoader.set([{ ref, data: { ...docs[0], owner: "txn1" } }]);
-    //         console.log("set txn1");
-    //         await sleep(1000);
-    //       })
-    //       .then(() => {
-    //         console.log("end txn1");
-    //       })
-    //       .catch((e) => {
-    //         console.log("error txn1", e);
-    //       });
-    //
-    //     const txn2 = loader
-    //       .inTransaction(async (txnLoader) => {
-    //         await sleep(500);
-    //         console.log("start txn2");
-    //         const doc = await txnLoader.get([ref]);
-    //         console.log("fetched txn2 doc");
-    //         await txnLoader.set([{ ref, data: { ...doc, owner: "txn2" } }]);
-    //         console.log("set txn2");
-    //       })
-    //       .then(() => {
-    //         console.log("end txn2");
-    //       })
-    //       .catch((e) => {
-    //         console.log("error txn2", e);
-    //       });
-    //     await Promise.all([txn1, txn2]);
-    //     // await Promise.all([txn2]);
-    //     // const txn1Result = await txn1;
-    //     // console.log("result1", ftxn1Result);
-    //     // console.log("result2", ftxn2Result);
-    //     // console.log("result1", txn1Result);
-    //     // console.log("result2", txn2Result);
+
+    it("should handle transaction contention", async () => {
+      await loader.create([createUserPayload("555", { message: "create" })]);
+      const ref = firestore.doc("/users/555");
+
+      // This txn will get write lock first and hold for 500ms before committing
+      const txn1 = loader.inTransaction(async (txnLoader) => {
+        const [doc555] = await txnLoader.get([ref]);
+        await txnLoader.set([createUserPayload("555", { ...doc555, message: `${doc555?.message}-txn1` })]);
+        await sleep(500);
+      });
+
+      // This txn should complete successfully but only after txn1 has completed
+      await sleep(200);
+      const txn2 = loader.inTransaction(async (txnLoader) => {
+        const [doc555] = await txnLoader.get([ref]);
+        await txnLoader.set([createUserPayload("555", { ...doc555, message: `${doc555?.message}-txn2` })]);
+      });
+
+      await Promise.all([txn1, txn2]);
+      const fetchedDirect = await firestore.doc("/users/555").get();
+      expect(fetchedDirect.data()).toEqual({ name: "Test User 555", message: "create-txn1-txn2" });
+    }, 10000);
   });
 });
