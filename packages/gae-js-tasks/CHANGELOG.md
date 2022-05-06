@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 1.0.3
+
+### Patch Changes
+
+- b0ea909: Local task queues now only log task execution errors. This is to prevent local server crashes due to unhandled exceptions.
+
 ## 1.0.2
 
 ### Patch Changes
