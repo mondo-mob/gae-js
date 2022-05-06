@@ -88,10 +88,16 @@ export class TaskQueueService {
         "content-type": "application/json",
         "x-appengine-taskname": taskName,
       },
-    }).then(async (result) => {
-      if (!result.ok) {
-        throw new Error(`Task failed to execute - status ${result.status}: ${await result.text()}`);
-      }
-    });
+    })
+      .then(async (result) => {
+        if (result.ok) {
+          this.logger.info(`Task completed with status ${result.status}`);
+        } else {
+          this.logger.error(`Task failed to execute - status ${result.status}: ${await result.text()}`);
+        }
+      })
+      .catch((e) => {
+        this.logger.error(e, `Task failed to execute`);
+      });
   }
 }
