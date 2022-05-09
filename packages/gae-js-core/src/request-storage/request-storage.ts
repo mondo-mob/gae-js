@@ -12,9 +12,6 @@ const requestLocalStorage = new AsyncLocalStorage<RequestStore>();
  * @param fn the callback function to execute within the new async context
  */
 export const runWithRequestStorage = <R>(fn: (...args: any[]) => R): R => {
-  // TODO: HACK: Node 12 typings are currently incorrect
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   return requestLocalStorage.run({ ...requestLocalStorage.getStore() }, fn);
 };
 
