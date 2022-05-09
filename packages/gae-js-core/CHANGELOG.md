@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 1.3.0
+
+### Minor Changes
+
+- 1daca49: Use simple text console logging when running locally
+
 ## 1.2.1
 
 ### Patch Changes
