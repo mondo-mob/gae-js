@@ -58,7 +58,47 @@ await repository.save({ id: "id123", name: "test item" });
 const item = await repository.get("id123");
 
 // Query items
-const list = await demoItemsRepository.query();
+const list = await repository.query();
+
+// Query items with ordering
+const results = repository.query({
+ sort: {
+   property: "owner",
+   direction: "desc",
+ }
+})
+
+// Query items for specific fields (i.e. projection)
+const results = await repository.query({
+  filters: [
+    {
+      fieldPath: "owner",
+      opStr: "==",
+      value: "user1",
+    },
+  ],
+  select: ["name", "otherProp"],
+});
+
+// Query items with limit/offset
+const results = await repository.query({
+  filters: [
+    {
+      fieldPath: "owner",
+      opStr: "==",
+      value: "user1",
+    },
+  ],
+  limit: 2,
+  offset: 2,
+});
+
+// Query items with cursors
+const results = await repository.query({
+  sort: { property: "owner" },
+  startAfter: ["user2"],
+});
+
 ```
 
 ### TimestampedRepository

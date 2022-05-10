@@ -3,6 +3,7 @@ import { RequestStorageLogger } from "./logger/request-storage-logger";
 import * as BunyanLogger from "bunyan";
 import { LoggingBunyan } from "@google-cloud/logging-bunyan";
 import { runningOnGcp } from "../util/environment";
+import { simpleConsoleWriter } from "./logger/simple-console-writer";
 
 /**
  * The internal default bunyan logger that will be used whenever the
@@ -15,7 +16,8 @@ export const defaultLogger: BunyanLogger = BunyanLogger.createLogger({
     ? [new LoggingBunyan().stream("info")]
     : [
         {
-          stream: process.stdout,
+          type: "raw",
+          stream: simpleConsoleWriter,
         },
       ],
 });

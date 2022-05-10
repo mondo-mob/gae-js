@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-types,@typescript-eslint/explicit-module-boundary-types */
 import { Logger } from "./logger";
 
+const isString = (param: any) => typeof param === "string";
+
 export class ProxyLogger implements Logger {
   private readonly prefix: string;
 
@@ -57,16 +59,24 @@ export class ProxyLogger implements Logger {
   }
 
   private logWithLevel<L extends keyof Logger>(level: L, formatOrObjOrErr?: any, ...params: any[]) {
-    const firstParam = this.prefixIfString(formatOrObjOrErr);
-    return params.length
-      ? this.loggerProvider()[level](firstParam, ...params)
+    let firstParam = formatOrObjOrErr;
+    const otherParams = [...params];
+
+    // Support prefixing if
+    // a) first argument is string or
+    // b) first arg is not string but second is.
+    if (isString(firstParam)) {
+      firstParam = this.addPrefix(formatOrObjOrErr);
+    } else if (otherParams.length && isString(otherParams[0])) {
+      otherParams[0] = this.addPrefix(otherParams[0]);
+    }
+
+    return otherParams.length
+      ? this.loggerProvider()[level](firstParam, ...otherParams)
       : this.loggerProvider()[level](firstParam);
   }
 
-  private prefixIfString(param: any) {
-    if (typeof param === "string") {
-      return `${this.prefix}${param}`;
-    }
-    return param;
+  private addPrefix(param: string) {
+    return `${this.prefix}${param}`;
   }
 }
