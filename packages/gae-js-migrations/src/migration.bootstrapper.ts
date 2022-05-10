@@ -55,8 +55,14 @@ export const migrationBootstrapper: (migrations: AutoMigration[], config: Migrat
     }
 
     await runWithRequestStorage(async () => {
+      // TODO: Remove logger statement
+      logger.info("DEBUG: before set firestore", firestoreProvider);
+
       // We need firestore loader in request storage if we want to use gae-js transactions
       firestoreLoaderRequestStorage.set(new FirestoreLoader(firestoreProvider.get()));
+
+      // TODO: Remove logger statement
+      logger.info("DEBUG: after set firestore");
 
       try {
         await mutexServiceProvider.get().obtain(MUTEX_ID, MUTEX_EXPIRY_SECONDS);
