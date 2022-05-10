@@ -1,17 +1,13 @@
-import { migrationBootstrapper } from "./migration.bootstrapper";
-import { AutoMigration, MigrationConfig } from "./auto-migration";
+import { runMigrations } from "./migration.bootstrapper";
+import { AutoMigration } from "./auto-migration";
 import { migrationResultsRepository } from "./migration-results.repository";
 import { newTimestampedEntity } from "@mondomob/gae-js-firestore";
 import { transactional, useFirestoreTest } from "./test-utils";
 import { mutexServiceProvider } from "./mutex.service";
 import { mutexesRepository } from "./mutexes.repository";
 
-describe("migrationBootstrapper", () => {
+describe("runMigrations", () => {
   useFirestoreTest(["mutexes", "migrations"]);
-
-  const config: MigrationConfig = {
-    environment: "dev",
-  };
 
   let migrationCount = 0;
   let migrations: AutoMigration[] = [];
@@ -53,7 +49,7 @@ describe("migrationBootstrapper", () => {
   });
 
   it("runs configured migrations, skips configured ones, and records results in firestore", async () => {
-    await migrationBootstrapper(migrations, config);
+    await runMigrations(migrations);
 
     expect(migrationCount).toBe(2);
 
@@ -73,7 +69,7 @@ describe("migrationBootstrapper", () => {
       result: "COMPLETE",
     });
 
-    await migrationBootstrapper(migrations, config);
+    await runMigrations(migrations);
 
     expect(migrationCount).toBe(1);
   });
@@ -84,7 +80,7 @@ describe("migrationBootstrapper", () => {
       result: "ERROR",
     });
 
-    await migrationBootstrapper(migrations, config);
+    await runMigrations(migrations);
 
     expect(migrationCount).toBe(1);
   });
@@ -94,14 +90,14 @@ describe("migrationBootstrapper", () => {
     transactional(async () => {
       await mutexServiceProvider.get().obtain("migration-bootstrapper", 10);
 
-      await migrationBootstrapper(migrations, config);
+      await runMigrations(migrations);
 
       expect(migrationCount).toBe(0);
     })
   );
 
   it("releases mutex after migrations run", async () => {
-    await migrationBootstrapper(migrations, config);
+    await runMigrations(migrations);
 
     const mutex = await mutexesRepository.getRequired("migration-bootstrapper");
 
