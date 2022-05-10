@@ -13,7 +13,6 @@ npm install @mondomob/gae-js-migrations
 ### runMigrations
 Run Migrations as a function e.g /migrate route handler
 
-
 ### bootstrapMigrations
 Bootstrap Migrations to be run before application starts
 
@@ -23,6 +22,8 @@ Use naming convention with date and index number to version migrations
 \
 `migrations/v_20220122_001_addUsers.ts`
 ```
+const userRepository = new TimestampedRepository<User>("users");
+
 export const v_20220122_001_addUsers: AutoMigration = {
     id: "v_20220122_001_addUsers",
     migrate: async ({ logger }) => {
@@ -42,11 +43,9 @@ export const v_20220122_001_addUsers: AutoMigration = {
 #### Application Startup (index.ts)
 ```
 import { bootstrap } from "@mondomob/gae-js-core";
-import {connectFirestore, firestoreLoader, firestoreProvider, newTimestampedEntity} from "@mondomob/gae-js-firestore";
+import { bootstrapMigrations } from "@mondomob/gae-js-migrations";
+import { firestoreLoader, firestoreProvider, newTimestampedEntity } from "@mondomob/gae-js-firestore";
 import {v_20220122_001_addUsers} from "./migrations/v_20220122_001_addUsers"
-
-// Repository
-const userRepository = new TimestampedRepository<User>("users");
 
 // Add firestore support
 firestoreProvider.init();
@@ -57,5 +56,5 @@ const migrations: AutoMigration[] = [
     v_20220122_001_addUsers
 ];
 
-await bootstrap([migrationBootstrapper(migrations)]);
+await bootstrap([bootstrapMigrations(migrations)]);
 ```
