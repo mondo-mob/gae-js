@@ -1,5 +1,13 @@
 # @mondomob/gae-js-storage
 
+## 1.2.0
+
+### Minor Changes
+
+- 8eece11: Support defining storage client credentials via app configuration. This is useful for local development
+  where a service account is required for things like signed urls. Combined with configuration secrets lookup
+  this allows connecting using a service account with the key stored in Secrets Manager.
+
 ## 1.1.1
 
 ### Patch Changes
