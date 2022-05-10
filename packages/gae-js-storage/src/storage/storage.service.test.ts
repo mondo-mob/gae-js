@@ -1,6 +1,6 @@
 import { StorageService } from "./storage.service";
 import { storageProvider } from "./storage-provider";
-import { initTestConfig } from "./test-utils";
+import { initTestConfig } from "../__test/test-utils";
 
 // TODO: This connects to the storage emulator but this currently only supports firebase functionality and
 //       so can't be used for most gcloud related functions. Hopefully will be improved soon...

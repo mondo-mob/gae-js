@@ -17,6 +17,14 @@ export const connectStorage = (options?: StorageConnectOptions): Storage => {
     ...options?.storageOptions,
   };
 
+  if (configuration.storageCredentials) {
+    logger.info(`Using custom storage credentials`);
+    storageSettings.credentials = {
+      client_email: configuration.storageCredentials.clientEmail,
+      private_key: configuration.storageCredentials.privateKey,
+    };
+  }
+
   if (configuration.emulatorHost) {
     logger.info(`Using storage emulator: ${configuration.emulatorHost}`);
     process.env.STORAGE_EMULATOR_HOST = configuration.emulatorHost;

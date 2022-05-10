@@ -41,7 +41,7 @@ export class StorageService {
     const gcsFile = this._defaultBucket.file(fileId);
     const urls = await gcsFile.getSignedUrl({
       action: "read",
-      expires: Date.now() + expiryInMs
+      expires: Date.now() + expiryInMs,
     });
     return urls[0];
   }
