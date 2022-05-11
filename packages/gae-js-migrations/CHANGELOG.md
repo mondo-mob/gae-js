@@ -1,5 +1,11 @@
 # @mondomob/gae-js-migrations
 
+## 1.1.2
+
+### Patch Changes
+
+- Updated migrations logger and mutex id
+
 ## 1.1.1
 
 ### Patch Changes
