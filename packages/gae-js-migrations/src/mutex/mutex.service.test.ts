@@ -1,4 +1,4 @@
-import { transactional, useFirestoreTest } from "./test-utils";
+import { transactional, useFirestoreTest } from "../__test/test-utils";
 import { MutexService, mutexServiceProvider } from "./mutex.service";
 
 describe("MutexService", () => {

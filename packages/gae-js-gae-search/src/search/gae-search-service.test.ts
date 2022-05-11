@@ -1,6 +1,6 @@
 import { GaeSearchService } from "./gae-search-service";
 import nock from "nock";
-import { initTestConfig } from "./test-utils";
+import { initTestConfig } from "../__test/test-utils";
 import { SearchService } from "@mondomob/gae-js-core";
 
 describe("GaeSearchService", () => {

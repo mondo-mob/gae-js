@@ -29,13 +29,17 @@ export const v_20220122_001_addUsers: AutoMigration = {
     migrate: async ({ logger }) => {
       logger.info("Adding users");
     
-      const investmentOptions = await userRepository.save([
+      const createdUsers = await userRepository.save([
         {
-          ...newTimestampedEntity("Test"),
-          name: "Test",
+          ...newTimestampedEntity("user1"),
+          name: "User 1",
+        },
+        {
+          ...newTimestampedEntity("user2"),
+          name: "User 2",
         },
       ]);
-      logger.info(`Creating ${investmentOptions.length} new investment options`);
+      logger.info(`Creating ${createdUsers.length} new users`);
     },
 }
 ```

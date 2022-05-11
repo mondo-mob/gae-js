@@ -1,5 +1,5 @@
 import { Firestore } from "@google-cloud/firestore";
-import { connectFirestore, initTestConfig } from "./test-utils";
+import { connectFirestore, initTestConfig } from "../__test/test-utils";
 import { FirestoreProvider } from "./firestore-provider";
 
 describe("FirestoreProvider", () => {

@@ -1,5 +1,5 @@
 import { Firestore } from "@google-cloud/firestore";
-import { connectFirestore, deleteCollection } from "./test-utils";
+import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import {
   DISABLE_TIMESTAMP_UPDATE,
   newTimestampedEntity,

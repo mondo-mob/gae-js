@@ -6,8 +6,7 @@ import {
   firestoreProvider,
   newTimestampedEntity,
 } from "@mondomob/gae-js-firestore";
-import { mutexServiceProvider } from "./mutex.service";
-import { MutexUnavailableError } from "./mutex-unavailable-error";
+import { mutexServiceProvider, MutexUnavailableError } from "./mutex";
 import { AutoMigration } from "./auto-migration";
 
 const logger = createLogger("migration-bootstrapper");
@@ -53,32 +52,32 @@ export const runMigrations = async (migrations: AutoMigration[]) => {
     return;
   }
 
-  await runWithRequestStorage(async () => {
-    // We need firestore loader in request storage if we want to use gae-js transactions
-    firestoreLoaderRequestStorage.set(new FirestoreLoader(firestoreProvider.get()));
-
-    try {
-      await mutexServiceProvider.get().obtain(MUTEX_ID, MUTEX_EXPIRY_SECONDS);
-    } catch (e) {
-      if (e instanceof MutexUnavailableError) {
-        logger.info(`Unable to obtain migration mutex '${MUTEX_ID}'. Skipping all migrations.`);
-        return;
-      }
-      throw e;
+  try {
+    await mutexServiceProvider.get().obtain(MUTEX_ID, MUTEX_EXPIRY_SECONDS);
+  } catch (e) {
+    if (e instanceof MutexUnavailableError) {
+      logger.info(`Unable to obtain migration mutex '${MUTEX_ID}'. Skipping all migrations.`);
+      return;
     }
+    throw e;
+  }
 
-    const migrationsToRun = await getMigrationsToRun(migrations);
+  const migrationsToRun = await getMigrationsToRun(migrations);
 
-    logger.info(`${migrationsToRun.length} migrations to run, ${migrations.length - migrationsToRun.length} skipped.`);
-    for (const migration of migrationsToRun) {
-      await runMigration(migration);
-    }
+  logger.info(`${migrationsToRun.length} migrations to run, ${migrations.length - migrationsToRun.length} skipped.`);
+  for (const migration of migrationsToRun) {
+    await runMigration(migration);
+  }
 
-    await mutexServiceProvider.get().release(MUTEX_ID);
-  });
+  await mutexServiceProvider.get().release(MUTEX_ID);
 };
 
 export const bootstrapMigrations: (migrations: AutoMigration[]) => Bootstrapper =
   (migrations: AutoMigration[]) => async () => {
-    await runMigrations(migrations);
+    await runWithRequestStorage(async () => {
+      // We need firestore loader in request storage if we want to use gae-js transactions
+      firestoreLoaderRequestStorage.set(new FirestoreLoader(firestoreProvider.get()));
+
+      await runMigrations(migrations);
+    });
   };
