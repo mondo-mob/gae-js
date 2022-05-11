@@ -1,6 +1,6 @@
 {
-  "name": "@mondomob/gae-js-core",
-  "version": "1.4.0",
+  "name": "@mondomob/gae-js-migrations",
+  "version": "1.1.2",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -10,10 +10,11 @@
   "scripts": {
     "build": "tsc --build --verbose tsconfig.prod.json",
     "clean": "rm -rf dist/ coverage/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
+    "firestore:start": "firebase emulators:start --project firestore-tests",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",
     "test": "jest",
-    "test:ci": "jest"
+    "test:ci": "firebase emulators:exec --only firestore --project firestore-tests jest"
   },
   "publishConfig": {
     "access": "public"
@@ -22,22 +23,20 @@
   "license": "MIT",
   "homepage": "https://github.com/mlev/gae-js",
   "dependencies": {
-    "@google-cloud/logging-bunyan": "^3.2.0",
-    "@google-cloud/rcloadenv": "^2.1.1",
-    "@google-cloud/secret-manager": "^3.10.1",
-    "@types/bunyan": "^1.8.8",
-    "bunyan": "^1.8.15",
-    "config": "^3.3.7",
-    "fp-ts": "2.11.8",
-    "io-ts": "2.2.16",
-    "io-ts-reporters": "2.0.1",
-    "lodash": "^4.17.21",
-    "tslib": "^2.3.1"
+    "dataloader": "2.0.0",
+    "lodash": "4.17.21",
+    "tslib": "2.3.1"
   },
   "peerDependencies": {
+    "@mondomob/gae-js-core": "^1.4.0",
+    "@mondomob/gae-js-firestore": "^1.4.0",
+    "@google-cloud/firestore": ">= 4.15.1",
     "express": ">= 4.17.1"
   },
   "devDependencies": {
+    "@mondomob/gae-js-core": "1.4.0",
+    "@mondomob/gae-js-firestore": "1.4.1",
+    "@google-cloud/firestore": "5.0.2",
     "@types/express": "4.17.13",
     "@types/lodash": "4.14.179",
     "express": "4.17.3"

@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 1.4.1
+
+### Patch Changes
+
+- Moved test utilities into \_\_test folder for packages
+
 ## 1.4.0
 
 ### Minor Changes

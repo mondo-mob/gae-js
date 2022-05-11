@@ -6,7 +6,7 @@ import { FirestoreLoader } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
 import { FirestoreRepository } from "./firestore-repository";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
-import { connectFirestore, deleteCollection } from "./test-utils";
+import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import { runInTransaction } from "./transactional";
 
 const repositoryItemSchema = t.type({

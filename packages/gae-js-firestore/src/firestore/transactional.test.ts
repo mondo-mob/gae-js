@@ -1,6 +1,6 @@
 import { FirestoreLoader } from "./firestore-loader";
 import { Firestore } from "@google-cloud/firestore";
-import { connectFirestore, deleteCollection, RepositoryItem } from "./test-utils";
+import { connectFirestore, deleteCollection, RepositoryItem } from "../__test/test-utils";
 import { runInTransaction, Transactional } from "./transactional";
 import { FirestoreRepository } from "./firestore-repository";
 import { runWithRequestStorage } from "@mondomob/gae-js-core";
