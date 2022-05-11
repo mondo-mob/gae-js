@@ -9,8 +9,8 @@ import {
 import { mutexServiceProvider, MutexUnavailableError } from "./mutex";
 import { AutoMigration } from "./auto-migration";
 
-const logger = createLogger("migration-bootstrapper");
-const MUTEX_ID = "migration-bootstrapper";
+const logger = createLogger("migrations");
+const MUTEX_ID = "migrations";
 const MUTEX_EXPIRY_SECONDS = 5 * 60;
 
 const getMigrationsToRun = async (migrations: AutoMigration[]) => {
