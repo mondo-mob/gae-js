@@ -39,7 +39,7 @@ describe("runMigrations", () => {
     },
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     migrations.splice(0);
     migrations.push(testMigration1);
     migrations.push(testMigration2);
@@ -47,60 +47,69 @@ describe("runMigrations", () => {
     migrationCount = 0;
   });
 
-  it("runs configured migrations, skips configured ones, and records results in firestore", async () => {
-    await runMigrations(migrations);
+  describe("runMigrations", () => {
+    it("runs configured migrations, skips configured ones, and records results in firestore", async () => {
+      await transactional(async () => {
+        await runMigrations(migrations);
 
-    expect(migrationCount).toBe(2);
+        expect(migrationCount).toBe(2);
 
-    const result1 = await migrationResultsRepository.getRequired(testMigration1.id);
-    expect(result1.result).toBe("COMPLETE");
+        const result1 = await migrationResultsRepository.getRequired(testMigration1.id);
+        expect(result1.result).toBe("COMPLETE");
 
-    const result2 = await migrationResultsRepository.getRequired(testMigration2.id);
-    expect(result2.result).toBe("ERROR");
-    expect(result2.error).toBe("i failed");
+        const result2 = await migrationResultsRepository.getRequired(testMigration2.id);
+        expect(result2.result).toBe("ERROR");
+        expect(result2.error).toBe("i failed");
 
-    expect(await migrationResultsRepository.exists(testMigration3.id)).toBe(false);
-  });
-
-  it("skips migrations that have already been run successfully", async () => {
-    await migrationResultsRepository.insert({
-      ...newTimestampedEntity("test-migration-1"),
-      result: "COMPLETE",
+        expect(await migrationResultsRepository.exists(testMigration3.id)).toBe(false);
+      });
     });
 
-    await runMigrations(migrations);
+    it("skips migrations that have already been run successfully", async () => {
+      await transactional(async () => {
+        await migrationResultsRepository.insert({
+          ...newTimestampedEntity("test-migration-1"),
+          result: "COMPLETE",
+        });
 
-    expect(migrationCount).toBe(1);
-  });
+        await runMigrations(migrations);
 
-  it("skips migrations that have already been run with error", async () => {
-    await migrationResultsRepository.insert({
-      ...newTimestampedEntity("test-migration-1"),
-      result: "ERROR",
+        expect(migrationCount).toBe(1);
+      });
     });
 
-    await runMigrations(migrations);
+    it("skips migrations that have already been run with error", async () => {
+      await transactional(async () => {
+        await migrationResultsRepository.insert({
+          ...newTimestampedEntity("test-migration-1"),
+          result: "ERROR",
+        });
 
-    expect(migrationCount).toBe(1);
-  });
+        await runMigrations(migrations);
 
-  it(
-    "skips all migrations if mutex unavailable",
-    transactional(async () => {
-      await mutexServiceProvider.get().obtain("migration-bootstrapper", 10);
+        expect(migrationCount).toBe(1);
+      });
+    });
 
-      await runMigrations(migrations);
+    it("skips all migrations if mutex unavailable", async () => {
+      await transactional(async () => {
+        await mutexServiceProvider.get().obtain("migration-bootstrapper", 10);
 
-      expect(migrationCount).toBe(0);
-    })
-  );
+        await runMigrations(migrations);
 
-  it("releases mutex after migrations run", async () => {
-    await runMigrations(migrations);
+        expect(migrationCount).toBe(0);
+      });
+    });
 
-    const mutex = await mutexesRepository.getRequired("migration-bootstrapper");
+    it("releases mutex after migrations run", async () => {
+      await transactional(async () => {
+        await runMigrations(migrations);
 
-    expect(migrationCount).toBe(2);
-    expect(mutex.locked).toBe(false);
+        const mutex = await mutexesRepository.getRequired("migration-bootstrapper");
+
+        expect(migrationCount).toBe(2);
+        expect(mutex.locked).toBe(false);
+      });
+    });
   });
 });
