@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 1.4.0
+
+### Minor Changes
+
+- Created @mondomob/gae-js-migrations module to run and bootstrap migrations
+
 ## 1.3.0
 
 ### Minor Changes
