@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-migrations",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "1.4.0",
-    "@mondomob/gae-js-firestore": "1.4.0",
+    "@mondomob/gae-js-firestore": "1.4.1",
     "@google-cloud/firestore": "5.0.2",
     "@types/express": "4.17.13",
     "@types/lodash": "4.14.179",

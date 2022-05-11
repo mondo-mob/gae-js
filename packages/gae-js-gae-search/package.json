@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-gae-search",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Use Appengine Search Service",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

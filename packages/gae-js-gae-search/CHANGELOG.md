@@ -1,5 +1,11 @@
 # @mondomob/gae-js-gae-search
 
+## 1.0.3
+
+### Patch Changes
+
+- Moved test utilities into \_\_test folder for packages
+
 ## 1.0.2
 
 ### Patch Changes
