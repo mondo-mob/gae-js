@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 1.4.2
+
+### Patch Changes
+
+- Fix typing to allow query projection with **name** and add a constant, FIRESTORE_ID_FIELD to represent **name**
+
 ## 1.4.1
 
 ### Patch Changes
