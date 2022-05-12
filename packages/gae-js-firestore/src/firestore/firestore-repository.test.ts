@@ -1,6 +1,7 @@
 import { Firestore } from "@google-cloud/firestore";
 import { StatusCode } from "@google-cloud/firestore/build/src/status-code";
 import { iots as t, runWithRequestStorage } from "@mondomob/gae-js-core";
+import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { isFirestoreError } from "./firestore-errors";
 import { FirestoreLoader } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
@@ -497,6 +498,26 @@ describe("FirestoreRepository", () => {
       expect(results[0].prop3).toEqual("prop3");
     });
 
+    it("selects ids only when empty projection query", async () => {
+      await repository.save([
+        createItem("123", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+        createItem("234", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+      ]);
+      const results = await repository.query({ select: [] });
+
+      expect(results).toEqual([{ id: "123" }, { id: "234" }]);
+    });
+
+    it("selects ids only when FIRESTORE_ID_FIELD projection query", async () => {
+      await repository.save([
+        createItem("123", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+        createItem("234", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+      ]);
+      const results = await repository.query({ select: [FIRESTORE_ID_FIELD] });
+
+      expect(results).toEqual([{ id: "123" }, { id: "234" }]);
+    });
+
     describe("limit and offset", () => {
       beforeEach(async () => {
         await repository.save([
@@ -592,7 +613,7 @@ describe("FirestoreRepository", () => {
 
       it("orders results by id special key", async () => {
         const results = await repository.query({
-          sort: [{ property: "prop2" }, { property: "__name__" }],
+          sort: [{ property: "prop2" }, { property: FIRESTORE_ID_FIELD }],
         });
 
         expect(results.length).toBe(5);
@@ -633,7 +654,7 @@ describe("FirestoreRepository", () => {
 
       it("applies endBefore", async () => {
         const results = await repository.query({
-          sort: { property: "__name__" },
+          sort: { property: FIRESTORE_ID_FIELD },
           startAt: ["234"],
           endBefore: ["567"],
         });
@@ -644,7 +665,7 @@ describe("FirestoreRepository", () => {
 
       it("applies endAt", async () => {
         const results = await repository.query({
-          sort: { property: "__name__" },
+          sort: { property: FIRESTORE_ID_FIELD },
           startAfter: ["234"],
           endAt: ["567"],
         });
@@ -655,7 +676,7 @@ describe("FirestoreRepository", () => {
 
       it("applies multiple properties", async () => {
         const results = await repository.query({
-          sort: [{ property: "prop1" }, { property: "__name__" }],
+          sort: [{ property: "prop1" }, { property: FIRESTORE_ID_FIELD }],
           startAfter: ["msg1", "345"],
           limit: 2,
         });
@@ -667,7 +688,7 @@ describe("FirestoreRepository", () => {
 
       it("applies cursor and limit", async () => {
         const results = await repository.query({
-          sort: { property: "__name__" },
+          sort: { property: FIRESTORE_ID_FIELD },
           startAfter: ["234"],
           limit: 2,
         });

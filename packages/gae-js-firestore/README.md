@@ -80,6 +80,21 @@ const results = await repository.query({
   select: ["name", "otherProp"],
 });
 
+// Query items for ids only (empty projection)
+const results = await repository.query({
+  filters: [
+    {
+      fieldPath: "owner",
+      opStr: "==",
+      value: "user1",
+    },
+  ],
+  select: [],
+});
+
+// Result: [{ id: "your-id" }, ...]
+
+
 // Query items with limit/offset
 const results = await repository.query({
   filters: [

@@ -1,3 +1,4 @@
+import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { FirestoreLoader } from "./firestore-loader";
 import { Firestore } from "@google-cloud/firestore";
 import { connectFirestore, deleteCollection } from "../__test/test-utils";
@@ -473,7 +474,7 @@ describe("FirestoreLoader", () => {
 
       it("orders results by id special key", async () => {
         const results = await loader.executeQuery("users", {
-          sort: [{ property: "category2" }, { property: "__name__" }],
+          sort: [{ property: "category2" }, { property: FIRESTORE_ID_FIELD }],
         });
 
         expect(results.size).toBe(5);
@@ -514,7 +515,7 @@ describe("FirestoreLoader", () => {
 
       it("applies endBefore", async () => {
         const results = await loader.executeQuery("users", {
-          sort: { property: "__name__" },
+          sort: { property: FIRESTORE_ID_FIELD },
           startAt: ["234"],
           endBefore: ["567"],
         });
@@ -525,7 +526,7 @@ describe("FirestoreLoader", () => {
 
       it("applies endAt", async () => {
         const results = await loader.executeQuery("users", {
-          sort: { property: "__name__" },
+          sort: { property: FIRESTORE_ID_FIELD },
           startAfter: ["234"],
           endAt: ["567"],
         });
@@ -536,7 +537,7 @@ describe("FirestoreLoader", () => {
 
       it("applies multiple properties", async () => {
         const results = await loader.executeQuery("users", {
-          sort: [{ property: "message" }, { property: "__name__" }],
+          sort: [{ property: "message" }, { property: FIRESTORE_ID_FIELD }],
           startAfter: ["msg1", "345"],
           limit: 2,
         });
@@ -548,7 +549,7 @@ describe("FirestoreLoader", () => {
 
       it("applies cursor and limit", async () => {
         const results = await loader.executeQuery("users", {
-          sort: { property: "__name__" },
+          sort: { property: FIRESTORE_ID_FIELD },
           startAfter: ["234"],
           limit: 2,
         });
