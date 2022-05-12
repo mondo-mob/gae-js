@@ -36,7 +36,6 @@ export const loadConfiguration = <T extends GaeJsCoreConfiguration>(validator: t
   const logger = createLogger("loadConfiguration");
 
   process.env.NODE_CONFIG_ENV = getConfigurationEnvironment();
-  process.env.NODE_CONFIG_STRICT_MODE = "true";
   logger.info(`Loading config for environment ${process.env.NODE_CONFIG_ENV}`);
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const nodeConfig = require("config");
