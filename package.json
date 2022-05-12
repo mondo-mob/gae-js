@@ -3,6 +3,7 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "build:watch": "tsc --build --verbose --watch tsconfig.packages.json",
+    "clean": "npm run clean --workspaces",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest",
     "test:ci": "npm run test:ci --workspaces"
