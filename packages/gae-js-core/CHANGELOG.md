@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 1.4.1
+
+### Patch Changes
+
+- 844344b: Disable strict mode for node-config package to improve support for testing
+
 ## 1.4.0
 
 ### Minor Changes
