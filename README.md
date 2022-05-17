@@ -132,6 +132,9 @@ Use GAE Search API to index and search your repository data
 #### Use Cloud Storage in your app
 Simplifies client initialisation and common storage tasks
 
+### gae-js-migrations ([documentation](./packages/gae-js-migrations/README.md))
+#### Run migrations
+Bootstrap migrations to be run when server starts or create an endpoint to trigger them. Status of migrations and mutex lock is managed with Firestore. 
 
 ## Contributing
 
