@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 1.5.0
+
+### Minor Changes
+
+- 262e0b4: Update custom HTTP error classes to accept error code
+
 ## 1.4.1
 
 ### Patch Changes
