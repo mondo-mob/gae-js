@@ -1,5 +1,5 @@
 export class HttpError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(readonly status: number, message: string, readonly code: string) {
     super(message);
     Object.setPrototypeOf(this, new.target.prototype);
   }
