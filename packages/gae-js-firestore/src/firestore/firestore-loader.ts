@@ -86,6 +86,12 @@ export class FirestoreLoader {
     );
   }
 
+  /**
+   * @deprecated This can produce inconsistent results due to the underlying Firestore update method always
+   * merging fields. Even if you pass a complete entity optional properties may not be cleared by the update
+   * operation. The returned value may also not accurately reflect the updated value in Firestore.
+   * Use the set method instead - although this will not perform the existence check that update currently does.
+   */
   public async update(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
     await this.applyOperation(
       entities,
