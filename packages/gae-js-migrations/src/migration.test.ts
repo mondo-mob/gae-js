@@ -9,7 +9,7 @@ describe("runMigrations", () => {
   useFirestoreTest(["mutexes", "migrations"]);
 
   let migrationCount = 0;
-  let migrations: AutoMigration[] = [];
+  const migrations: AutoMigration[] = [];
 
   const testMigration1: AutoMigration = {
     id: "test-migration-1",
