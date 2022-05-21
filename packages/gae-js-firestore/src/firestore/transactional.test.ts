@@ -1,7 +1,7 @@
 import { FirestoreLoader } from "./firestore-loader";
 import { Firestore } from "@google-cloud/firestore";
 import { connectFirestore, deleteCollection, RepositoryItem } from "../__test/test-utils";
-import { runInTransaction, Transactional } from "./transactional";
+import { isTransactionActive, runInTransaction, Transactional } from "./transactional";
 import { FirestoreRepository } from "./firestore-repository";
 import { runWithRequestStorage } from "@mondomob/gae-js-core";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
@@ -173,6 +173,22 @@ describe("Transactional", () => {
           await expect(repository1.get("567")).resolves.toBe(null);
           await expect(repository2.get("567")).resolves.toBe(null);
         }
+      });
+    });
+  });
+
+  describe("isTransactionActive", () => {
+    it("returns true if transaction active", async () => {
+      await runWithRequestStorage(async () => {
+        firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
+        await runInTransaction(async () => expect(isTransactionActive()).toBe(true));
+      });
+    });
+
+    it("returns true if transaction not active", async () => {
+      await runWithRequestStorage(async () => {
+        firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
+        expect(isTransactionActive()).toBe(false);
       });
     });
   });

@@ -1,7 +1,7 @@
 import { DatastoreLoader } from "./datastore-loader";
 import { Datastore } from "@google-cloud/datastore";
 import { connectDatastoreEmulator, deleteKind, RepositoryItem, repositoryItemSchema } from "./test-utils";
-import { runInTransaction, Transactional } from "./transactional";
+import { isTransactionActive, runInTransaction, Transactional } from "./transactional";
 import { DatastoreRepository } from "./datastore-repository";
 import { runWithRequestStorage } from "@mondomob/gae-js-core";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
@@ -173,6 +173,22 @@ describe("Transactional", () => {
           await expect(repository1.get("567")).resolves.toBe(null);
           await expect(repository2.get("567")).resolves.toBe(null);
         }
+      });
+    });
+  });
+
+  describe("isTransactionActive", () => {
+    it("returns true if transaction active", async () => {
+      await runWithRequestStorage(async () => {
+        datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
+        await runInTransaction(async () => expect(isTransactionActive()).toBe(true));
+      });
+    });
+
+    it("returns true if transaction not active", async () => {
+      await runWithRequestStorage(async () => {
+        datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
+        expect(isTransactionActive()).toBe(false);
       });
     });
   });
