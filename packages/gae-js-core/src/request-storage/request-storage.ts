@@ -62,11 +62,12 @@ export const getRequestStorageValue = <T>(key: string): T | null => {
  * Fetch a request storage value or throw an error if not defined.
  *
  * @param key key to retrieve value for from request storage
+ * @param errorMsg error message to include if value does not exist
  */
-export const getRequestStorageValueRequired = <T>(key: string): T => {
+export const getRequestStorageValueRequired = <T>(key: string, errorMsg?: string): T => {
   const nullable = getRequestStorageValue<T>(key);
   if (nullable === null) {
-    throw new Error(`No request storage value exists for key: ${key}`);
+    throw new Error(errorMsg || `No request storage value exists for key: ${key}`);
   }
   return nullable;
 };

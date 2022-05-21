@@ -16,8 +16,8 @@ export class RequestStorageStore<T> {
     return getRequestStorageValueOrDefault(this.key, defaultVal);
   }
 
-  getRequired(): T {
-    return getRequestStorageValueRequired(this.key);
+  getRequired(errorMsg?: string): T {
+    return getRequestStorageValueRequired(this.key, errorMsg);
   }
 
   set(value: T): T {

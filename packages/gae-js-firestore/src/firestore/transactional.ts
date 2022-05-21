@@ -6,7 +6,7 @@ const logger = createLogger("Transactional");
 type AnyAsync<T = any> = (...args: any[]) => Promise<T>;
 
 const applyInTransaction = (thisArg: any, original: AnyAsync, ...args: any[]): Promise<any> => {
-  const loader = firestoreLoaderRequestStorage.getRequired();
+  const loader = getLoader();
   if (loader.isTransaction()) {
     logger.info("Continuing existing transaction...");
     return original.apply(thisArg, args);
@@ -20,6 +20,11 @@ const applyInTransaction = (thisArg: any, original: AnyAsync, ...args: any[]): P
     );
   }
 };
+
+const getLoader = () =>
+  firestoreLoaderRequestStorage.getRequired(
+    "Firestore transactions require a FirestoreLoader to be set in request storage but none was found."
+  );
 
 /**
  * Method decorator to run a function within a transaction.
