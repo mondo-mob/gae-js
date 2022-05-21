@@ -26,13 +26,22 @@ describe("ConfigurationProvider", () => {
   it("throws if config not set", async () => {
     const provider = new ConfigurationProvider<TestConfig>();
 
-    expect(() => provider.get()).toThrow("No value has been set");
+    expect(provider.hasValue()).toBe(false);
+    expect(() => provider.get()).toThrow("No value has been set on this provider");
+  });
+
+  it("throws custom message if config not set", async () => {
+    const provider = new ConfigurationProvider<TestConfig>(undefined, "No Configuration has been set");
+
+    expect(provider.hasValue()).toBe(false);
+    expect(() => provider.get()).toThrow("No Configuration has been set");
   });
 
   it("inits config into typed provider", async () => {
     const provider = new ConfigurationProvider<TestConfig>();
     await provider.init(testConfigSchema);
 
+    expect(provider.hasValue()).toBe(true);
     expect(provider.get()).toBeTruthy();
     expect(provider.get().projectId).toBe("gaejs-tests");
     expect(provider.get().appName).toBe("Test app");
@@ -42,6 +51,7 @@ describe("ConfigurationProvider", () => {
     const provider = new ConfigurationProvider();
     await provider.init(testConfigSchema);
 
+    expect(provider.hasValue()).toBe(true);
     expect(provider.get()).toBeTruthy();
     expect(provider.get().projectId).toBe("gaejs-tests");
     expect(provider.get<TestConfig>().appName).toBe("Test app");

@@ -12,4 +12,7 @@ class StorageProvider extends Provider<Storage> {
   }
 }
 
-export const storageProvider = new StorageProvider();
+export const storageProvider = new StorageProvider(
+  undefined,
+  "No Storage instance found. Please initialise storageProvider."
+);

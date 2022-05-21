@@ -14,4 +14,7 @@ export class ConfigurationProvider<T extends GaeJsCoreConfiguration = any> exten
   }
 }
 
-export const configurationProvider = new ConfigurationProvider();
+export const configurationProvider = new ConfigurationProvider(
+  undefined,
+  "No Configuration instance found. Please initialise configurationProvider."
+);
