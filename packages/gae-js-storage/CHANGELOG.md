@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 1.3.0
+
+### Minor Changes
+
+- 0a51188: Allow custom no-value error messages on providers and update built-in providers to supply one. Add hasValue method to support checking provider state without throwing errors.
+
 ## 1.2.0
 
 ### Minor Changes

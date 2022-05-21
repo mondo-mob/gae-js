@@ -1,5 +1,13 @@
 # @mondomob/gae-js-datastore
 
+## 1.2.0
+
+### Minor Changes
+
+- 6b19e91: Add support for checking if db transaction currently active.
+- 0a51188: Allow custom no-value error messages on providers and update built-in providers to supply one. Add hasValue method to support checking provider state without throwing errors.
+- 7fdcbd3: Support custom error messages when fetching required items from request storage.
+
 ## 1.1.1
 
 ### Patch Changes
