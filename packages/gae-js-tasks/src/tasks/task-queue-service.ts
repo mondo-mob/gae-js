@@ -33,14 +33,18 @@ export class TaskQueueService {
   async appEngineQueue(taskName: string, payload: any = {}, inSeconds?: number) {
     const client = new CloudTasksClient();
 
-    const projectId = this.configuration.projectId;
-    const location = this.configuration.location;
+    const projectId = this.configuration.tasksProjectId || this.configuration.projectId;
+    const location = this.configuration.tasksLocation || this.configuration.location;
+    if (!location) {
+      throw new Error('Cannot resolve queue location - please configure "tasksLocation" or "location"');
+    }
     const serviceTasksOnThisVersion = !!this.configuration.serviceTasksOnThisVersion;
 
     const body = JSON.stringify(payload);
     const requestPayload = Buffer.from(body).toString("base64");
 
     const parent = client.queuePath(projectId, location, this.queueName);
+    this.logger.info(`Using queue path: ${parent}`);
 
     const task = {
       appEngineHttpRequest: {
@@ -75,6 +79,9 @@ export class TaskQueueService {
   }
 
   async localQueue(taskName: string, payload: any = {}) {
+    if (!this.configuration.host) {
+      throw new Error('Cannot resolve local queue path - please configure "host"');
+    }
     const endpoint = `${this.configuration.host}${this.pathPrefix}/${taskName}`;
     this.logger.info(`Dispatching local task to ${endpoint}`);
 

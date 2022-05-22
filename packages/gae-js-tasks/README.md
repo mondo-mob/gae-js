@@ -10,6 +10,14 @@ npm install @mondomob/gae-js-tasks
 
 ## Components
 
+### Configuration
+
+In most cases no configuration is required - as long as `location` has been configured in the core configuration.
+
+- `serviceTasksOnThisVersion`: (optional) The specific appengine version to use for processing tasks. 
+- `tasksLocation`: (optional) The location for the queues. Defaults to the core `location` config.
+- `tasksProjectId`: (optional) The projectId for the queues. Defaults to the core `projectId` config.
+
 ### TaskQueueService
 Helper service for enqueuing tasks.
 
