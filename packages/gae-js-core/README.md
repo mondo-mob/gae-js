@@ -85,7 +85,7 @@ app.use((req, res, next) => {
 Extendable typed configuration loader based around "config" library.
 
 NOTE: The environment is automatically detected from the project name. See Conventions for more details.
-NOTE: The GCP_ENVIRONMENT environment variable must be set when running on GCP (not locally). See Conventions for more details.
+NOTE: The GAEJS_ENVIRONMENT environment variable must be set when running on GCP (not locally). See Conventions for more details.
 
 Organise your configuration files in the following way:
 ```shell
