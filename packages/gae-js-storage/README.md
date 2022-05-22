@@ -10,6 +10,14 @@ npm install @mondomob/gae-js-storage
 
 ## Components
 
+### Configuration
+
+- `storageDefaultBucket`: (required) The default bucket to use for storage
+- `storageApiEndpoint`: (optional) The storage API endpoint to use - rarely used
+- `storageCredentials`: (optional) User/Service Account Credentials - mainly used for local development (see Local Development below)
+- `storageEmulatorHost`: (optional) The emulator host to connect to (only if using emulator)
+- `storageOrigin`: (optionla) specific origin to use for upload urls. Defaults to core `host` configuration.
+
 ### StorageProvider
 
 Initialise storage to be accessed elsewhere in your app.

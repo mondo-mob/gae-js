@@ -8,11 +8,12 @@ export const gaeJsStorageConfigurationSchema = t.intersection([
     storageApiEndpoint: t.string,
     // Emulator host is separate from the api endpoint because to connect to Firebase storage emulator
     // you need to set the STORAGE_EMULATOR_HOST environment variable instead
-    emulatorHost: t.string,
+    storageEmulatorHost: t.string,
     storageCredentials: t.type({
       clientEmail: t.string,
       privateKey: t.string,
     }),
+    storageOrigin: t.string,
   }),
 ]);
 

@@ -10,9 +10,9 @@ export const initTestConfig = async (
   process.env.NODE_CONFIG = JSON.stringify({
     projectId: "storage-tests",
     host: "localhost",
-    location: "local",
+    storageOrigin: "localhost",
     storageDefaultBucket: "test-bucket",
-    emulatorHost: "http://localhost:9199",
+    storageEmulatorHost: "http://localhost:9199",
     ...config,
   });
   await configurationProvider.init(schema);

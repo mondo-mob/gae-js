@@ -25,9 +25,10 @@ export const connectStorage = (options?: StorageConnectOptions): Storage => {
     };
   }
 
-  if (configuration.emulatorHost) {
-    logger.info(`Using storage emulator: ${configuration.emulatorHost}`);
-    process.env.STORAGE_EMULATOR_HOST = configuration.emulatorHost;
+  const emulatorHost = configuration.storageEmulatorHost;
+  if (emulatorHost) {
+    logger.info(`Using storage emulator: ${emulatorHost}`);
+    process.env.STORAGE_EMULATOR_HOST = emulatorHost;
   }
 
   return new Storage(storageSettings);

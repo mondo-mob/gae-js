@@ -31,9 +31,11 @@ export class StorageService {
 
   async getDefaultBucketResumableUploadUrl(fileId: string): Promise<string> {
     const gcsFile = this._defaultBucket.file(fileId);
-    const urls = await gcsFile.createResumableUpload({
-      origin: this.configuration.host,
-    });
+    const origin = this.configuration.storageOrigin || this.configuration.host;
+    if (!origin) {
+      this.logger.warn('Unable to set upload origin - please configure "storageOrigin" or "host"');
+    }
+    const urls = await gcsFile.createResumableUpload({ origin });
     return urls[0];
   }
 
