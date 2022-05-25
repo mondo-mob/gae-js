@@ -1,6 +1,8 @@
 import * as t from "io-ts";
 import { ConfigurationProvider } from "./configuration-provider";
 import { gaeJsCoreConfigurationSchema } from "./schema";
+import { iotsValidator } from "./iots-validator";
+import { ENV_VAR_CONFIG_OVERRIDES, ENV_VAR_PROJECT } from "./variables";
 
 const testConfigSchema = t.intersection([
   gaeJsCoreConfigurationSchema,
@@ -10,17 +12,20 @@ const testConfigSchema = t.intersection([
 ]);
 type TestConfig = t.TypeOf<typeof testConfigSchema>;
 
+const validator = iotsValidator(testConfigSchema);
+
 describe("ConfigurationProvider", () => {
   beforeEach(() => {
-    process.env.NODE_CONFIG = JSON.stringify({
-      projectId: "gaejs-tests",
+    process.env[ENV_VAR_PROJECT] = "gaejs-tests";
+    process.env[ENV_VAR_CONFIG_OVERRIDES] = JSON.stringify({
       host: "localhost",
       location: "local",
       appName: "Test app",
     });
   });
   afterEach(() => {
-    process.env.NODE_CONFIG = undefined;
+    process.env[ENV_VAR_CONFIG_OVERRIDES] = undefined;
+    process.env[ENV_VAR_PROJECT] = undefined;
   });
 
   it("throws if config not set", async () => {
@@ -39,7 +44,7 @@ describe("ConfigurationProvider", () => {
 
   it("inits config into typed provider", async () => {
     const provider = new ConfigurationProvider<TestConfig>();
-    await provider.init(testConfigSchema);
+    await provider.init({ validator });
 
     expect(provider.hasValue()).toBe(true);
     expect(provider.get()).toBeTruthy();
@@ -49,7 +54,7 @@ describe("ConfigurationProvider", () => {
 
   it("inits config into untyped provider", async () => {
     const provider = new ConfigurationProvider();
-    await provider.init(testConfigSchema);
+    await provider.init({ validator });
 
     expect(provider.hasValue()).toBe(true);
     expect(provider.get()).toBeTruthy();

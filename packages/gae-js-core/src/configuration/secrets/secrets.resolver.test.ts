@@ -12,7 +12,7 @@ describe("SecretsResolver", () => {
     mockSecretsClient.fetchSecret = jest.fn().mockImplementation((key: string) => resolvedSecret(key));
     mockSecretsClient.fetchOptionalSecret = jest.fn();
 
-    secretsResolver = new SecretsResolver(mockSecretsClient);
+    secretsResolver = new SecretsResolver({ secretsClient: mockSecretsClient });
   });
 
   describe("resolveSecrets", () => {

@@ -5,6 +5,7 @@ export const gaeJsCoreConfigurationSchema = t.intersection([
     projectId: t.string,
   }),
   t.partial({
+    environment: t.string,
     host: t.string,
     location: t.string,
     secretsProjectId: t.string,

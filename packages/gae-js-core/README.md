@@ -14,7 +14,7 @@ There are a few conventions that must be followed for the library to function co
 * Project naming. For configuration to work correctly the gcp projects must be named with a suffix
   of the environment they represent. e.g. `my-project-dev` implies this is the "dev" environment and
   configuration will be loaded from the dev.json config file.
-* To help the library know what environment it is executing in you must define an environment
+* To help the library know what runtime environment it is executing in you must define an environment
   variable called GAEJS_ENVIRONMENT. e.g. for appengine in your `app.yaml` file:
     ```yaml
     env_variables:
@@ -82,24 +82,32 @@ app.use((req, res, next) => {
 ```
 
 ### Configuration
-Extendable typed configuration loader based around "config" library.
+Typed configuration loader that loads and merges configuration from files, environment variables and static options into a typed object.
 
-NOTE: The environment is automatically detected from the project name. See Conventions for more details.
-NOTE: The GAEJS_ENVIRONMENT environment variable must be set when running on GCP (not locally). See Conventions for more details.
+NOTE: For GCP environments the projectId can be automatically identified and by default the environment is 
+derived from the project id (see conventions). For local development the projectId must be explicitly 
+defined. The recommended approach is to set GAEJS_PROJECT environment variable to the form "your-project-local" to 
+match the GCP project name conventions. This will identify the environment as `local` and load configuration from `local.json`.
 
-Organise your configuration files in the following way:
+Basic setup:
+
+1. Organise your configuration files in a `config` folder underneath the working directory of your app:
 ```shell
 /config/default.json       <- Common base config
-       /development.json   <- Local development
+       /local.json         <- local development
        /dev.json           <- dev environment config
        /uat.json           <- uat environment config
        /prod.json          <- prod environment config
+       /yourOwnEnv.json    <- any other environments you have
 ```
-Then in your app:
-```typescript
 
+2. In your app create the typings for your desired configuration and a ConfigValidator instance.
+This can be any function that takes some unknown data and returns a typed instance of your configuration.
+e.g. the library contains a pre-built io-ts validator:
+
+```typescript
 // Define the io-ts configuration schema you want to use for your app
-export const configSchema = t.intersection([
+const configSchema = t.intersection([
   // Include the schemas from the libraries you are using
   gaeJsCoreConfigurationSchema,
   gaeJsFirestoreConfigurationSchema,
@@ -109,11 +117,17 @@ export const configSchema = t.intersection([
   }),
 ]);
 
-// Initialise the config
-const config = await initialiseConfiguration(configSchema);
+// Create ConfigValidator from schema
+const validator = iotsValidator(configSchema);
+```
 
-// Optionally set into global provider for use elsewhere
-configurationProvider.set(config);
+3. Initialise the configuration
+```typescript
+// Option 1: Initialise config into a local variable
+const config = await initialiseConfiguration({ validator });
+
+// Option 2: Initialise the configurationProvider for use globally
+await configurationProvider.init({ validator });
 ```
 
 ### Configuration Secrets
@@ -128,7 +142,6 @@ Step 3: Update your config files to include secret references
 ```json
 {
   "projectId": "my-project-dev",
-  "host": "https://my-project-dev.ts.r.appspot.com",
   "apiPassword": "SECRET(API_PASSWORD)"
 }
 ```

@@ -1,10 +1,12 @@
+import { ENV_VAR_RUNTIME_ENVIRONMENT } from "../configuration/variables";
+
 /**
  * This checks for the cloud function reserved environment variables K_SERVICE and K_REVISION
  * These are set in the cloud environment so make sure you don't set these locally
  */
 const onCloudFunctions = (): boolean => !!process.env.K_SERVICE && !!process.env.K_REVISION;
 
-const onAppEngine = (): boolean => process.env.GAEJS_ENVIRONMENT === "appengine";
+const onAppEngine = (): boolean => process.env[ENV_VAR_RUNTIME_ENVIRONMENT] === "appengine";
 
 /**
  * Determines whether the code is running on GCP (vs locally).
