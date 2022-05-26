@@ -1,5 +1,5 @@
 import { CollectionReference, Firestore, Settings } from "@google-cloud/firestore";
-import { configurationProvider, runWithRequestStorage } from "@mondomob/gae-js-core";
+import { configurationProvider, iotsValidator, runWithRequestStorage } from "@mondomob/gae-js-core";
 import ProvidesCallback = jest.ProvidesCallback;
 import {
   FirestoreLoader,
@@ -12,16 +12,14 @@ import {
 export const initTestConfig = async (
   config?: Partial<GaeJsFirestoreConfiguration>
 ): Promise<GaeJsFirestoreConfiguration> => {
-  process.env.NODE_CONFIG = JSON.stringify({
-    projectId: "firestore-tests",
-    host: "localhost",
-    location: "local",
+  process.env.GAEJS_PROJECT = "migration-tests";
+  process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
     firestoreProjectId: "firestore-tests",
     firestoreHost: "0.0.0.0",
     firestorePort: 9000,
     ...config,
   });
-  await configurationProvider.init(gaeJsFirestoreConfigurationSchema);
+  await configurationProvider.init({ validator: iotsValidator(gaeJsFirestoreConfigurationSchema) });
   return configurationProvider.get<GaeJsFirestoreConfiguration>();
 };
 

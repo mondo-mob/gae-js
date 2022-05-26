@@ -1,5 +1,5 @@
 import { CollectionReference, Firestore, Settings } from "@google-cloud/firestore";
-import { configurationProvider } from "@mondomob/gae-js-core";
+import { configurationProvider, iotsValidator } from "@mondomob/gae-js-core";
 import { GaeJsFirestoreConfiguration, gaeJsFirestoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
@@ -10,16 +10,14 @@ export interface RepositoryItem {
 export const initTestConfig = async (
   config?: Partial<GaeJsFirestoreConfiguration>
 ): Promise<GaeJsFirestoreConfiguration> => {
-  process.env.NODE_CONFIG = JSON.stringify({
-    projectId: "firestore-tests",
-    host: "localhost",
-    location: "local",
+  process.env.GAEJS_PROJECT = "firestore-tests";
+  process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
     firestoreProjectId: "firestore-tests",
     firestoreHost: "0.0.0.0",
     firestorePort: 9000,
     ...config,
   });
-  await configurationProvider.init(gaeJsFirestoreConfigurationSchema);
+  await configurationProvider.init({ validator: iotsValidator(gaeJsFirestoreConfigurationSchema) });
   return configurationProvider.get<GaeJsFirestoreConfiguration>();
 };
 

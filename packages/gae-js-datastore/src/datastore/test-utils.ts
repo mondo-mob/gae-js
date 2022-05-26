@@ -1,5 +1,5 @@
 import { Datastore, DatastoreOptions } from "@google-cloud/datastore";
-import { iots as t, configurationProvider } from "@mondomob/gae-js-core";
+import { iots as t, configurationProvider, iotsValidator } from "@mondomob/gae-js-core";
 import { GaeJsDatastoreConfiguration, gaeJsDatastoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
@@ -15,15 +15,14 @@ export const repositoryItemSchema = t.type({
 export const initTestConfig = async (
   config?: Partial<GaeJsDatastoreConfiguration>
 ): Promise<GaeJsDatastoreConfiguration> => {
-  process.env.NODE_CONFIG = JSON.stringify({
+  process.env.GAEJS_PROJECT = "datastore-tests";
+  process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
     projectId: "datastore-tests",
-    host: "localhost",
-    location: "local",
     datastoreProjectId: "datastore-tests",
     datastoreApiEndpoint: "localhost:8081",
     ...config,
   });
-  await configurationProvider.init(gaeJsDatastoreConfigurationSchema);
+  await configurationProvider.init({ validator: iotsValidator(gaeJsDatastoreConfigurationSchema) });
   return configurationProvider.get<GaeJsDatastoreConfiguration>();
 };
 

@@ -1,21 +1,19 @@
 import { Storage, StorageOptions } from "@google-cloud/storage";
 import { GaeJsStorageConfiguration, gaeJsStorageConfigurationSchema } from "../configuration";
-import { configurationProvider, gaeJsCoreConfigurationSchema, iots as t } from "@mondomob/gae-js-core";
+import { configurationProvider, gaeJsCoreConfigurationSchema, iots as t, iotsValidator } from "@mondomob/gae-js-core";
 
 export const initTestConfig = async (
   config?: Partial<GaeJsStorageConfiguration>
 ): Promise<GaeJsStorageConfiguration> => {
   const schema = t.intersection([gaeJsCoreConfigurationSchema, gaeJsStorageConfigurationSchema]);
-
-  process.env.NODE_CONFIG = JSON.stringify({
-    projectId: "storage-tests",
-    host: "localhost",
+  process.env.GAEJS_PROJECT = "storage-tests";
+  process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
     storageOrigin: "localhost",
     storageDefaultBucket: "test-bucket",
     storageEmulatorHost: "http://localhost:9199",
     ...config,
   });
-  await configurationProvider.init(schema);
+  await configurationProvider.init({ validator: iotsValidator(schema) });
   return configurationProvider.get<GaeJsStorageConfiguration>();
 };
 

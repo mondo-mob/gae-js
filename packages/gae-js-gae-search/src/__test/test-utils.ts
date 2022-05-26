@@ -1,4 +1,4 @@
-import { configurationProvider, iots as t, gaeJsCoreConfigurationSchema } from "@mondomob/gae-js-core";
+import { configurationProvider, iots as t, gaeJsCoreConfigurationSchema, iotsValidator } from "@mondomob/gae-js-core";
 import { GaeJsGaeSearchConfiguration, gaeJsGaeSearchConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
@@ -15,13 +15,11 @@ export const initTestConfig = async (
   config?: Partial<GaeJsGaeSearchConfiguration>
 ): Promise<GaeJsGaeSearchConfiguration> => {
   const schema = t.intersection([gaeJsCoreConfigurationSchema, gaeJsGaeSearchConfigurationSchema]);
-  process.env.NODE_CONFIG = JSON.stringify({
-    projectId: "datastore-tests",
-    host: "localhost",
-    location: "local",
+  process.env.GAEJS_PROJECT = "search-tests";
+  process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
     searchServiceEndpoint: "http://localhost:9999",
     ...config,
   });
-  await configurationProvider.init(schema);
+  await configurationProvider.init({ validator: iotsValidator(schema) });
   return configurationProvider.get<GaeJsGaeSearchConfiguration>();
 };
