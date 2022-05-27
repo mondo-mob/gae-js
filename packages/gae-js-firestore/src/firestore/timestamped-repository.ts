@@ -1,11 +1,5 @@
-import {
-  isReadonlyArray,
-  BaseEntity,
-  createLogger,
-  getRequestStorageValueOrDefault,
-  OneOrMany,
-} from "@mondomob/gae-js-core";
-import { FirestoreRepository } from "./firestore-repository";
+import { isReadonlyArray, createLogger, getRequestStorageValueOrDefault, OneOrMany } from "@mondomob/gae-js-core";
+import { BaseEntity, FirestoreRepository } from "./firestore-repository";
 
 export interface TimestampedEntity extends BaseEntity {
   createdAt: string;

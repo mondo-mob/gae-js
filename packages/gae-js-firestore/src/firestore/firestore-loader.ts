@@ -10,7 +10,7 @@ import {
   Transaction,
   WriteBatch,
 } from "@google-cloud/firestore";
-import { asArray, createLogger } from "@mondomob/gae-js-core";
+import { asArray } from "@mondomob/gae-js-core";
 import { QueryOptions } from "./firestore-query";
 
 export interface FirestorePayload {
@@ -48,7 +48,6 @@ export class FirestoreLoader {
   private readonly loader: DataLoader<DocumentReference, DocumentData | null>;
   private readonly firestore: Firestore;
   private readonly transaction: Transaction | null;
-  private readonly logger = createLogger("firestore-loader");
 
   constructor(firestore: Firestore, transaction?: Transaction) {
     this.firestore = firestore;
@@ -82,21 +81,6 @@ export class FirestoreLoader {
       entities,
       (transaction, entity) => transaction.set(entity.ref, entity.data),
       (batch, entity) => batch.set(entity.ref, entity.data),
-      (loader, { ref, data }) => setCacheFromData(loader, ref, data)
-    );
-  }
-
-  /**
-   * @deprecated This can produce inconsistent results due to the underlying Firestore update method always
-   * merging fields. Even if you pass a complete entity optional properties may not be cleared by the update
-   * operation. The returned value may also not accurately reflect the updated value in Firestore.
-   * Use the set method instead - although this will not perform the existence check that update currently does.
-   */
-  public async update(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
-    await this.applyOperation(
-      entities,
-      (transaction, entity) => transaction.update(entity.ref, entity.data),
-      (batch, entity) => batch.update(entity.ref, entity.data),
       (loader, { ref, data }) => setCacheFromData(loader, ref, data)
     );
   }

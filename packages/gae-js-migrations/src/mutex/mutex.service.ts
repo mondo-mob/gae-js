@@ -45,7 +45,7 @@ export class MutexService {
         this.logger.warn(`Attempt to release non-existent mutex ${mutexId}`);
         return null;
       }
-      return mutexesRepository.update({
+      return mutexesRepository.save({
         ...mutex,
         locked: false,
         releasedAt: new Date().toISOString(),

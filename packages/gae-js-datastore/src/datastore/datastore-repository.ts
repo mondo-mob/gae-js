@@ -3,23 +3,46 @@ import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
 import { chain, first, flatMap, omit } from "lodash";
 import {
   asArray,
-  BaseEntity,
+  createLogger,
+  IndexConfig,
+  IndexEntry,
   iots as t,
   iotsReporter as reporter,
   isLeft,
   OneOrMany,
-  Repository,
+  Page,
+  prepareIndexEntry,
+  Searchable,
+  SearchFields,
+  searchProvider,
+  SearchResults,
+  SearchService,
+  Sort,
 } from "@mondomob/gae-js-core";
 import { DatastoreLoader, DatastorePayload, Index, QueryOptions, QueryResponse } from "./datastore-loader";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { datastoreProvider } from "./datastore-provider";
+import assert from "assert";
 
-export interface RepositoryOptions<T extends { id: any }> {
+const SEARCH_NOT_ENABLED_MSG = "Search is not configured for this repository";
+
+export interface BaseEntity {
+  id: string;
+}
+
+export interface RepositorySearchOptions<T extends BaseEntity> {
+  indexName: string;
+  indexConfig: IndexConfig<T>;
+  searchService?: SearchService;
+}
+
+export interface RepositoryOptions<T extends BaseEntity> {
   datastore?: Datastore;
   // TODO: Make optional?
   validator: t.Type<T>;
   defaultValues?: Partial<Omit<T, "id">>;
   index?: Index<Omit<T, "id">>;
+  search?: RepositorySearchOptions<T>;
 }
 
 export function buildExclusions<T>(input: T, schema: Index<T> = {}, path = ""): string[] {
@@ -74,13 +97,16 @@ class SaveError extends Error {
   }
 }
 
-export class DatastoreRepository<T extends BaseEntity> implements Repository<T, QueryOptions<T>, QueryResponse<T>> {
+export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> {
+  private readonly logger = createLogger("datastore-repository");
   private readonly validator: t.Type<T>;
   private readonly datastore?: Datastore;
+  protected readonly searchOptions?: RepositorySearchOptions<T>;
 
   constructor(protected readonly kind: string, protected readonly options: RepositoryOptions<T>) {
     this.datastore = options?.datastore;
     this.validator = options.validator;
+    this.searchOptions = options?.search;
   }
 
   async getRequired(id: string): Promise<T> {
@@ -183,12 +209,30 @@ export class DatastoreRepository<T extends BaseEntity> implements Repository<T, 
   async delete(...ids: string[]): Promise<void> {
     const allIds = ids.map((id) => this.key(id));
     await this.getLoader().delete(allIds);
+    if (this.searchOptions) {
+      await this.getSearchService().delete(this.searchOptions.indexName, ...ids);
+    }
   }
 
   async deleteAll(): Promise<void> {
     const [allEntities] = await this.query();
     const allIds = allEntities.map((value) => this.key(value.id));
     await this.getLoader().delete(allIds);
+    if (this.searchOptions) {
+      await this.getSearchService().deleteAll(this.searchOptions.indexName);
+    }
+  }
+
+  async search(searchFields: SearchFields, sort?: Sort, page?: Page): Promise<SearchResults<T>> {
+    assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
+    const queryResults = await this.getSearchService().query(this.searchOptions.indexName, searchFields, sort, page);
+    const requests = await this.fetchSearchResults(queryResults.ids);
+    return {
+      resultCount: queryResults.resultCount,
+      limit: queryResults.limit,
+      offset: queryResults.offset,
+      results: requests,
+    };
   }
 
   public key = (name: string): Entity.Key => {
@@ -233,8 +277,34 @@ export class DatastoreRepository<T extends BaseEntity> implements Repository<T, 
       });
 
     await mutation(this.getLoader(), entitiesToSave);
-
+    if (this.searchOptions) {
+      await this.indexForSearch(entities);
+    }
     return entities;
+  }
+
+  protected prepareSearchEntry(entity: T): IndexEntry {
+    assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
+    return prepareIndexEntry(this.searchOptions.indexConfig, entity);
+  }
+
+  protected prepareSearchEntries(entities: OneOrMany<T>): IndexEntry[] {
+    assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
+    return asArray(entities).map((entity) => this.prepareSearchEntry(entity));
+  }
+
+  private indexForSearch(entities: OneOrMany<T>) {
+    assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
+    const entries = this.prepareSearchEntries(entities);
+    return this.getSearchService().index(this.searchOptions.indexName, entries);
+  }
+
+  private async fetchSearchResults(ids: string[]): Promise<ReadonlyArray<T>> {
+    const results = await this.get(ids);
+    if (results.some((result) => !result)) {
+      this.logger.warn("Search results contained at least one null value - search index likely out of sync with db");
+    }
+    return results.filter((result): result is T => !!result);
   }
 
   private getDatastore = (): Datastore => {
@@ -244,5 +314,9 @@ export class DatastoreRepository<T extends BaseEntity> implements Repository<T, 
   private getLoader = (): DatastoreLoader => {
     const loader = datastoreLoaderRequestStorage.get();
     return loader ?? new DatastoreLoader(this.getDatastore());
+  };
+
+  private getSearchService = (): SearchService => {
+    return this.searchOptions?.searchService ?? searchProvider.get();
   };
 }

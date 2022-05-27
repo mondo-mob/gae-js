@@ -1,6 +1,15 @@
 import { Firestore } from "@google-cloud/firestore";
 import { StatusCode } from "@google-cloud/firestore/build/src/status-code";
-import { iots as t, runWithRequestStorage } from "@mondomob/gae-js-core";
+import {
+  IndexConfig,
+  IndexEntry,
+  iots as t,
+  Page,
+  runWithRequestStorage,
+  SearchFields,
+  SearchService,
+  Sort,
+} from "@mondomob/gae-js-core";
 import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { isFirestoreError } from "./firestore-errors";
 import { FirestoreLoader } from "./firestore-loader";
@@ -10,18 +19,22 @@ import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import { runInTransaction } from "./transactional";
 
-const repositoryItemSchema = t.type({
-  id: t.string,
-  name: t.string,
-});
+const repositoryItemSchema = t.intersection([
+  t.type({
+    id: t.string,
+    name: t.string,
+  }),
+  t.partial({
+    prop1: t.string,
+    prop2: t.string,
+    prop3: t.string,
+    nested: t.type({
+      prop4: t.string,
+    }),
+  }),
+]);
 
-interface RepositoryItem {
-  id: string;
-  name: string;
-  prop1?: string;
-  prop2?: string;
-  prop3?: string;
-}
+type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
 
 describe("FirestoreRepository", () => {
   const collection = "repository-items";
@@ -359,56 +372,6 @@ describe("FirestoreRepository", () => {
     });
   });
 
-  describe("update", () => {
-    it("updates documents outside of transaction", async () => {
-      await repository.insert([createItem("123", { message: "create" }), createItem("234", { message: "create" })]);
-
-      await repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })]);
-
-      const fetched = await repository.get(["123", "234"]);
-      expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
-    });
-
-    it("updates documents in transaction", async () => {
-      await repository.insert([createItem("123", { message: "create" }), createItem("234", { message: "create" })]);
-
-      await runWithRequestStorage(async () => {
-        firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
-        return runInTransaction(() =>
-          repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })])
-        );
-      });
-
-      const fetched = await repository.get(["123", "234"]);
-      expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
-    });
-
-    describe("with schema", () => {
-      beforeEach(async () => {
-        repository = new FirestoreRepository<RepositoryItem>(collection, {
-          firestore,
-          validator: repositoryItemSchema,
-        });
-        await repository.insert([createItem("123", { message: "create" }), createItem("234", { message: "create" })]);
-      });
-
-      it("updates document outside of transaction that matches schema", async () => {
-        await repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })]);
-
-        const fetched = await repository.get(["123", "234"]);
-        expect(fetched.length).toBe(2);
-        expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
-      });
-
-      it("throws for document that doesn't match schema", async () => {
-        const abc = { id: "123", message: "no name" } as any as RepositoryItem;
-        await expect(repository.save(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
-      });
-    });
-  });
-
   describe("delete", () => {
     it("deletes a document outside of transaction", async () => {
       await firestore.doc(`${collection}/123`).create({
@@ -696,6 +659,170 @@ describe("FirestoreRepository", () => {
         expect(results.length).toBe(2);
         expect(results[0].id).toEqual("345");
         expect(results[1].id).toEqual("456");
+      });
+    });
+  });
+
+  describe("with search enabled", () => {
+    const searchService: SearchService = {
+      index: jest.fn(),
+      delete: jest.fn(),
+      deleteAll: jest.fn(),
+      query: jest.fn(),
+    };
+
+    const initRepo = (indexConfig: IndexConfig<RepositoryItem>): FirestoreRepository<RepositoryItem> =>
+      new FirestoreRepository<RepositoryItem>(collection, {
+        firestore,
+        search: {
+          searchService: searchService,
+          indexName: "item",
+          indexConfig,
+        },
+      });
+
+    const createItem = (id: string): RepositoryItem => ({
+      id,
+      name: id,
+      prop1: `${id}_prop1`,
+      prop2: `${id}_prop2`,
+      prop3: `${id}_prop3`,
+      nested: {
+        prop4: `${id}_prop4`,
+      },
+    });
+
+    beforeEach(() => {
+      jest.resetAllMocks();
+      repository = initRepo({
+        prop1: true,
+        prop2: (value) => value.prop2?.toUpperCase(),
+        nested: true,
+        custom: (value) => `custom_${value.prop3}`,
+      });
+    });
+
+    const itIndexesEntitiesForOperation = (operation: string) => {
+      const verifyIndexEntries = (entries: IndexEntry[]) => {
+        expect(searchService.index).toHaveBeenCalledWith("item", entries);
+      };
+
+      it("indexes fields in repository config (single item)", async () => {
+        const item = createItem("item1");
+
+        await (repository as any)[operation](item);
+
+        verifyIndexEntries([
+          {
+            id: "item1",
+            fields: {
+              prop1: "item1_prop1",
+              prop2: "ITEM1_PROP2",
+              nested: {
+                prop4: "item1_prop4",
+              },
+              custom: "custom_item1_prop3",
+            },
+          },
+        ]);
+      });
+
+      it("indexes fields in repository config (multiple items)", async () => {
+        const item1 = createItem("item1");
+        const item2 = createItem("item2");
+
+        await (repository as any)[operation]([item1, item2]);
+
+        verifyIndexEntries([
+          {
+            id: "item1",
+            fields: {
+              prop1: "item1_prop1",
+              prop2: "ITEM1_PROP2",
+              nested: {
+                prop4: "item1_prop4",
+              },
+              custom: "custom_item1_prop3",
+            },
+          },
+          {
+            id: "item2",
+            fields: {
+              prop1: "item2_prop1",
+              prop2: "ITEM2_PROP2",
+              nested: {
+                prop4: "item2_prop4",
+              },
+              custom: "custom_item2_prop3",
+            },
+          },
+        ]);
+      });
+    };
+
+    describe("save", () => {
+      itIndexesEntitiesForOperation("save");
+    });
+
+    describe("insert", () => {
+      itIndexesEntitiesForOperation("insert");
+    });
+
+    describe("delete", () => {
+      it("requests index deletion (single item)", async () => {
+        await repository.delete("item1");
+
+        expect(searchService.delete).toHaveBeenCalledWith("item", "item1");
+      });
+
+      it("requests index deletion (multiple items)", async () => {
+        await repository.delete("item1", "item2");
+
+        expect(searchService.delete).toHaveBeenCalledWith("item", "item1", "item2");
+      });
+    });
+
+    describe("deleteAll", () => {
+      it("requests search index deletion of all items", async () => {
+        await repository.deleteAll();
+
+        expect(searchService.deleteAll).toHaveBeenCalledWith("item");
+      });
+    });
+
+    describe("search", () => {
+      it("searches and fetches results", async () => {
+        const searchFields: SearchFields = {
+          prop1: "prop1",
+        };
+        const sort: Sort = {
+          field: "prop1",
+        };
+        const page: Page = {
+          limit: 10,
+          offset: 10,
+        };
+
+        (searchService as any).query.mockImplementation(async () => ({
+          resultCount: 2,
+          limit: 10,
+          offset: 10,
+          ids: ["item1", "item2"],
+        }));
+
+        await repository.save([createItem("item1"), createItem("item2")]);
+
+        const results = await repository.search(searchFields, sort, page);
+
+        expect(results).toEqual({
+          resultCount: 2,
+          limit: 10,
+          offset: 10,
+          results: expect.arrayContaining([
+            expect.objectContaining({ id: "item1" }),
+            expect.objectContaining({ id: "item2" }),
+          ]),
+        });
       });
     });
   });

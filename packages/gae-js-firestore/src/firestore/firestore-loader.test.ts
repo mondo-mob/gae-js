@@ -180,87 +180,6 @@ describe("FirestoreLoader", () => {
     });
   });
 
-  describe("update", () => {
-    it("should update documents outside of transaction", async () => {
-      await loader.create([
-        createUserPayload("123", { message: "create" }),
-        createUserPayload("234", { message: "create" }),
-      ]);
-      await loader.update([
-        createUserPayload("123", { message: "update" }),
-        createUserPayload("234", { message: "update" }),
-      ]);
-      const fetched = await firestore.getAll(firestore.doc("/users/123"), firestore.doc("/users/234"));
-      expect(fetched.length).toBe(2);
-      expect(fetched[0].data()).toEqual({ name: `Test User 123`, message: "update" });
-      expect(fetched[1].data()).toEqual({ name: `Test User 234`, message: "update" });
-    });
-
-    it("should set documents in transaction", async () => {
-      await loader.create([
-        createUserPayload("123", { message: "create" }),
-        createUserPayload("234", { message: "create" }),
-      ]);
-      await loader.inTransaction(async (txnLoader) => {
-        await txnLoader.update([
-          createUserPayload("123", { message: "update" }),
-          createUserPayload("234", { message: "update" }),
-        ]);
-      });
-
-      const fetched = await firestore.getAll(firestore.doc("/users/123"), firestore.doc("/users/234"));
-      expect(fetched.length).toBe(2);
-      expect(fetched[0].data()).toEqual({ name: `Test User 123`, message: "update" });
-      expect(fetched[1].data()).toEqual({ name: `Test User 234`, message: "update" });
-    });
-
-    it("rejects document that doesn't exist", async () => {
-      await expect(loader.update([createUserPayload("123")])).rejects.toThrow("NOT_FOUND");
-    });
-
-    it("updates document and updates cache", async () => {
-      const getAllSpy = jest.spyOn(firestore, "getAll");
-
-      await loader.create([createUserPayload("123", { message: "create" })]);
-      await loader.update([createUserPayload("123", { message: "update" })]);
-
-      const fetchedDirect = await firestore.doc("/users/123").get();
-      expect(fetchedDirect.data()).toEqual({ name: `Test User 123`, message: "update" });
-
-      const fetchedCache = await loader.get([firestore.doc("/users/123")]);
-      expect(fetchedCache[0]).toEqual({ name: `Test User 123`, message: "update" });
-      expect(getAllSpy).toBeCalledTimes(1);
-    });
-
-    it("clears stale cache value after transaction completes", async () => {
-      await loader.create([createUserPayload("123", { message: "create" })]);
-      await loader.inTransaction(async (txnLoader) => {
-        await txnLoader.update([createUserPayload("123", { message: "update" })]);
-      });
-
-      const fetchedDirect = await firestore.doc("/users/123").get();
-      expect(fetchedDirect.data()).toEqual({ name: `Test User 123`, message: "update" });
-
-      const fetchedLoader = await loader.get([firestore.doc("/users/123")]);
-      expect(fetchedLoader[0]).toEqual({ name: `Test User 123`, message: "update" });
-    });
-
-    it("should not pollute cache when changing original document", async () => {
-      await loader.create([createUserPayload("123", { message: "create" })]);
-      const getAllSpy = jest.spyOn(firestore, "getAll");
-
-      const original = createUserPayload("123", { message: "update" });
-      await loader.update([original]);
-
-      // If we change a property on the original it should not change cached version
-      original.data.name = "Changed name";
-
-      const [doc1] = await loader.get([original.ref]);
-      expect(getAllSpy).toBeCalledTimes(0);
-      expect(doc1).toEqual({ name: `Test User 123`, message: "update" });
-    });
-  });
-
   describe("delete", () => {
     it("deletes a document outside of transaction", async () => {
       await loader.create([createUserPayload("123")]);
@@ -571,17 +490,17 @@ describe("FirestoreLoader", () => {
         createUserPayload("234", { message: "create" }),
       ]);
       await loader.inTransaction(async (txnLoader) => {
-        await txnLoader.update([createUserPayload("123", { message: "update" })]);
+        await txnLoader.set([createUserPayload("123", { message: "set" })]);
         await txnLoader.set([createUserPayload("234", { message: "set" })]);
         await txnLoader.inTransaction(async (nestedTxnLoader) => {
-          await nestedTxnLoader.update([createUserPayload("234", { message: "updateNested" })]);
+          await nestedTxnLoader.set([createUserPayload("234", { message: "setNested" })]);
         });
       });
 
       const fetched = await firestore.getAll(firestore.doc("/users/123"), firestore.doc("/users/234"));
       expect(fetched.length).toBe(2);
-      expect(fetched[0].data()).toEqual({ name: `Test User 123`, message: "update" });
-      expect(fetched[1].data()).toEqual({ name: `Test User 234`, message: "updateNested" });
+      expect(fetched[0].data()).toEqual({ name: `Test User 123`, message: "set" });
+      expect(fetched[1].data()).toEqual({ name: `Test User 234`, message: "setNested" });
       expect(runTransactionSpy).toBeCalledTimes(1);
     });
 

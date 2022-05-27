@@ -1,7 +1,6 @@
 export * from "./auth";
 export * from "./bootstrap";
 export * from "./configuration";
-export * from "./data";
 export * from "./error";
 export * from "./logging";
 export * from "./middleware";

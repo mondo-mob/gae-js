@@ -7,26 +7,51 @@ import {
   iots as t,
   iotsReporter as reporter,
   isLeft,
-  BaseEntity,
   OneOrMany,
-  Repository,
+  SearchFields,
+  Sort,
+  Page,
+  SearchResults,
+  SearchService,
+  searchProvider,
+  IndexEntry,
+  prepareIndexEntry,
+  IndexConfig,
+  createLogger,
 } from "@mondomob/gae-js-core";
 import { first } from "lodash";
 import { RepositoryError } from "./repository-error";
 import { firestoreProvider } from "./firestore-provider";
+import assert from "assert";
 
-export interface RepositoryOptions<T> {
-  firestore?: Firestore;
-  validator?: t.Type<T>;
+const SEARCH_NOT_ENABLED_MSG = "Search is not configured for this repository";
+
+export interface BaseEntity {
+  id: string;
 }
 
-export class FirestoreRepository<T extends BaseEntity> implements Repository<T, QueryOptions<T>, QueryResponse<T>> {
+export interface RepositorySearchOptions<T extends BaseEntity> {
+  indexName: string;
+  indexConfig: IndexConfig<T>;
+  searchService?: SearchService;
+}
+
+export interface RepositoryOptions<T extends BaseEntity> {
+  firestore?: Firestore;
+  validator?: t.Type<T>;
+  search?: RepositorySearchOptions<T>;
+}
+
+export class FirestoreRepository<T extends BaseEntity> {
+  private readonly logger = createLogger("firestore-repository");
   private readonly validator?: t.Type<T>;
   private readonly firestore?: Firestore;
+  protected readonly searchOptions?: RepositorySearchOptions<T>;
 
   constructor(protected readonly collectionPath: string, options?: RepositoryOptions<T>) {
     this.validator = options?.validator;
     this.firestore = options?.firestore;
+    this.searchOptions = options?.search;
   }
 
   async getRequired(id: string): Promise<T>;
@@ -85,40 +110,10 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
     return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.set(e));
   }
 
-  /**
-   * @deprecated This can produce inconsistent results due to the underlying Firestore update method always
-   * merging fields. Even if you pass a complete entity optional properties may not be cleared by the update
-   * operation. The returned value may also not accurately reflect the updated value in Firestore.
-   * Use the set method instead - although this will not perform the existence check that update currently does.
-   */
-  async update(entities: T): Promise<T>;
-  /**
-   * @deprecated This can produce inconsistent results due to the underlying Firestore update method always
-   * merging fields. Even if you pass a complete entity optional properties may not be cleared by the update
-   * operation. The returned value may also not accurately reflect the updated value in Firestore.
-   * Use the set method instead - although this will not perform the existence check that update currently does.
-   */
-  async update(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
-  /**
-   * @deprecated This can produce inconsistent results due to the underlying Firestore update method always
-   * merging fields. Even if you pass a complete entity optional properties may not be cleared by the update
-   * operation. The returned value may also not accurately reflect the updated value in Firestore.
-   * Use the set method instead - although this will not perform the existence check that update currently does.
-   */
-  async update(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
-    return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.update(e));
-  }
-
   async insert(entities: T): Promise<T>;
   async insert(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
   async insert(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
     return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.create(e));
-  }
-
-  async upsert(_entities: T): Promise<T>;
-  async upsert(_entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
-  async upsert(_entities: OneOrMany<T>): Promise<OneOrMany<T>> {
-    throw new Error("Not implemented");
   }
 
   /**
@@ -135,11 +130,29 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
   async delete(...ids: string[]): Promise<void> {
     const allIds = ids.map((id) => this.documentRef(id));
     await this.getLoader().delete(allIds);
+    if (this.searchOptions) {
+      await this.getSearchService().delete(this.searchOptions.indexName, ...ids);
+    }
   }
 
   async deleteAll(): Promise<void> {
     const collectionRef = this.getFirestore().collection(this.collectionPath);
-    return this.getFirestore().recursiveDelete(collectionRef);
+    await this.getFirestore().recursiveDelete(collectionRef);
+    if (this.searchOptions) {
+      await this.getSearchService().deleteAll(this.searchOptions.indexName);
+    }
+  }
+
+  async search(searchFields: SearchFields, sort?: Sort, page?: Page): Promise<SearchResults<T>> {
+    assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
+    const queryResults = await this.getSearchService().query(this.searchOptions.indexName, searchFields, sort, page);
+    const requests = await this.fetchSearchResults(queryResults.ids);
+    return {
+      resultCount: queryResults.resultCount,
+      limit: queryResults.limit,
+      offset: queryResults.offset,
+      results: requests,
+    };
   }
 
   documentRef = (name: string): DocumentReference => {
@@ -165,7 +178,9 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
       );
 
     await mutation(this.getLoader(), entitiesToSave);
-
+    if (this.searchOptions) {
+      await this.indexForSearch(entities);
+    }
     return entities;
   }
 
@@ -188,6 +203,30 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
     return validation.right;
   };
 
+  protected prepareSearchEntry(entity: T): IndexEntry {
+    assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
+    return prepareIndexEntry(this.searchOptions.indexConfig, entity);
+  }
+
+  protected prepareSearchEntries(entities: OneOrMany<T>): IndexEntry[] {
+    assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
+    return asArray(entities).map((entity) => this.prepareSearchEntry(entity));
+  }
+
+  private indexForSearch(entities: OneOrMany<T>) {
+    assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
+    const entries = this.prepareSearchEntries(entities);
+    return this.getSearchService().index(this.searchOptions.indexName, entries);
+  }
+
+  private async fetchSearchResults(ids: string[]): Promise<ReadonlyArray<T>> {
+    const results = await this.get(ids);
+    if (results.some((result) => !result)) {
+      this.logger.warn("Search results contained at least one null value - search index likely out of sync with db");
+    }
+    return results.filter((result): result is T => !!result);
+  }
+
   private getFirestore = (): Firestore => {
     return this.firestore ?? firestoreProvider.get();
   };
@@ -195,5 +234,9 @@ export class FirestoreRepository<T extends BaseEntity> implements Repository<T, 
   private getLoader = (): FirestoreLoader => {
     const loader = firestoreLoaderRequestStorage.get();
     return loader ?? new FirestoreLoader(this.getFirestore());
+  };
+
+  private getSearchService = (): SearchService => {
+    return this.searchOptions?.searchService ?? searchProvider.get();
   };
 }
