@@ -148,44 +148,6 @@ Step 3: Update your config files to include secret references
 
 That's it - when the config is initialised the secret will be resolved and accessible within your app as `config.apiPassword`
 
-### Client Runtime Configuration
-Provide your static client applications with runtime configuration via the "Google Cloud Runtime Config API"
-
-This is particularly useful for app serving static single pages applications (SPAs) like those created by Create React App.
-Normally with these applications any client side configuration is built into the javascript bundle at build time. So if you 
-need to have different configuration for different environments you either have to rebuild the app or bundle all of the 
-config for every environment you need. Any time a configuration value changes the bundle must be rebuilt. Some background info
-here [https://github.com/facebook/create-react-app/issues/578]https://github.com/facebook/create-react-app/issues/578.
-
-The solution here is for the client to fetch its config from the server on first load. The server loads the appropriate 
-config from the Google Cloud Runtime Config API and returns it as a javascript file that populates the `window.client_env`
-property. Any client code can then fetch the config it needs from that 
-
-The trade-off is an extra round-trip to the server so may not be suitable for all applications.
-
-Step 1: Define your config in the GCP projects
-
-- Create config `web-client-config` (or whatever you want to call it)
-gcloud beta runtime-config configs create web-client-config --project=<your gcp project name>
-  
-- Add config values
-gcloud beta runtime-config configs variables set <CONFIG_KEY> <CONFIG_VALUE> —config-name=web-client-config --project=<your gcp project name>
-... any other values you need
-
-Step 2: Add middleware
-```javascript
-app.use("/client-env.js", clientRuntimeEnv("web-client-config"));
-```
-
-Step 3: Update index.html to load the javascript
-```html
-<html>
-  <body>
-    ...other stuff
-    <script src="%PUBLIC_URL%/client-env.js"></script>
-  </body>
-</html>
-```
 
 ### Serving static resources with ETags
 Around September 2020 Google changed the way it builds GAE apps so that all file timestamps are zeroed out.

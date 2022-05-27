@@ -88,9 +88,6 @@ Extendable, typed and environment aware configuration loader
 #### Configuration Secrets
 Seamlessly load secrets stored in "Google Cloud Secret Manager"
 
-#### Client Runtime Configuration
-Provide your static client applications with runtime configuration via the "Google Cloud Runtime Config API"
-
 #### Serving static resources with etags
 Serve static assets with strong etags to workaround GAE build wiping out your file timestamps
 

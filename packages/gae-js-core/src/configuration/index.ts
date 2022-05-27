@@ -1,4 +1,3 @@
-export * from "./client-runtime-env";
 export * from "./configuration";
 export * from "./configuration-provider";
 export * from "./iots-validator";
