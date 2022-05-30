@@ -28,9 +28,7 @@
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "1.6.0",
-    "@types/express": "4.17.13",
-    "express": "4.17.2",
-    "firebase-admin": "10.0.2"
+    "firebase-admin": "10.2.0"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"
 }
