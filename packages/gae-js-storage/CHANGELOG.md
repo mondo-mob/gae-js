@@ -1,5 +1,26 @@
 # @mondomob/gae-js-storage
 
+## 2.0.0
+
+### Major Changes
+
+- 954c867: BREAKING: `emulatorHost` configuration renamed to `storageEmulatorHost`. Please update configuration accordingly.
+- f62bb4b: Update to new configuration conventions
+
+### Minor Changes
+
+- New configuration property `storageOrigin` can be set to define a storage origin used when creating things like upload urls. The core configuration `host` property is used by default (if defined).
+
+### Patch Changes
+
+- e3e7a5f: Update dependencies to latest. Move common dev dependencies to root
+- Updated dependencies [e3e7a5f]
+- Updated dependencies [cd1b365]
+- Updated dependencies [3e56c75]
+- Updated dependencies [8eca18c]
+- Updated dependencies [c6d48a7]
+  - @mondomob/gae-js-core@2.0.0
+
 ## 1.3.0
 
 ### Minor Changes

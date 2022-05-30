@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-tasks",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Tools for Google Cloud Tasks",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -25,12 +25,12 @@
     "node-fetch": "2.6.7"
   },
   "peerDependencies": {
-    "@mondomob/gae-js-core": "^1.4.0",
+    "@mondomob/gae-js-core": "^2.0.0",
     "@google-cloud/tasks": "^2.4.2",
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "1.6.0",
+    "@mondomob/gae-js-core": "2.0.0",
     "@google-cloud/tasks": "2.6.0",
     "@types/node-fetch": "2.6.1",
     "nock": "13.2.4"

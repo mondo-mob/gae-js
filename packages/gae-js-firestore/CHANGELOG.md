@@ -1,5 +1,23 @@
 # @mondomob/gae-js-firestore
 
+## 2.0.0
+
+### Major Changes
+
+- cd1b365: BREAKING: Refactored Repository and SearchRepository from core directly into firestore/datastore libs. Refactor any usage of SearchRepository to use new standard repositories.
+- BREAKING: Removed deprecated update and upsert methods from FirestoreRepository. Use save() method instead.
+- f62bb4b: Update to new configuration conventions
+
+### Patch Changes
+
+- e3e7a5f: Update dependencies to latest. Move common dev dependencies to root
+- Updated dependencies [e3e7a5f]
+- Updated dependencies [cd1b365]
+- Updated dependencies [3e56c75]
+- Updated dependencies [8eca18c]
+- Updated dependencies [c6d48a7]
+  - @mondomob/gae-js-core@2.0.0
+
 ## 1.5.0
 
 ### Minor Changes

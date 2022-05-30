@@ -1,5 +1,55 @@
 # @mondomob/gae-js-core
 
+## 2.0.0
+
+### Major Changes
+
+- 3e56c75: BREAKING: Configuration rewritten to remove dependency on "config" library.
+  - Where possible `projectId` and `environment` will be inferred from the runtime environment. This allows initialising the lib with zero config.
+  - There is no default environment (was "development") - for local development you must specify one or rely on project name inference.
+  - Options can be passed programmatically as well as through environment variables.
+  - No error is thrown is configuration files do not exist.
+  - Environment variable names changed:
+    - `NODE_CONFIG_ENV` => `GAEJS_CONFIG_ENV` - explicitly sets configuration environment
+    - `NODE_CONFIG_DIR` => `GAEJS_CONFIG_DIR` - sets directory containing configuration files
+    - `NODE_CONFIG` => `GAEJS_CONFIG_OVERRIDES` - stringified JSON of config values to merge into the configuration
+  - New environment variable `GAEJS_PROJECT` - sets the project id the app is running in. Mostly useful for local development/testing.
+  - Validation can now use any framework. Library provides implementation for io-ts validator.
+  - Configuration can be loaded multiple times - e.g. with different sources/options.
+- cd1b365: BREAKING: Refactored Repository and SearchRepository from core directly into firestore/datastore libs. Refactor search usage to use standard repositories instead.
+- 8eca18c: BREAKING: host and location configuration properties are now optional in the config schema. This may break downstream typings expecting these to be mandatory.
+- c6d48a7: BREAKING: Client Runtime Configuration middleware removed. If you need it just pull it from the git history.
+
+#### Upgrading
+
+Follow these steps to upgrade the configuration to new recommended approach:
+
+- Rename `development.json` to `local.json`
+- Remove `projectId` entries from configuration files - this will be set automatically.
+- Add environment variable to local development npm script to set the project. Ensure the project has suffix `-local`.
+
+  ```
+    "scripts": {
+      ...
+      "dev": "GAEJS_PROJECT=gae-js-demo-local nodemon"
+    }
+  ```
+
+- Change any usage of environment variables to new names - e.g. `NODE_CONFIG_ENV` to `GAEJS_CONFIG_ENV`. This is most likely in unit tests.
+- Update initialisation code to create validator and pass as a named param.
+
+  ```typescript
+  // FROM
+  await configurationProvider.init(configSchema);
+
+  // TO
+  await configurationProvider.init({ validator: iotsValidator(configSchema) });
+  ```
+
+### Patch Changes
+
+- e3e7a5f: Update dependencies to latest. Move common dev dependencies to root
+
 ## 1.6.0
 
 ### Minor Changes
