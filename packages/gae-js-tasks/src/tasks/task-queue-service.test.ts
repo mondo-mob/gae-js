@@ -30,15 +30,19 @@ describe("TaskQueueService", () => {
 
       it("posts to local task service with body", async () => {
         const scope = nock("http://localhost").post("/tasks/local-task", { some: "data" }).reply(204);
-        await taskQueueService.enqueue("local-task", { some: "data" });
+        await taskQueueService.enqueue<TestPayload>("local-task", { some: "data" });
         await waitUntil(() => scope.isDone());
       });
 
       it("local task enqueues even if downstream execution fails", async () => {
         const scope = nock("http://localhost").post("/tasks/local-task", { some: "data" }).reply(500);
-        await taskQueueService.enqueue("local-task", { some: "data" });
+        await taskQueueService.enqueue<TestPayload>("local-task", { some: "data" });
         await waitUntil(() => scope.isDone());
       });
+
+      interface TestPayload {
+        some: string;
+      }
     });
 
     describe("local queue custom prefix", () => {

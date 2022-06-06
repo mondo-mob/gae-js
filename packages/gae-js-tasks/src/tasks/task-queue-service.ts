@@ -22,7 +22,7 @@ export class TaskQueueService {
     this.logger.info(`Initialised task queue ${this.queueName} with target path prefix ${this.pathPrefix}`);
   }
 
-  async enqueue(taskName: string, payload: any = {}, inSeconds?: number) {
+  async enqueue<P extends object = object>(taskName: string, payload?: P, inSeconds?: number) {
     if (runningOnGcp()) {
       await this.appEngineQueue(taskName, payload, inSeconds);
     } else {
@@ -30,7 +30,7 @@ export class TaskQueueService {
     }
   }
 
-  async appEngineQueue(taskName: string, payload: any = {}, inSeconds?: number) {
+  private async appEngineQueue(taskName: string, payload: object = {}, inSeconds?: number) {
     const client = new CloudTasksClient();
 
     const projectId = this.configuration.tasksProjectId || this.configuration.projectId;
@@ -78,7 +78,7 @@ export class TaskQueueService {
     });
   }
 
-  async localQueue(taskName: string, payload: any = {}) {
+  private async localQueue(taskName: string, payload: object = {}) {
     if (!this.configuration.host) {
       throw new Error('Cannot resolve local queue path - please configure "host"');
     }
