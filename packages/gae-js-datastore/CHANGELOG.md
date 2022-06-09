@@ -1,5 +1,18 @@
 # @mondomob/gae-js-datastore
 
+## 2.1.0
+
+### Minor Changes
+
+- 59395f6: Support fetching document keys in projection queries
+- 7c1302d: Make DatastoreRepository schema validation optional
+- c3d4e9c: Allow DataRepository.getRequired() to accept array of ids
+- d5db4e7: Add TimestampedRepository to support auto-updating entity timestamps on mutation
+
+### Patch Changes
+
+- 47ca88a: Fix typings for DatastoreRepository.get() when called with array
+
 ## 2.0.0
 
 ### Major Changes
