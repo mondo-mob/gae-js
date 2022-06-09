@@ -147,12 +147,7 @@ describe("DatastoreRepository", () => {
 
   describe("getRequired", () => {
     it("fetches document that exists", async () => {
-      await datastore.insert({
-        key: itemKey("123"),
-        data: {
-          name: "test123",
-        },
-      });
+      await insertItem("123");
 
       const document = await repository.getRequired("123");
 
@@ -164,6 +159,34 @@ describe("DatastoreRepository", () => {
 
     it("throws for document that doesn't exist", async () => {
       await expect(repository.getRequired("123")).rejects.toThrow("invalid id");
+    });
+
+    describe("with array", () => {
+      it("fetches documents that exist", async () => {
+        await insertItem("123");
+        await insertItem("234");
+
+        const results = await repository.getRequired(["123", "234"]);
+
+        expect(results).toEqual([
+          {
+            id: "123",
+            name: "test123",
+          },
+          {
+            id: "234",
+            name: "test234",
+          },
+        ]);
+      });
+
+      it("throws for any document that doesn't exist", async () => {
+        await insertItem("123");
+
+        await expect(repository.getRequired(["123", "does-not-exist", "also-does-not-exist"])).rejects.toThrow(
+          '"repository-items" with id "does-not-exist" failed to load'
+        );
+      });
     });
 
     describe("with schema", () => {

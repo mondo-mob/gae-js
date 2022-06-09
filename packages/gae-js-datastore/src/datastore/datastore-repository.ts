@@ -108,12 +108,17 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
     this.searchOptions = options?.search;
   }
 
-  async getRequired(id: string): Promise<T> {
-    const result = await this.get(id);
-    if (!result) {
-      throw new LoadError(this.kind, id, ["invalid id"]);
+  async getRequired(id: string): Promise<T>;
+  async getRequired(ids: ReadonlyArray<string>): Promise<T[]>;
+  async getRequired(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T>> {
+    const isArrayParam = Array.isArray(ids);
+    const idsArray = isArrayParam ? ids : [ids];
+    const results = await this.get(idsArray);
+    const nullIndex = results.indexOf(null);
+    if (nullIndex >= 0) {
+      throw new LoadError(this.kind, idsArray[nullIndex], ["invalid id"]);
     }
-    return result;
+    return isArrayParam ? (results as ReadonlyArray<T>) : (results[0] as T);
   }
 
   async exists(id: string): Promise<boolean> {
