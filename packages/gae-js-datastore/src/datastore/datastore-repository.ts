@@ -38,8 +38,7 @@ export interface RepositorySearchOptions<T extends BaseEntity> {
 
 export interface RepositoryOptions<T extends BaseEntity> {
   datastore?: Datastore;
-  // TODO: Make optional?
-  validator: t.Type<T>;
+  validator?: t.Type<T>;
   defaultValues?: Partial<Omit<T, "id">>;
   index?: Index<Omit<T, "id">>;
   search?: RepositorySearchOptions<T>;
@@ -99,7 +98,7 @@ class SaveError extends Error {
 
 export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> {
   private readonly logger = createLogger("datastore-repository");
-  private readonly validator: t.Type<T>;
+  private readonly validator?: t.Type<T>;
   private readonly datastore?: Datastore;
   protected readonly searchOptions?: RepositorySearchOptions<T>;
 
@@ -132,7 +131,8 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
 
     const validatedResults = results.map((result, idx) => {
       if (result) {
-        return this.validate(idArray[idx], result);
+        const entity = this.createEntity(idArray[idx], result);
+        return this.validateLoad(entity);
       }
 
       return result;
@@ -149,8 +149,12 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
     const [results, queryInfo] = await this.getLoader().executeQuery<T>(this.kind, options);
 
     return [
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      results.map<any>((value) => this.validate(value[Entity.KEY_SYMBOL].name!, omit(value, Datastore.KEY))),
+      results.map<any>((value) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const entity = this.createEntity(value[Entity.KEY_SYMBOL].name!, omit(value, Datastore.KEY));
+        // Cannot run validation if performing query projection
+        return options.select ? entity : this.validateLoad(entity);
+      }),
       queryInfo,
     ];
   }
@@ -239,17 +243,27 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
     return this.getDatastore().key([this.kind, name]);
   };
 
-  private validate = (id: string, value: Record<string, unknown>): T => {
-    const entity = { ...(this.options.defaultValues as any), ...value, id };
+  private validateLoad = (entity: T) => this.validateEntity(entity, LoadError);
+
+  private validateSave = (entity: T) => this.validateEntity(entity, SaveError);
+
+  private validateEntity = (entity: T, errorClass: new (kind: string, id: string, errors: string[]) => Error): T => {
+    if (!this.validator) {
+      return entity;
+    }
 
     const validation = this.validator.decode(entity);
 
     if (isLeft(validation)) {
       const errors = reporter.report(validation);
-      throw new LoadError(this.kind, id, errors);
+      throw new errorClass(this.kind, entity.id, errors);
     }
 
     return validation.right;
+  };
+
+  private createEntity = (id: string, value: Record<string, unknown>): T => {
+    return { ...(this.options.defaultValues as any), ...value, id };
   };
 
   private async applyMutation(
@@ -257,16 +271,7 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
     mutation: (loader: DatastoreLoader, entities: ReadonlyArray<DatastorePayload>) => Promise<any>
   ): Promise<OneOrMany<T>> {
     const entitiesToSave = asArray(entities)
-      .map((entity) => {
-        const validation = this.validator.decode(entity);
-
-        if (isLeft(validation)) {
-          const errors = reporter.report(validation);
-          throw new SaveError(this.kind, entity.id, errors);
-        }
-
-        return validation.right;
-      })
+      .map(this.validateSave)
       .map((data) => {
         const withoutId = omit(data, "id");
         return {

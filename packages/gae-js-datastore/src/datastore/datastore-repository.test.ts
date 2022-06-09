@@ -34,7 +34,6 @@ const repositoryItemSchema = t.intersection([
 type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
 
 // TODO: beforePersist hook
-// TODO: update
 // TODO: upsert
 
 describe("DatastoreRepository", () => {
@@ -45,7 +44,7 @@ describe("DatastoreRepository", () => {
   beforeAll(async () => (datastore = connectDatastoreEmulator()));
   beforeEach(async () => {
     await deleteKind(datastore, collection);
-    repository = new DatastoreRepository<RepositoryItem>(collection, { datastore, validator: repositoryItemSchema });
+    repository = new DatastoreRepository<RepositoryItem>(collection, { datastore });
     jest.clearAllMocks();
   });
 
@@ -98,6 +97,13 @@ describe("DatastoreRepository", () => {
     });
 
     describe("with schema", () => {
+      beforeEach(() => {
+        repository = new DatastoreRepository<RepositoryItem>(collection, {
+          datastore,
+          validator: repositoryItemSchema,
+        });
+      });
+
       it("fetches document that exists and matches schema", async () => {
         await insertItem("123");
 
@@ -161,6 +167,13 @@ describe("DatastoreRepository", () => {
     });
 
     describe("with schema", () => {
+      beforeEach(() => {
+        repository = new DatastoreRepository<RepositoryItem>(collection, {
+          datastore,
+          validator: repositoryItemSchema,
+        });
+      });
+
       it("fetches document that exists and matches schema", async () => {
         await insertItem("123");
 
@@ -213,6 +226,13 @@ describe("DatastoreRepository", () => {
     });
 
     describe("with schema", () => {
+      beforeEach(() => {
+        repository = new DatastoreRepository<RepositoryItem>(collection, {
+          datastore,
+          validator: repositoryItemSchema,
+        });
+      });
+
       it("saves document outside of transaction that matches schema", async () => {
         await repository.save([createItem("123"), createItem("234")]);
 
@@ -254,6 +274,13 @@ describe("DatastoreRepository", () => {
     });
 
     describe("with schema", () => {
+      beforeEach(() => {
+        repository = new DatastoreRepository<RepositoryItem>(collection, {
+          datastore,
+          validator: repositoryItemSchema,
+        });
+      });
+
       it("inserts documents outside of transaction that match schema", async () => {
         await repository.insert([createItem("123"), createItem("234")]);
 
@@ -265,6 +292,56 @@ describe("DatastoreRepository", () => {
       it("throws for document that doesn't match schema", async () => {
         const abc = { id: "123", message: "no name" } as any as RepositoryItem;
         await expect(repository.insert(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
+      });
+    });
+  });
+
+  describe("update", () => {
+    it("updates documents outside of transaction", async () => {
+      await repository.insert([createItem("123", { message: "create" }), createItem("234", { message: "create" })]);
+
+      await repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })]);
+
+      const fetched = await repository.get(["123", "234"]);
+      expect(fetched.length).toBe(2);
+      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
+    });
+
+    it("updates documents in transaction", async () => {
+      await repository.insert([createItem("123", { message: "create" }), createItem("234", { message: "create" })]);
+
+      await runWithRequestStorage(async () => {
+        datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
+        return runInTransaction(async () =>
+          repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })])
+        );
+      });
+
+      const fetched = await repository.get(["123", "234"]);
+      expect(fetched.length).toBe(2);
+      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
+    });
+
+    describe("with schema", () => {
+      beforeEach(async () => {
+        repository = new DatastoreRepository<RepositoryItem>(collection, {
+          datastore,
+          validator: repositoryItemSchema,
+        });
+        await repository.insert([createItem("123", { message: "create" }), createItem("234", { message: "create" })]);
+      });
+
+      it("updates document outside of transaction that matches schema", async () => {
+        await repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })]);
+
+        const fetched = await repository.get(["123", "234"]);
+        expect(fetched.length).toBe(2);
+        expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
+      });
+
+      it("throws for document that doesn't match schema", async () => {
+        const abc = { id: "123", message: "no name" } as any as RepositoryItem;
+        await expect(repository.save(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
       });
     });
   });
@@ -302,12 +379,13 @@ describe("DatastoreRepository", () => {
         validator: repositoryItemSchema,
         index: {
           name: true,
+          prop1: true,
+          prop2: true,
+          prop3: true,
         },
       });
     });
-    // TODO: selects specific fields
-    // TODO: limit and offset
-    // TODO: ordering
+
     it("filters by exact match", async () => {
       await repository.save([createItem("123"), createItem("234")]);
 
@@ -319,6 +397,196 @@ describe("DatastoreRepository", () => {
 
       expect(results.length).toBe(1);
       expect(results[0].name).toEqual("Test Item 234");
+    });
+
+    it("selects specific fields", async () => {
+      await repository.save([
+        createItem("123", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+        createItem("234", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+      ]);
+
+      const [results] = await repository.query({
+        select: ["prop1", "prop3"],
+      });
+
+      expect(results.length).toBe(2);
+      expect(results[0].prop1).toEqual("prop1");
+      expect(results[0].prop2).toBeUndefined();
+      expect(results[0].prop3).toEqual("prop3");
+    });
+
+    it("selects everything when empty projection query", async () => {
+      await repository.save([
+        createItem("123", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+        createItem("234", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+      ]);
+      const [results] = await repository.query({ select: [] });
+
+      expect(results.length).toEqual(2);
+      expect(results[0]).toEqual({ id: "123", name: "Test Item 123", prop1: "prop1", prop2: "prop2", prop3: "prop3" });
+    });
+
+    it("selects ids only when  projection query", async () => {
+      await repository.save([
+        createItem("123", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+        createItem("234", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
+      ]);
+      const [results] = await repository.query({ select: ["__key__"] });
+
+      expect(results).toEqual([{ id: "123" }, { id: "234" }]);
+    });
+
+    describe("limit and offset", () => {
+      beforeEach(async () => {
+        await repository.save([
+          createItem("123", { prop1: "user1" }),
+          createItem("234", { prop1: "user2" }),
+          createItem("345", { prop1: "user3" }),
+          createItem("456", { prop1: "user4" }),
+          createItem("567", { prop1: "user5" }),
+        ]);
+      });
+
+      it("applies limit", async () => {
+        const [results] = await repository.query({
+          limit: 3,
+        });
+
+        expect(results.length).toBe(3);
+      });
+
+      it("applies offset", async () => {
+        const [results] = await repository.query({
+          offset: 3,
+        });
+
+        expect(results.length).toBe(2);
+        expect(results[0].id).toEqual("456");
+      });
+
+      it("applies limit and offset", async () => {
+        const [results] = await repository.query({
+          limit: 2,
+          offset: 2,
+        });
+
+        expect(results.length).toBe(2);
+        expect(results[0].id).toEqual("345");
+        expect(results[1].id).toEqual("456");
+      });
+    });
+
+    describe("ordering", () => {
+      beforeEach(async () => {
+        await repository.save([
+          createItem("123", { prop1: "AA", prop2: "XX" }),
+          createItem("234", { prop1: "BA", prop2: "XX" }),
+          createItem("345", { prop1: "AB", prop2: "ZZ" }),
+          createItem("456", { prop1: "BB", prop2: "YY" }),
+          createItem("567", { prop1: "CA", prop2: "XX" }),
+        ]);
+      });
+
+      it("orders results ascending", async () => {
+        const [results] = await repository.query({
+          sort: {
+            property: "prop1",
+            options: {
+              descending: false,
+            },
+          },
+        });
+
+        expect(results.length).toBe(5);
+        expect(results.map((doc) => doc.id)).toEqual(["123", "345", "234", "456", "567"]);
+      });
+
+      it("orders results descending", async () => {
+        const [results] = await repository.query({
+          sort: {
+            property: "prop1",
+            options: {
+              descending: true,
+            },
+          },
+        });
+
+        expect(results.length).toBe(5);
+        expect(results.map((doc) => doc.id)).toEqual(["567", "456", "234", "345", "123"]);
+      });
+
+      it("orders by multiple fields", async () => {
+        const [results] = await repository.query({
+          sort: [
+            {
+              property: "prop2",
+              options: {
+                descending: false,
+              },
+            },
+            {
+              property: "prop1",
+              options: {
+                descending: true,
+              },
+            },
+          ],
+        });
+
+        expect(results.length).toBe(5);
+        expect(results.map((doc) => doc.id)).toEqual(["567", "234", "123", "456", "345"]);
+      });
+
+      it("orders results by id special key", async () => {
+        const [results] = await repository.query({
+          sort: [{ property: "prop2" }, { property: "__key__" }],
+        });
+
+        expect(results.length).toBe(5);
+        expect(results.map((doc) => doc.id)).toEqual(["123", "234", "567", "456", "345"]);
+      });
+    });
+
+    describe("cursors", () => {
+      beforeEach(async () => {
+        await repository.save([
+          createItem("123", { prop1: "msg1" }),
+          createItem("234", { prop1: "msg2" }),
+          createItem("345", { prop1: "msg1" }),
+          createItem("456", { prop1: "msg2" }),
+          createItem("567", { prop1: "msg1" }),
+        ]);
+      });
+
+      it("applies start cursor", async () => {
+        const [, queryInfo] = await repository.query({
+          sort: { property: "name" },
+          limit: 2,
+        });
+
+        const [results] = await repository.query({
+          sort: { property: "name" },
+          start: queryInfo.endCursor,
+        });
+
+        expect(results.length).toBe(3);
+        expect(results[0].name).toEqual("Test Item 345");
+      });
+
+      it("applies end cursor", async () => {
+        const [, queryInfo] = await repository.query({
+          sort: { property: "name" },
+          limit: 3,
+        });
+
+        const [results] = await repository.query({
+          sort: { property: "name" },
+          end: queryInfo.endCursor,
+        });
+
+        expect(results.length).toBe(3);
+        expect(results[0].name).toEqual("Test Item 123");
+      });
     });
   });
 
