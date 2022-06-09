@@ -18,7 +18,7 @@ export interface PropertySort<T> {
 }
 
 export interface QueryOptions<T> {
-  select: OneOrMany<keyof T & string>;
+  select: OneOrMany<(keyof T | "__key__") & string>;
   filters: Filters<T>;
   sort: OneOrMany<PropertySort<T>>;
   groupBy: OneOrMany<keyof T & string>;
