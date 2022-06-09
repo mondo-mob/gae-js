@@ -47,7 +47,7 @@ describe("simpleConsoleWriter", () => {
     expectWarnLog("testing: with error | \\{.*\\}");
   });
 
-  it("logs error messages", async () => {
+  it("logs error messages with stack", async () => {
     const logSpy = jest.spyOn(console, "log");
     const expectErrorLog = (msgRegex: string) => {
       expect(logSpy).toHaveBeenCalledWith(
@@ -64,6 +64,6 @@ describe("simpleConsoleWriter", () => {
 
     expectErrorLog("testing: basic message");
     expectErrorLog("testing: formatted message");
-    expectErrorLog("testing: with error | \\{.*\\}");
+    expectErrorLog("testing: with error | \\s+Error: error\\s+at Object\\.<anonymous>\\.+");
   });
 });

@@ -21,7 +21,7 @@ interface LogRecord {
   level: number;
   msg: string;
   time: Date;
-  err?: string;
+  err?: unknown;
 }
 
 const pad = (num: number): string => num.toString().padStart(2, "0");
@@ -48,7 +48,7 @@ export const simpleConsoleWriter: WriteFn = {
     // Other custom objects will not be output to console
     let message = `${time} | ${level} | ${logRecord.msg}`;
     if (logRecord.err) {
-      message = `${message} | ${JSON.stringify(logRecord.err)}`;
+      message = `${message} \n ${errorString(logRecord.err)}`;
     }
 
     // Add colour for levels above INFO
@@ -60,3 +60,9 @@ export const simpleConsoleWriter: WriteFn = {
     }
   },
 };
+
+const errorString = (err: unknown) =>
+  isErrorLike(err) ? err.stack ?? `${err.name}: ${err.message}` : JSON.stringify(err, undefined, 2);
+
+const isErrorLike = (err: unknown): err is Error =>
+  typeof err === "object" && err != null && "message" in err && "name" in err;
