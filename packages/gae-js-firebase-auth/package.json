@@ -27,7 +27,7 @@
     "firebase-admin": ">= 10.0.0"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "2.0.0",
+    "@mondomob/gae-js-core": "2.0.1",
     "firebase-admin": "10.2.0"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"

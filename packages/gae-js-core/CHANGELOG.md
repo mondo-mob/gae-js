@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 2.0.1
+
+### Patch Changes
+
+- 81f78be: Local simple logger tweaked to log errors with full stack so it's easier to read and click through in IDE
+
 ## 2.0.0
 
 ### Major Changes
