@@ -122,7 +122,7 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
   }
 
   async get(id: string): Promise<T | null>;
-  async get(id: ReadonlyArray<string>): Promise<ReadonlyArray<T>>;
+  async get(ids: ReadonlyArray<string>): Promise<ReadonlyArray<T | null>>;
   async get(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T | null>> {
     const idArray = asArray(ids);
     const allKeys = idArray.map(this.key);
