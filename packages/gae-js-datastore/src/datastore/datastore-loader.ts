@@ -24,7 +24,9 @@ export interface QueryOptions<T> {
   groupBy: OneOrMany<keyof T & string>;
   start: string;
   end: string;
+  /** @deprecated Use hasAncestor instead */
   hasAnscestor: Entity.Key;
+  hasAncestor: Entity.Key;
   offset: number;
   limit: number;
 }
@@ -147,7 +149,12 @@ export class DatastoreLoader {
     }
 
     if (options.hasAnscestor) {
+      this.logger.warn("hasAnscestor query option is deprecated - use hasAncestor instead");
       query.hasAncestor(options.hasAnscestor);
+    }
+
+    if (options.hasAncestor) {
+      query.hasAncestor(options.hasAncestor);
     }
 
     if (options.limit) {
