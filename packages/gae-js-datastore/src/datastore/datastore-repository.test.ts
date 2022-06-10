@@ -28,6 +28,7 @@ const repositoryItemSchema = t.intersection([
     nested: t.type({
       prop4: t.string,
     }),
+    propArray: t.array(t.string),
   }),
 ]);
 
@@ -405,6 +406,7 @@ describe("DatastoreRepository", () => {
           prop1: true,
           prop2: true,
           prop3: true,
+          propArray: true,
         },
       });
     });
@@ -420,6 +422,34 @@ describe("DatastoreRepository", () => {
 
       expect(results.length).toBe(1);
       expect(results[0].name).toEqual("Test Item 234");
+    });
+
+    it("filters by array match using short filter", async () => {
+      await repository.save([
+        createItem("123", { propArray: ["ROLE_1", "ROLE_2"] }),
+        createItem("234", { propArray: ["ROLE_1", "ROLE_3"] }),
+      ]);
+
+      const [results] = await repository.query({
+        filters: { propArray: "ROLE_3" },
+      });
+
+      expect(results.length).toBe(1);
+      expect(results[0].name).toEqual("Test Item 234");
+    });
+
+    it("filters by array match using complex filter", async () => {
+      await repository.save([
+        createItem("123", { propArray: ["ROLE_1", "ROLE_2"] }),
+        createItem("234", { propArray: ["ROLE_1", "ROLE_3"] }),
+      ]);
+
+      const [results] = await repository.query({
+        filters: { propArray: { op: "=", value: "ROLE_2" } },
+      });
+
+      expect(results.length).toBe(1);
+      expect(results[0].name).toEqual("Test Item 123");
     });
 
     it("selects specific fields", async () => {

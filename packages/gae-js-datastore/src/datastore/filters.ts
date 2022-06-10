@@ -18,7 +18,7 @@ type FilterType<T> = [T] extends [Date] ? Filter<T> : [T] extends [object] ? Fil
 type FilterArray<T extends any[]> = T[0] extends object ? Filters<T[0]> : FilterType<T[0]>;
 
 export type Filters<T> = {
-  [K in keyof T]?: T[K] extends any[] ? FilterArray<T[K]> : FilterType<T[K]>;
+  [K in keyof T]?: Required<T>[K] extends any[] ? FilterArray<Required<T>[K]> : FilterType<T[K]>;
 };
 
 export function isComplexFilter<T>(filter: Filter<T>): filter is ComplexFilter<T> {
