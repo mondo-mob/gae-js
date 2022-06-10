@@ -1,5 +1,15 @@
 # @mondomob/gae-js-datastore
 
+## 2.2.0
+
+### Minor Changes
+
+- c367c35: Deprecated hasAnscestor query option in favour of correctly spelled hasAncestor
+
+### Patch Changes
+
+- c40dd29: Fix typings to allow querying by optional array property
+
 ## 2.1.0
 
 ### Minor Changes
