@@ -24,18 +24,17 @@ export const serveStaticWithEtag = (root: string, options?: { ignorePaths: strin
   const rootFolder = path.resolve(root);
   const validFiles: Record<string, string> = {};
 
-  let initFilesPromise: Promise<void>;
-  if (pathExists(rootFolder)) {
-    initFilesPromise = fetchFileList(rootFolder).then((allFiles) => {
-      allFiles
-        .filter((file) => !options?.ignorePaths?.some((path) => file.startsWith(path)))
-        .forEach((file) => (validFiles[file] = HASH_UNSET));
-      logger.info("Serving static files: ", Object.keys(validFiles));
-    });
-  } else {
+  if (!pathExists(rootFolder)) {
     logger.warn(`Requested static folder ${rootFolder} does not exist - cannot serve files`);
-    initFilesPromise = Promise.resolve();
+    return (req, res, next) => next();
   }
+
+  const initFilesPromise = fetchFileList(rootFolder).then((allFiles) => {
+    allFiles
+      .filter((file) => !options?.ignorePaths?.some((path) => file.startsWith(path)))
+      .forEach((file) => (validFiles[file] = HASH_UNSET));
+    logger.info("Serving static files: ", Object.keys(validFiles));
+  });
 
   return async (req, res, next) => {
     await initFilesPromise;

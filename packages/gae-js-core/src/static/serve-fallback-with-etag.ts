@@ -1,6 +1,6 @@
 import * as path from "path";
 import { Handler } from "express";
-import { generateHash } from "./utils";
+import { generateHash, pathExists } from "./utils";
 import { createLogger } from "../logging";
 
 /**
@@ -16,6 +16,12 @@ import { createLogger } from "../logging";
 export const serveFallbackWithEtag = (file: string): Handler => {
   const logger = createLogger("serveFallbackWithEtag");
   const fullFilePath = path.resolve(file);
+
+  if (!pathExists(fullFilePath)) {
+    logger.warn(`Requested fallback file ${fullFilePath} does not exist - cannot serve file`);
+    return (req, res, next) => next();
+  }
+
   const hashPromise = generateHash(fullFilePath);
 
   return async (req, res, next) => {

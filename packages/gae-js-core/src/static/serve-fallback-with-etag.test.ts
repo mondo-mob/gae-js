@@ -1,16 +1,16 @@
-import express from "express";
+import express, { Application } from "express";
 import request from "supertest";
 import { generateHash } from "./utils";
 import { serveFallbackWithEtag } from "./serve-fallback-with-etag";
 
-const initApp = () => {
+const initApp = (fallback = "src/static/index.ts") => {
   const app = express();
   app.get("/notfallback", (req, res, next) => {
     // contrived example to marked headersSent flag to true
     res.writeHead(200, { "Content-Type": "text/plain" });
     next();
   });
-  app.use("/*", serveFallbackWithEtag("src/static/index.ts"));
+  app.use("/*", serveFallbackWithEtag(fallback));
   app.get("/notfallback", (req, res) => {
     res.write("NOT FALLBACK");
     res.end();
@@ -19,7 +19,8 @@ const initApp = () => {
 };
 
 describe("serveFallbackWithEtag", () => {
-  const app = initApp();
+  let app: Application;
+  beforeEach(() => (app = initApp()));
 
   it("returns fallback file with etag", async () => {
     const expectedHash = await generateHash("src/static/index.ts");
@@ -34,6 +35,12 @@ describe("serveFallbackWithEtag", () => {
   });
 
   it("does not interfere when headers already sent", async () => {
+    await request(app).get("/notfallback").expect(200).expect("NOT FALLBACK");
+  });
+
+  it("ignores missing fallback file", async () => {
+    app = initApp("not-a-file");
+
     await request(app).get("/notfallback").expect(200).expect("NOT FALLBACK");
   });
 });
