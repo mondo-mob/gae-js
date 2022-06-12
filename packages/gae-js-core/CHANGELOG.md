@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 2.0.2
+
+### Patch Changes
+
+- 650a06f: Log warning but don't throw error if static folder doesn't exist
+
 ## 2.0.1
 
 ### Patch Changes
