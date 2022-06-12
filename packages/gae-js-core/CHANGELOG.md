@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 2.0.3
+
+### Patch Changes
+
+- a38c8d4: Log warning but don't throw error if fallback file doesn't exist
+
 ## 2.0.2
 
 ### Patch Changes
