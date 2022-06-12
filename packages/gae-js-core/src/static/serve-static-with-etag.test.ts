@@ -1,17 +1,20 @@
-import express from "express";
+import express, { Application } from "express";
 import request from "supertest";
 import { serveStaticWithEtag } from "./serve-static-with-etag";
 import { generateHash } from "./utils";
 
-const initApp = () => {
+const initApp = (folder = "src/static") => {
   const app = express();
-  app.use(serveStaticWithEtag("src/static"));
+  app.use(serveStaticWithEtag(folder));
   app.get("/", (req, res) => res.send("NOT STATIC"));
   return app;
 };
 
 describe("serveStaticWithEtag", () => {
-  const app = initApp();
+  let app: Application;
+  beforeEach(() => {
+    app = initApp();
+  });
 
   it("returns known file with etag", async () => {
     const expectedHash = await generateHash("src/static/index.ts");
@@ -26,6 +29,12 @@ describe("serveStaticWithEtag", () => {
   });
 
   it("passes through request for unrecognised file", async () => {
+    await request(app).get("/").expect(200).expect("NOT STATIC");
+  });
+
+  it("ignores invalid folder", async () => {
+    app = initApp("not-a-folder");
+
     await request(app).get("/").expect(200).expect("NOT STATIC");
   });
 });

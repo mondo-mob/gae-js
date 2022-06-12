@@ -29,3 +29,7 @@ export const fetchFileList = async (rootFolder: string, folder = "/"): Promise<s
 
   return filePaths;
 };
+
+export const pathExists = (fileOrFolderPath: string): boolean => {
+  return fs.existsSync(fileOrFolderPath);
+};
