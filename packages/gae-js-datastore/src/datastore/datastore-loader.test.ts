@@ -1,7 +1,6 @@
-import { DatastoreLoader, DatastorePayload } from "./datastore-loader";
+import { DatastoreEntity, DatastoreLoader, DatastorePayload } from "./datastore-loader";
 import { connectDatastoreEmulator, deleteKind } from "./test-utils";
 import { Datastore, Key } from "@google-cloud/datastore";
-import _ from "lodash";
 
 interface User {
   id: string;
@@ -32,9 +31,16 @@ describe("DatastoreLoader", () => {
       },
     };
   };
+  const datastoreEntity = (id: string, data?: Record<string, unknown>): DatastoreEntity => {
+    return {
+      [Datastore.KEY]: userKey(id),
+      ...data,
+    };
+  };
+
   const fetchDirect = async (ids: string[]) => {
     const [fetched] = await datastore.get(ids.map(userKey));
-    return fetched.map((f: any) => _.omit(f, Datastore.KEY));
+    return fetched.map((f: any) => f);
   };
   const fetchLoader = async (ids: string[]) => {
     return loader.get(ids.map(userKey));
@@ -65,7 +71,7 @@ describe("DatastoreLoader", () => {
       await loader.insert([createUserPayload("123"), createUserPayload("234")]);
       const fetched = await fetchDirect(["123", "234"]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ name: `Test User 123` });
+      expect(fetched[0]).toEqual(datastoreEntity("123", { name: `Test User 123` }));
     });
 
     it("creates documents in transaction", async () => {
@@ -75,7 +81,7 @@ describe("DatastoreLoader", () => {
 
       const fetched = await fetchDirect(["456", "789"]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ name: `Test User 456` });
+      expect(fetched[0]).toEqual(datastoreEntity("456", { name: `Test User 456` }));
     });
 
     it("rejects for document that already exists", async () => {
@@ -89,7 +95,7 @@ describe("DatastoreLoader", () => {
       await loader.save([createUserPayload("123"), createUserPayload("234")]);
       const [fetched] = await datastore.get([userKey("123"), userKey("234")]);
       expect(fetched.length).toBe(2);
-      expect(_.omit(fetched[0], Datastore.KEY)).toEqual({ name: `Test User 123` });
+      expect(fetched[0]).toEqual(datastoreEntity("123", { name: `Test User 123` }));
     });
 
     it("should save documents in transaction", async () => {
@@ -99,7 +105,7 @@ describe("DatastoreLoader", () => {
 
       const fetched = await fetchDirect(["456", "789"]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ name: `Test User 456` });
+      expect(fetched[0]).toEqual(datastoreEntity("456", { name: `Test User 456` }));
     });
 
     it("overwrites document that already exists and updates cache", async () => {
@@ -107,10 +113,10 @@ describe("DatastoreLoader", () => {
       await loader.save([createUserPayload("123", { message: "save" })]);
 
       const fetchedDirect = await fetchDirect(["123"]);
-      expect(fetchedDirect[0]).toEqual({ name: `Test User 123`, message: "save" });
+      expect(fetchedDirect[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "save" }));
 
       const fetchedCache = await fetchLoader(["123"]);
-      expect(fetchedCache[0]).toEqual({ name: `Test User 123`, message: "save" });
+      expect(fetchedCache[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "save" }));
     });
 
     it("clears stale cache value after transaction completes", async () => {
@@ -120,10 +126,10 @@ describe("DatastoreLoader", () => {
       });
 
       const fetchedDirect = await fetchDirect(["123"]);
-      expect(fetchedDirect[0]).toEqual({ name: `Test User 123`, message: "save" });
+      expect(fetchedDirect[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "save" }));
 
       const fetchedLoader = await fetchLoader(["123"]);
-      expect(fetchedLoader[0]).toEqual({ name: `Test User 123`, message: "save" });
+      expect(fetchedLoader[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "save" }));
     });
   });
 
@@ -140,8 +146,8 @@ describe("DatastoreLoader", () => {
 
       const fetched = await fetchDirect(["123", "234"]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ name: `Test User 123`, message: "update" });
-      expect(fetched[1]).toEqual({ name: `Test User 234`, message: "update" });
+      expect(fetched[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "update" }));
+      expect(fetched[1]).toEqual(datastoreEntity("234", { name: `Test User 234`, message: "update" }));
     });
 
     it("should update documents in transaction", async () => {
@@ -158,8 +164,8 @@ describe("DatastoreLoader", () => {
 
       const fetched = await fetchDirect(["123", "234"]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ name: `Test User 123`, message: "update" });
-      expect(fetched[1]).toEqual({ name: `Test User 234`, message: "update" });
+      expect(fetched[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "update" }));
+      expect(fetched[1]).toEqual(datastoreEntity("234", { name: `Test User 234`, message: "update" }));
     });
 
     it("rejects document that doesn't exist", async () => {
@@ -171,10 +177,10 @@ describe("DatastoreLoader", () => {
       await loader.update([createUserPayload("123", { message: "update" })]);
 
       const fetchedDirect = await fetchDirect(["123"]);
-      expect(fetchedDirect[0]).toEqual({ name: `Test User 123`, message: "update" });
+      expect(fetchedDirect[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "update" }));
 
       const fetchedCache = await fetchLoader(["123"]);
-      expect(fetchedCache[0]).toEqual({ name: `Test User 123`, message: "update" });
+      expect(fetchedCache[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "update" }));
     });
 
     it("clears stale cache value after transaction completes", async () => {
@@ -184,10 +190,10 @@ describe("DatastoreLoader", () => {
       });
 
       const fetchedDirect = await fetchDirect(["123"]);
-      expect(fetchedDirect[0]).toEqual({ name: `Test User 123`, message: "update" });
+      expect(fetchedDirect[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "update" }));
 
       const fetchedLoader = await fetchLoader(["123"]);
-      expect(fetchedLoader[0]).toEqual({ name: `Test User 123`, message: "update" });
+      expect(fetchedLoader[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "update" }));
     });
   });
 
@@ -204,8 +210,8 @@ describe("DatastoreLoader", () => {
 
       const fetched = await fetchDirect(["123", "234"]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ name: `Test User 123`, message: "upsert" });
-      expect(fetched[1]).toEqual({ name: `Test User 234`, message: "upsert" });
+      expect(fetched[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "upsert" }));
+      expect(fetched[1]).toEqual(datastoreEntity("234", { name: `Test User 234`, message: "upsert" }));
     });
 
     it("should update documents in transaction", async () => {
@@ -222,15 +228,15 @@ describe("DatastoreLoader", () => {
 
       const fetched = await fetchDirect(["123", "234"]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ name: `Test User 123`, message: "upsert" });
-      expect(fetched[1]).toEqual({ name: `Test User 234`, message: "upsert" });
+      expect(fetched[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "upsert" }));
+      expect(fetched[1]).toEqual(datastoreEntity("234", { name: `Test User 234`, message: "upsert" }));
     });
 
     it("creates document that doesn't exist", async () => {
       await loader.upsert([createUserPayload("123", { message: "upsert" })]);
 
       const fetched = await fetchDirect(["123"]);
-      expect(fetched[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+      expect(fetched[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "upsert" }));
     });
 
     it("updates document and updates cache", async () => {
@@ -238,10 +244,10 @@ describe("DatastoreLoader", () => {
       await loader.upsert([createUserPayload("123", { message: "upsert" })]);
 
       const fetchedDirect = await fetchDirect(["123"]);
-      expect(fetchedDirect[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+      expect(fetchedDirect[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "upsert" }));
 
       const fetchedCache = await fetchLoader(["123"]);
-      expect(fetchedCache[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+      expect(fetchedCache[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "upsert" }));
     });
 
     it("clears stale cache value after transaction completes", async () => {
@@ -251,10 +257,10 @@ describe("DatastoreLoader", () => {
       });
 
       const fetchedDirect = await fetchDirect(["123"]);
-      expect(fetchedDirect[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+      expect(fetchedDirect[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "upsert" }));
 
       const fetchedLoader = await fetchLoader(["123"]);
-      expect(fetchedLoader[0]).toEqual({ name: `Test User 123`, message: "upsert" });
+      expect(fetchedLoader[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "upsert" }));
     });
   });
 
@@ -321,8 +327,8 @@ describe("DatastoreLoader", () => {
       const [results] = await loader.executeQuery("users", {});
       const docs = await fetchLoader(["123"]);
 
-      expect(_.omit(results[0], Datastore.KEY)).toEqual({ prop1: "prop1" });
-      expect(docs[0]).toEqual({ prop1: "prop1" });
+      expect(results[0]).toEqual(datastoreEntity("123", { prop1: "prop1" }));
+      expect(docs[0]).toEqual(datastoreEntity("123", { prop1: "prop1" }));
       expect(getSpy).toBeCalledTimes(0);
     });
 
@@ -335,8 +341,8 @@ describe("DatastoreLoader", () => {
       });
       const docs = await fetchLoader(["123"]);
 
-      expect(_.omit(results[0], Datastore.KEY)).toEqual({ prop1: "prop1", prop3: "prop3" });
-      expect(docs[0]).toEqual({ prop1: "prop1", prop2: "prop2", prop3: "prop3" });
+      expect(results[0]).toEqual(datastoreEntity("123", { prop1: "prop1", prop3: "prop3" }));
+      expect(docs[0]).toEqual(datastoreEntity("123", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }));
       expect(getSpy).toBeCalledTimes(1);
     });
 
@@ -523,8 +529,8 @@ describe("DatastoreLoader", () => {
 
       const fetched = await fetchDirect(["123", "234"]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ name: `Test User 123`, message: "update" });
-      expect(fetched[1]).toEqual({ name: `Test User 234`, message: "updateNested" });
+      expect(fetched[0]).toEqual(datastoreEntity("123", { name: `Test User 123`, message: "update" }));
+      expect(fetched[1]).toEqual(datastoreEntity("234", { name: `Test User 234`, message: "updateNested" }));
       expect(runTransactionSpy).toBeCalledTimes(1);
     });
 
@@ -556,7 +562,7 @@ describe("DatastoreLoader", () => {
       expect(txn2Result.data).toEqual({ owner: "txn2" });
 
       const fetched = await fetchDirect(["555"]);
-      expect(fetched[0]).toEqual({ owner: "txn2" });
+      expect(fetched[0]).toEqual(datastoreEntity("555", { owner: "txn2" }));
     });
   });
 });

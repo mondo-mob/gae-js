@@ -41,8 +41,8 @@ export interface DatastorePayload {
   excludeFromIndexes?: string[];
 }
 
-export type WithDatastoreKey<T> = T & {
-  [Entity.KEY_SYMBOL]: Entity.Key;
+export type DatastoreEntity = DocumentData & {
+  [Datastore.KEY]: Entity.Key;
 };
 
 function isTransaction(datastore: Datastore | Transaction): datastore is Transaction {
@@ -50,7 +50,7 @@ function isTransaction(datastore: Datastore | Transaction): datastore is Transac
 }
 
 export class DatastoreLoader {
-  private readonly loader: DataLoader<Entity.Key, DocumentData>;
+  private readonly loader: DataLoader<Entity.Key, DatastoreEntity | null>;
   private readonly datastore: Datastore | Transaction;
   private readonly logger: Logger;
 
@@ -62,13 +62,23 @@ export class DatastoreLoader {
     this.logger = createLogger("datastore-loader");
   }
 
-  public async get(ids: Entity.Key[]): Promise<Array<DocumentData | null>> {
+  public async get(ids: Entity.Key[]): Promise<Array<DatastoreEntity | null>> {
     const results = await this.loader.loadMany(ids);
-    const firstError = results.find((result) => result instanceof Error);
-    if (firstError) {
-      throw firstError;
+    const { values, errors } = results.reduce(
+      (acc, entry) => {
+        if (entry instanceof Error) {
+          acc.errors.push(entry);
+        } else {
+          acc.values.push(entry);
+        }
+        return acc;
+      },
+      { errors: [] as Array<Error>, values: [] as Array<DatastoreEntity | null> }
+    );
+    if (errors.length) {
+      throw errors[0];
     }
-    return results;
+    return values;
   }
 
   /**
@@ -121,7 +131,7 @@ export class DatastoreLoader {
   public async executeQuery<T>(
     kind: string,
     options: Partial<QueryOptions<T>>
-  ): Promise<[WithDatastoreKey<T>[], RunQueryInfo]> {
+  ): Promise<[DatastoreEntity[], RunQueryInfo]> {
     let query = this.datastore.createQuery(kind);
 
     if (options.select) {
@@ -170,11 +180,11 @@ export class DatastoreLoader {
     if (!options.select) {
       // Update cache only when query does not select specific fields
       results.forEach((result: any) => {
-        this.loader.clear(result[Datastore.KEY]).prime(result[Datastore.KEY], _.omit(result, Datastore.KEY));
+        this.loader.clear(result[Datastore.KEY]).prime(result[Datastore.KEY], result);
       });
     }
 
-    return [results as WithDatastoreKey<T>[], queryInfo];
+    return [results as DatastoreEntity[], queryInfo];
   }
 
   public isTransaction(): boolean {
@@ -210,14 +220,19 @@ export class DatastoreLoader {
     }
   }
 
-  private static resetDataloaderCache(loader: DataLoader<Entity.Key, DocumentData>, key: Entity.Key, data: any) {
-    return loader.clear(key).prime(key, data);
+  private static resetDataloaderCache(
+    loader: DataLoader<Entity.Key, DatastoreEntity | null>,
+    key: Entity.Key,
+    data: DocumentData | null
+  ) {
+    const datastoreEntity = { [Datastore.KEY]: key, ...data };
+    return loader.clear(key).prime(key, datastoreEntity);
   }
 
   private async applyBatched<T>(
     values: ReadonlyArray<T>,
     operation: (datastore: Datastore | Transaction, chunk: ReadonlyArray<T>) => Promise<any> | void,
-    updateLoader: (loader: DataLoader<Entity.Key, DocumentData>, value: T) => void,
+    updateLoader: (loader: DataLoader<Entity.Key, DatastoreEntity | null>, value: T) => void,
     batchSize = 100
   ) {
     const entityChunks: T[][] = _.chunk(values, batchSize);
@@ -227,14 +242,11 @@ export class DatastoreLoader {
     values.forEach((value) => updateLoader(this.loader, value));
   }
 
-  private load = async (keys: ReadonlyArray<Entity.Key>): Promise<Array<any | Error>> => {
+  private load = async (keys: ReadonlyArray<Entity.Key>): Promise<Array<DatastoreEntity | null | Error>> => {
     const [results] = await this.datastore.get([...keys]);
     return keys.map((key) => {
       const result = results.find((result: any) => keysEqual(result[Datastore.KEY], key));
-      if (result) {
-        return _.omit(result, Datastore.KEY);
-      }
-      return null;
+      return result || null;
     });
   };
 }

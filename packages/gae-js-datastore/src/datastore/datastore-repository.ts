@@ -19,7 +19,14 @@ import {
   SearchService,
   Sort,
 } from "@mondomob/gae-js-core";
-import { DatastoreLoader, DatastorePayload, Index, QueryOptions, QueryResponse } from "./datastore-loader";
+import {
+  DatastoreEntity,
+  DatastoreLoader,
+  DatastorePayload,
+  Index,
+  QueryOptions,
+  QueryResponse,
+} from "./datastore-loader";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { datastoreProvider } from "./datastore-provider";
 import assert from "assert";
@@ -108,6 +115,17 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
     this.searchOptions = options?.search;
   }
 
+  public key = (name: string): Entity.Key => {
+    return this.getDatastore().key([this.kind, name]);
+  };
+
+  private fromDatastoreEntity(datastoreEntity: DatastoreEntity): T {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const id = datastoreEntity[Datastore.KEY].name!;
+    const data = omit(datastoreEntity, Datastore.KEY);
+    return { ...(this.options.defaultValues as any), ...data, id };
+  }
+
   async getRequired(id: string): Promise<T>;
   async getRequired(ids: ReadonlyArray<string>): Promise<T[]>;
   async getRequired(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T>> {
@@ -134,12 +152,11 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
 
     const results = await this.getLoader().get(allKeys);
 
-    const validatedResults = results.map((result, idx) => {
+    const validatedResults = results.map((result) => {
       if (result) {
-        const entity = this.createEntity(idArray[idx], result);
+        const entity = this.fromDatastoreEntity(result);
         return this.validateLoad(entity);
       }
-
       return result;
     });
 
@@ -155,8 +172,7 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
 
     return [
       results.map<any>((value) => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const entity = this.createEntity(value[Entity.KEY_SYMBOL].name!, omit(value, Datastore.KEY));
+        const entity = this.fromDatastoreEntity(value);
         // Cannot run validation if performing query projection
         return options.select ? entity : this.validateLoad(entity);
       }),
@@ -244,10 +260,6 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
     };
   }
 
-  public key = (name: string): Entity.Key => {
-    return this.getDatastore().key([this.kind, name]);
-  };
-
   private validateLoad = (entity: T) => this.validateEntity(entity, LoadError);
 
   private validateSave = (entity: T) => this.validateEntity(entity, SaveError);
@@ -265,10 +277,6 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
     }
 
     return validation.right;
-  };
-
-  private createEntity = (id: string, value: Record<string, unknown>): T => {
-    return { ...(this.options.defaultValues as any), ...value, id };
   };
 
   private async applyMutation(
