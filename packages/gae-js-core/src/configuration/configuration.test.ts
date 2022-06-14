@@ -2,7 +2,7 @@ import { ConfigurationOptions, ConfigValidator, initialiseConfiguration } from "
 import { iots } from "../util";
 import { gaeJsCoreConfigurationSchema } from "./schema";
 import { ENV_VAR_CONFIG_ENV, ENV_VAR_CONFIG_OVERRIDES, ENV_VAR_PROJECT } from "./variables";
-import { iotsValidator } from "./iots-validator";
+import { iotsValidator } from "../util/iots";
 import { withEnvVars } from "../__test/test-utils";
 import SpyInstance = jest.SpyInstance;
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";

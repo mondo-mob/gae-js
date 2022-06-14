@@ -1,3 +1,4 @@
+export * from "./data";
 export * from "./environment";
 export * from "./iots";
 export * from "./provider";

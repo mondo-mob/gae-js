@@ -5,10 +5,11 @@ import Path from "path";
 import FileSystem from "fs";
 import { ENV_VAR_CONFIG_DIR, ENV_VAR_CONFIG_ENV, ENV_VAR_CONFIG_OVERRIDES, ENV_VAR_PROJECT } from "./variables";
 import { SecretsResolver } from "./secrets/secrets.resolver";
+import { DataValidator } from "../util/data";
 
 export type EnvironmentStrategy = (projectId?: string) => string | undefined;
 
-export type ConfigValidator<T> = (data: unknown) => T;
+export type ConfigValidator<T> = DataValidator<T>;
 
 export interface ConfigurationOptions<T extends GaeJsCoreConfiguration> {
   validator: ConfigValidator<T>;
@@ -119,7 +120,11 @@ const loadRawConfiguration = async <T extends GaeJsCoreConfiguration>(
   });
 
   // 6. Validate final config matches expected schema
-  return options.validator(mergedConfig);
+  try {
+    return options.validator(mergedConfig);
+  } catch (e) {
+    throw new Error(`Configuration does not conform to expected format: ${(e as Error).message}`);
+  }
 };
 
 const resolveSecrets = async (config: Record<string, unknown>): Promise<Record<string, unknown>> => {

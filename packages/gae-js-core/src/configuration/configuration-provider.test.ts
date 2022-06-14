@@ -1,7 +1,7 @@
 import * as t from "io-ts";
 import { ConfigurationProvider } from "./configuration-provider";
 import { gaeJsCoreConfigurationSchema } from "./schema";
-import { iotsValidator } from "./iots-validator";
+import { iotsValidator } from "../util/iots";
 import { ENV_VAR_CONFIG_OVERRIDES, ENV_VAR_PROJECT } from "./variables";
 
 const testConfigSchema = t.intersection([
