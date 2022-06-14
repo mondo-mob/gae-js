@@ -1,6 +1,6 @@
 import { DatastoreLoader } from "./datastore-loader";
 import { Datastore } from "@google-cloud/datastore";
-import { connectDatastoreEmulator, deleteKind, RepositoryItem, repositoryItemSchema } from "./test-utils";
+import { connectDatastoreEmulator, deleteKind, RepositoryItem } from "./test-utils";
 import { isTransactionActive, runInTransaction, Transactional } from "./transactional";
 import { DatastoreRepository } from "./datastore-repository";
 import { runWithRequestStorage } from "@mondomob/gae-js-core";
@@ -47,8 +47,8 @@ describe("Transactional", () => {
   beforeEach(async () => {
     await deleteKind(datastore, collection1);
     await deleteKind(datastore, collection2);
-    repository1 = new DatastoreRepository<RepositoryItem>(collection1, { datastore, validator: repositoryItemSchema });
-    repository2 = new DatastoreRepository<RepositoryItem>(collection2, { datastore, validator: repositoryItemSchema });
+    repository1 = new DatastoreRepository<RepositoryItem>(collection1, { datastore });
+    repository2 = new DatastoreRepository<RepositoryItem>(collection2, { datastore });
     service = new TransactionalService(repository1, repository2);
     jest.clearAllMocks();
   });

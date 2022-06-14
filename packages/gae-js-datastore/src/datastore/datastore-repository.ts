@@ -4,11 +4,9 @@ import { chain, first, flatMap, omit } from "lodash";
 import {
   asArray,
   createLogger,
+  DataValidator,
   IndexConfig,
   IndexEntry,
-  iots as t,
-  iotsReporter as reporter,
-  isLeft,
   OneOrMany,
   Page,
   prepareIndexEntry,
@@ -45,7 +43,7 @@ export interface RepositorySearchOptions<T extends BaseEntity> {
 
 export interface RepositoryOptions<T extends BaseEntity> {
   datastore?: Datastore;
-  validator?: t.Type<T>;
+  validator?: DataValidator<T>;
   defaultValues?: Partial<Omit<T, "id">>;
   index?: Index<Omit<T, "id">>;
   search?: RepositorySearchOptions<T>;
@@ -77,35 +75,21 @@ export function buildExclusions<T>(input: T, schema: Index<T> = {}, path = ""): 
   return [path];
 }
 
-export const datastoreKey = new t.Type<Entity.Key>(
-  "Entity.Key",
-  (input): input is Entity.Key => typeof input === "object",
-  (input) => t.success(input as Entity.Key),
-  (value: Entity.Key) => value
-);
-
-export const dateType = new t.Type<Date>(
-  "DateType",
-  (m): m is Date => m instanceof Date,
-  (m, c) => (m instanceof Date ? t.success(m) : t.failure("Value is not date", c)),
-  (a) => a
-);
-
 class LoadError extends Error {
-  constructor(kind: string, id: string, errors: string[]) {
-    super(`"${kind}" with id "${id}" failed to load due to ${errors.length} errors:\n${errors.join("\n")}`);
+  constructor(kind: string, id: string, message: string) {
+    super(`"${kind}" with id "${id}" failed to load due to error:\n${message})}`);
   }
 }
 
 class SaveError extends Error {
-  constructor(kind: string, id: string, errors: string[]) {
-    super(`"${kind}" with id "${id}" failed to save due to ${errors.length} errors:\n${errors.join("\n")}`);
+  constructor(kind: string, id: string, message: string) {
+    super(`"${kind}" with id "${id}" failed to save due to error:\n${message}`);
   }
 }
 
 export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> {
   private readonly logger = createLogger("datastore-repository");
-  private readonly validator?: t.Type<T>;
+  private readonly validator?: DataValidator<T>;
   private readonly datastore?: Datastore;
   protected readonly searchOptions?: RepositorySearchOptions<T>;
 
@@ -134,7 +118,7 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
     const results = await this.get(idsArray);
     const nullIndex = results.indexOf(null);
     if (nullIndex >= 0) {
-      throw new LoadError(this.kind, idsArray[nullIndex], ["invalid id"]);
+      throw new LoadError(this.kind, idsArray[nullIndex], "invalid id");
     }
     return isArrayParam ? (results as ReadonlyArray<T>) : (results[0] as T);
   }
@@ -260,23 +244,20 @@ export class DatastoreRepository<T extends BaseEntity> implements Searchable<T> 
     };
   }
 
-  private validateLoad = (entity: T) => this.validateEntity(entity, LoadError);
+  protected validateLoad = (entity: T) => this.validateEntity(entity, LoadError);
 
-  private validateSave = (entity: T) => this.validateEntity(entity, SaveError);
+  protected validateSave = (entity: T) => this.validateEntity(entity, SaveError);
 
-  private validateEntity = (entity: T, errorClass: new (kind: string, id: string, errors: string[]) => Error): T => {
+  private validateEntity = (entity: T, errorClass: new (kind: string, id: string, message: string) => Error): T => {
     if (!this.validator) {
       return entity;
     }
 
-    const validation = this.validator.decode(entity);
-
-    if (isLeft(validation)) {
-      const errors = reporter.report(validation);
-      throw new errorClass(this.kind, entity.id, errors);
+    try {
+      return this.validator(entity);
+    } catch (e) {
+      throw new errorClass(this.kind, entity.id, (e as Error).message);
     }
-
-    return validation.right;
   };
 
   private async applyMutation(

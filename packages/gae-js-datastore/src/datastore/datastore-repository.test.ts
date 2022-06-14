@@ -6,6 +6,7 @@ import {
   IndexConfig,
   IndexEntry,
   iots as t,
+  iotsValidator,
   Page,
   runWithRequestStorage,
   SearchFields,
@@ -33,6 +34,8 @@ const repositoryItemSchema = t.intersection([
 ]);
 
 type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
+
+const validator = iotsValidator(repositoryItemSchema);
 
 // TODO: beforePersist hook
 // TODO: upsert
@@ -101,7 +104,7 @@ describe("DatastoreRepository", () => {
       beforeEach(() => {
         repository = new DatastoreRepository<RepositoryItem>(collection, {
           datastore,
-          validator: repositoryItemSchema,
+          validator,
         });
       });
 
@@ -130,7 +133,7 @@ describe("DatastoreRepository", () => {
     describe("with datastore client in provider", () => {
       beforeEach(() => {
         datastoreProvider.set(datastore);
-        repository = new DatastoreRepository<RepositoryItem>(collection, { validator: repositoryItemSchema });
+        repository = new DatastoreRepository<RepositoryItem>(collection, { validator });
       });
 
       it("fetches document that exists and matches schema", async () => {
@@ -194,7 +197,7 @@ describe("DatastoreRepository", () => {
       beforeEach(() => {
         repository = new DatastoreRepository<RepositoryItem>(collection, {
           datastore,
-          validator: repositoryItemSchema,
+          validator,
         });
       });
 
@@ -253,7 +256,7 @@ describe("DatastoreRepository", () => {
       beforeEach(() => {
         repository = new DatastoreRepository<RepositoryItem>(collection, {
           datastore,
-          validator: repositoryItemSchema,
+          validator,
         });
       });
 
@@ -301,7 +304,7 @@ describe("DatastoreRepository", () => {
       beforeEach(() => {
         repository = new DatastoreRepository<RepositoryItem>(collection, {
           datastore,
-          validator: repositoryItemSchema,
+          validator,
         });
       });
 
@@ -350,7 +353,7 @@ describe("DatastoreRepository", () => {
       beforeEach(async () => {
         repository = new DatastoreRepository<RepositoryItem>(collection, {
           datastore,
-          validator: repositoryItemSchema,
+          validator,
         });
         await repository.insert([createItem("123", { message: "create" }), createItem("234", { message: "create" })]);
       });
@@ -400,7 +403,7 @@ describe("DatastoreRepository", () => {
     beforeEach(() => {
       repository = new DatastoreRepository<RepositoryItem>(collection, {
         datastore,
-        validator: repositoryItemSchema,
+        validator,
         index: {
           name: true,
           prop1: true,
@@ -654,7 +657,7 @@ describe("DatastoreRepository", () => {
     const initRepo = (indexConfig: IndexConfig<RepositoryItem>): DatastoreRepository<RepositoryItem> =>
       new DatastoreRepository<RepositoryItem>(collection, {
         datastore,
-        validator: repositoryItemSchema,
+        validator,
         search: {
           searchService: searchService,
           indexName: "item",
