@@ -1,5 +1,15 @@
 # @mondomob/gae-js-core
 
+## 2.1.0
+
+### Minor Changes
+
+- ee968e9: Support passing id generator function to search index preparation
+
+### Patch Changes
+
+- 861a0bc: iotsValidator returns generic error message, so it can be reused in more places that accept validators
+
 ## 2.0.3
 
 ### Patch Changes

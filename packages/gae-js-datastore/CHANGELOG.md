@@ -1,5 +1,19 @@
 # @mondomob/gae-js-datastore
 
+## 3.0.0
+
+### Major Changes
+
+- cff8b92: BREAKING: Allow repository validation using any framework instead of just io-ts
+- 03e5172: BREAKING: DatastoreLoader now returns full datastore entity including the Key. All data mapping should happen in repositories.
+- bf0f6a7: BREAKING: Add DatastoreKeyRepository to support handling entities with ancestors. This required refactoring the existing code into AbstractRepository. Contract has changed but existing code should work without changes.
+
+### Upgrading
+
+- When instantiating a repository with a schema you must pass a DataValidator instance instead. For io-ts you can use the `iotsValidator` helper.
+- Update any direct access to DatastoreLoader with new contract
+- Update repository usage to match new contract. Most likely change is to update usages of `repository.key` to `repository.idToKey`.
+
 ## 2.2.0
 
 ### Minor Changes
