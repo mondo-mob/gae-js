@@ -1,5 +1,5 @@
 import { Datastore, Key } from "@google-cloud/datastore";
-import { DatastoreRepository } from "./datastore-repository";
+import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
 import { connectDatastoreEmulator, deleteKind } from "./test-utils";
 import { runInTransaction } from "./transactional";
 import {
@@ -16,6 +16,7 @@ import {
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { DatastoreLoader } from "./datastore-loader";
 import { datastoreProvider } from "./datastore-provider";
+import { DatastoreKeyRepository } from "./datastore-key-repository";
 
 const repositoryItemSchema = t.intersection([
   t.type({
@@ -37,18 +38,15 @@ type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
 
 const validator = iotsValidator(repositoryItemSchema);
 
-// TODO: beforePersist hook
-// TODO: upsert
-
-describe("DatastoreRepository", () => {
+describe("DatastoreKeyRepository", () => {
   const collection = "repository-items";
   let datastore: Datastore;
-  let repository: DatastoreRepository<RepositoryItem>;
+  let repository: DatastoreKeyRepository<RepositoryItem>;
 
   beforeAll(async () => (datastore = connectDatastoreEmulator()));
   beforeEach(async () => {
     await deleteKind(datastore, collection);
-    repository = new DatastoreRepository<RepositoryItem>(collection, { datastore });
+    repository = new DatastoreKeyRepository<RepositoryItem>(collection, { datastore });
     jest.clearAllMocks();
   });
 
@@ -74,11 +72,11 @@ describe("DatastoreRepository", () => {
   describe("exists", () => {
     it("returns true when a document exists", async () => {
       await insertItem("123");
-      expect(await repository.exists("123")).toBe(true);
+      expect(await repository.exists(itemKey("123"))).toBe(true);
     });
 
     it("returns false when a document does not exist", async () => {
-      expect(await repository.exists("does-not-exist-123")).toBe(false);
+      expect(await repository.exists(itemKey("does-not-exist-123"))).toBe(false);
     });
   });
 
@@ -86,7 +84,7 @@ describe("DatastoreRepository", () => {
     it("fetches document that exists", async () => {
       await insertItem("123");
 
-      const document = await repository.get("123");
+      const document = await repository.get(itemKey("123"));
 
       expect(document).toEqual({
         id: "123",
@@ -95,14 +93,14 @@ describe("DatastoreRepository", () => {
     });
 
     it("returns null for document that doesn't exist", async () => {
-      const document = await repository.get("123");
+      const document = await repository.get(itemKey("123"));
 
       expect(document).toBe(null);
     });
 
     describe("with schema", () => {
       beforeEach(() => {
-        repository = new DatastoreRepository<RepositoryItem>(collection, {
+        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
           datastore,
           validator,
         });
@@ -111,7 +109,7 @@ describe("DatastoreRepository", () => {
       it("fetches document that exists and matches schema", async () => {
         await insertItem("123");
 
-        const document = await repository.get("123");
+        const document = await repository.get(itemKey("123"));
 
         expect(document).toEqual({
           id: "123",
@@ -126,20 +124,20 @@ describe("DatastoreRepository", () => {
             description: "test123",
           },
         });
-        await expect(repository.get("123")).rejects.toThrow('"repository-items" with id "123" failed to load');
+        await expect(repository.get(itemKey("123"))).rejects.toThrow('"repository-items" with id "123" failed to load');
       });
     });
 
     describe("with datastore client in provider", () => {
       beforeEach(() => {
         datastoreProvider.set(datastore);
-        repository = new DatastoreRepository<RepositoryItem>(collection, { validator });
+        repository = new DatastoreKeyRepository<RepositoryItem>(collection, { validator });
       });
 
       it("fetches document that exists and matches schema", async () => {
         await insertItem("123");
 
-        const document = await repository.get("123");
+        const document = await repository.get(itemKey("123"));
 
         expect(document).toEqual({
           id: "123",
@@ -153,7 +151,7 @@ describe("DatastoreRepository", () => {
     it("fetches document that exists", async () => {
       await insertItem("123");
 
-      const document = await repository.getRequired("123");
+      const document = await repository.getRequired(itemKey("123"));
 
       expect(document).toEqual({
         id: "123",
@@ -162,7 +160,7 @@ describe("DatastoreRepository", () => {
     });
 
     it("throws for document that doesn't exist", async () => {
-      await expect(repository.getRequired("123")).rejects.toThrow("invalid id");
+      await expect(repository.getRequired(itemKey("123"))).rejects.toThrow("invalid id");
     });
 
     describe("with array", () => {
@@ -170,7 +168,7 @@ describe("DatastoreRepository", () => {
         await insertItem("123");
         await insertItem("234");
 
-        const results = await repository.getRequired(["123", "234"]);
+        const results = await repository.getRequired([itemKey("123"), itemKey("234")]);
 
         expect(results).toEqual([
           {
@@ -187,15 +185,15 @@ describe("DatastoreRepository", () => {
       it("throws for any document that doesn't exist", async () => {
         await insertItem("123");
 
-        await expect(repository.getRequired(["123", "does-not-exist", "also-does-not-exist"])).rejects.toThrow(
-          '"repository-items" with id "repository-items|does-not-exist" failed to load'
-        );
+        await expect(
+          repository.getRequired([itemKey("123"), itemKey("does-not-exist"), itemKey("also-does-not-exist")])
+        ).rejects.toThrow('"repository-items" with id "repository-items|does-not-exist" failed to load');
       });
     });
 
     describe("with schema", () => {
       beforeEach(() => {
-        repository = new DatastoreRepository<RepositoryItem>(collection, {
+        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
           datastore,
           validator,
         });
@@ -204,7 +202,7 @@ describe("DatastoreRepository", () => {
       it("fetches document that exists and matches schema", async () => {
         await insertItem("123");
 
-        const document = await repository.getRequired("123");
+        const document = await repository.getRequired(itemKey("123"));
 
         expect(document).toEqual({
           id: "123",
@@ -219,7 +217,9 @@ describe("DatastoreRepository", () => {
             description: "test123",
           },
         });
-        await expect(repository.getRequired("123")).rejects.toThrow('"repository-items" with id "123" failed to load');
+        await expect(repository.getRequired(itemKey("123"))).rejects.toThrow(
+          '"repository-items" with id "123" failed to load'
+        );
       });
     });
   });
@@ -228,7 +228,7 @@ describe("DatastoreRepository", () => {
     it("saves documents outside of transaction", async () => {
       await repository.save([createItem("123"), createItem("234")]);
 
-      const fetched = await repository.get(["123", "234"]);
+      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
       expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
     });
@@ -239,7 +239,7 @@ describe("DatastoreRepository", () => {
         return runInTransaction(() => repository.save([createItem("123"), createItem("234")]));
       });
 
-      const fetched = await repository.get(["123", "234"]);
+      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
       expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
     });
@@ -248,13 +248,40 @@ describe("DatastoreRepository", () => {
       await repository.save(createItem("123", { message: "create" }));
       await repository.save(createItem("123", { message: "save" }));
 
-      const fetched = await repository.get("123");
+      const fetched = await repository.get(itemKey("123"));
       expect(fetched).toEqual({ id: "123", name: `Test Item 123`, message: "save" });
+    });
+
+    describe("with parent", () => {
+      type ItemWithParent = {
+        id: string;
+        parentItem: Entity.Key;
+        name: string;
+      };
+      let parentRepository: DatastoreKeyRepository<ItemWithParent>;
+      beforeEach(() => {
+        parentRepository = new DatastoreKeyRepository<ItemWithParent>(collection, {
+          datastore,
+          parentProperty: "parentItem",
+        });
+      });
+
+      const itemWithParentKey = (id: string, parent: string): Key =>
+        datastore.key([collection, parent, collection, id]);
+
+      it("saves documents with parent", async () => {
+        await parentRepository.save([{ ...createItem("123"), parentItem: itemKey("555") }]);
+
+        const fetched = await parentRepository.get([itemWithParentKey("123", "555")]);
+
+        expect(fetched.length).toBe(1);
+        expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, parentItem: itemKey("555") });
+      });
     });
 
     describe("with schema", () => {
       beforeEach(() => {
-        repository = new DatastoreRepository<RepositoryItem>(collection, {
+        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
           datastore,
           validator,
         });
@@ -263,7 +290,7 @@ describe("DatastoreRepository", () => {
       it("saves document outside of transaction that matches schema", async () => {
         await repository.save([createItem("123"), createItem("234")]);
 
-        const fetched = await repository.get(["123", "234"]);
+        const fetched = await repository.get([itemKey("123"), itemKey("234")]);
         expect(fetched.length).toBe(2);
         expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
       });
@@ -279,7 +306,7 @@ describe("DatastoreRepository", () => {
     it("inserts documents outside of transaction", async () => {
       await repository.insert([createItem("123"), createItem("234")]);
 
-      const fetched = await repository.get(["123", "234"]);
+      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
       expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
     });
@@ -290,7 +317,7 @@ describe("DatastoreRepository", () => {
         return runInTransaction(() => repository.insert([createItem("123"), createItem("234")]));
       });
 
-      const fetched = await repository.get(["123", "234"]);
+      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
       expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
     });
@@ -302,7 +329,7 @@ describe("DatastoreRepository", () => {
 
     describe("with schema", () => {
       beforeEach(() => {
-        repository = new DatastoreRepository<RepositoryItem>(collection, {
+        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
           datastore,
           validator,
         });
@@ -311,7 +338,7 @@ describe("DatastoreRepository", () => {
       it("inserts documents outside of transaction that match schema", async () => {
         await repository.insert([createItem("123"), createItem("234")]);
 
-        const fetched = await repository.get(["123", "234"]);
+        const fetched = await repository.get([itemKey("123"), itemKey("234")]);
         expect(fetched.length).toBe(2);
         expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
       });
@@ -329,7 +356,7 @@ describe("DatastoreRepository", () => {
 
       await repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })]);
 
-      const fetched = await repository.get(["123", "234"]);
+      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
       expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
     });
@@ -344,14 +371,14 @@ describe("DatastoreRepository", () => {
         );
       });
 
-      const fetched = await repository.get(["123", "234"]);
+      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
       expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
     });
 
     describe("with schema", () => {
       beforeEach(async () => {
-        repository = new DatastoreRepository<RepositoryItem>(collection, {
+        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
           datastore,
           validator,
         });
@@ -361,7 +388,7 @@ describe("DatastoreRepository", () => {
       it("updates document outside of transaction that matches schema", async () => {
         await repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })]);
 
-        const fetched = await repository.get(["123", "234"]);
+        const fetched = await repository.get([itemKey("123"), itemKey("234")]);
         expect(fetched.length).toBe(2);
         expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
       });
@@ -377,7 +404,7 @@ describe("DatastoreRepository", () => {
     it("deletes a document outside of transaction", async () => {
       await insertItem("123");
 
-      await repository.delete("123");
+      await repository.delete(itemKey("123"));
 
       const [doc] = await datastore.get(itemKey("123"));
       expect(doc).toBe(undefined);
@@ -389,7 +416,7 @@ describe("DatastoreRepository", () => {
 
       await runWithRequestStorage(async () => {
         datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
-        return runInTransaction(() => repository.delete("123", "234"));
+        return runInTransaction(() => repository.delete(itemKey("123"), itemKey("234")));
       });
 
       const [doc123] = await datastore.get(itemKey("123"));
@@ -401,7 +428,7 @@ describe("DatastoreRepository", () => {
 
   describe("query", () => {
     beforeEach(() => {
-      repository = new DatastoreRepository<RepositoryItem>(collection, {
+      repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
         datastore,
         validator,
         index: {
@@ -654,8 +681,8 @@ describe("DatastoreRepository", () => {
       query: jest.fn(),
     };
 
-    const initRepo = (indexConfig: IndexConfig<RepositoryItem>): DatastoreRepository<RepositoryItem> =>
-      new DatastoreRepository<RepositoryItem>(collection, {
+    const initRepo = (indexConfig: IndexConfig<RepositoryItem>): DatastoreKeyRepository<RepositoryItem> =>
+      new DatastoreKeyRepository<RepositoryItem>(collection, {
         datastore,
         validator,
         search: {
@@ -698,7 +725,7 @@ describe("DatastoreRepository", () => {
 
         verifyIndexEntries([
           {
-            id: "item1",
+            id: '{"path":["repository-items","item1"]}',
             fields: {
               prop1: "item1_prop1",
               prop2: "ITEM1_PROP2",
@@ -719,7 +746,7 @@ describe("DatastoreRepository", () => {
 
         verifyIndexEntries([
           {
-            id: "item1",
+            id: '{"path":["repository-items","item1"]}',
             fields: {
               prop1: "item1_prop1",
               prop2: "ITEM1_PROP2",
@@ -730,7 +757,7 @@ describe("DatastoreRepository", () => {
             },
           },
           {
-            id: "item2",
+            id: '{"path":["repository-items","item2"]}',
             fields: {
               prop1: "item2_prop1",
               prop2: "ITEM2_PROP2",
@@ -766,15 +793,19 @@ describe("DatastoreRepository", () => {
 
     describe("delete", () => {
       it("requests index deletion (single item)", async () => {
-        await repository.delete("item1");
+        await repository.delete(itemKey("item1"));
 
-        expect(searchService.delete).toHaveBeenCalledWith("item", "item1");
+        expect(searchService.delete).toHaveBeenCalledWith("item", '{"path":["repository-items","item1"]}');
       });
 
       it("requests index deletion (multiple items)", async () => {
-        await repository.delete("item1", "item2");
+        await repository.delete(itemKey("item1"), itemKey("item2"));
 
-        expect(searchService.delete).toHaveBeenCalledWith("item", "item1", "item2");
+        expect(searchService.delete).toHaveBeenCalledWith(
+          "item",
+          '{"path":["repository-items","item1"]}',
+          '{"path":["repository-items","item2"]}'
+        );
       });
     });
 
@@ -803,7 +834,7 @@ describe("DatastoreRepository", () => {
           resultCount: 2,
           limit: 10,
           offset: 10,
-          ids: ["item1", "item2"],
+          ids: ['{"path":["repository-items","item1"]}', '{"path":["repository-items","item2"]}'],
         }));
 
         await repository.save([createItem("item1"), createItem("item2")]);

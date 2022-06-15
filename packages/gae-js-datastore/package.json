@@ -13,7 +13,7 @@
     "datastore:start": "gcloud beta emulators datastore start --consistency 1.0",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",
-    "test": "jest",
+    "test": "jest --runInBand",
     "test:ci": "jest --config=./jest-ci.config.js"
   },
   "publishConfig": {

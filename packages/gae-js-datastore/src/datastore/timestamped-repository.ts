@@ -1,5 +1,6 @@
 import { isReadonlyArray, createLogger, getRequestStorageValueOrDefault, OneOrMany } from "@mondomob/gae-js-core";
-import { BaseEntity, DatastoreRepository } from "./datastore-repository";
+import { DatastoreRepository } from "./datastore-repository";
+import { BaseEntity } from "./abstract-repository";
 
 export interface TimestampedEntity extends BaseEntity {
   createdAt: Date;

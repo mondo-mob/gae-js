@@ -75,7 +75,7 @@ describe("TimestampedRepository", () => {
   describe("save", () => {
     it("adds createdAt if not set (i.e. to an existing record)", async () => {
       await datastore.insert({
-        key: repository.key("123"),
+        key: repository.idToKey("123"),
         data: {
           name: `test${123}`,
         },
@@ -94,7 +94,7 @@ describe("TimestampedRepository", () => {
     it("updates a single item", async () => {
       const item = createItemFixedTime("123");
       await datastore.insert({
-        key: repository.key("123"),
+        key: repository.idToKey("123"),
         data: {
           ...omit(item, "id"),
         },
