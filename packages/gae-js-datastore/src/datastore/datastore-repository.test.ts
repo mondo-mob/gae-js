@@ -233,6 +233,13 @@ describe("DatastoreRepository", () => {
       expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
     });
 
+    it("saves document with unindexed Key", async () => {
+      await repository.save([createItem("123", { propKey: itemKey("234") })]);
+
+      const fetched = await repository.get("123");
+      expect(fetched).toEqual({ id: "123", name: `Test Item 123`, propKey: itemKey("234") });
+    });
+
     it("saves documents in transaction", async () => {
       await runWithRequestStorage(async () => {
         datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));

@@ -60,6 +60,8 @@ export function buildExclusions<T>(input: T, schema: Index<T> = {}, path = ""): 
       .push(`${path}[]`)
       .uniq()
       .value();
+  } else if (Entity.isDsKey(input)) {
+    return [path];
   } else if (typeof input === "object") {
     const paths = flatMap<Record<string, unknown>, string>(input as any, (value, key) => {
       return buildExclusions(value, (schema as any)[key], `${path}${path.length > 0 ? "." : ""}${key}`);

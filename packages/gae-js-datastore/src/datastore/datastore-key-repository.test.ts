@@ -18,6 +18,13 @@ import { DatastoreLoader } from "./datastore-loader";
 import { datastoreProvider } from "./datastore-provider";
 import { DatastoreKeyRepository } from "./datastore-key-repository";
 
+const datastoreKey = new t.Type<Entity.Key>(
+  "Entity.Key",
+  (input): input is Entity.Key => typeof input === "object",
+  (input) => t.success(input as Entity.Key),
+  (value: Entity.Key) => value
+);
+
 const repositoryItemSchema = t.intersection([
   t.type({
     id: t.string,
@@ -31,6 +38,7 @@ const repositoryItemSchema = t.intersection([
       prop4: t.string,
     }),
     propArray: t.array(t.string),
+    propKey: datastoreKey,
   }),
 ]);
 
@@ -233,6 +241,13 @@ describe("DatastoreKeyRepository", () => {
       expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
     });
 
+    it("saves document with unindexed Key", async () => {
+      await repository.save([createItem("123", { propKey: itemKey("234") })]);
+
+      const fetched = await repository.get(itemKey("123"));
+      expect(fetched).toEqual({ id: "123", name: `Test Item 123`, propKey: itemKey("234") });
+    });
+
     it("saves documents in transaction", async () => {
       await runWithRequestStorage(async () => {
         datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
@@ -293,6 +308,13 @@ describe("DatastoreKeyRepository", () => {
         const fetched = await repository.get([itemKey("123"), itemKey("234")]);
         expect(fetched.length).toBe(2);
         expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
+      });
+
+      it("saves document with unindexed Key", async () => {
+        await repository.save([createItem("123", { propKey: itemKey("234") })]);
+
+        const fetched = await repository.get(itemKey("123"));
+        expect(fetched).toEqual({ id: "123", name: `Test Item 123`, propKey: itemKey("234") });
       });
 
       it("throws for document that doesn't match schema", async () => {

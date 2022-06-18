@@ -1,5 +1,7 @@
 export * from "./connect";
+export * from "./abstract-repository";
 export * from "./datastore-loader";
+export * from "./datastore-key-repository";
 export * from "./datastore-provider";
 export * from "./datastore-repository";
 export * from "./datastore-request-storage";
