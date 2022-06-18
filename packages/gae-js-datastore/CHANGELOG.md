@@ -1,5 +1,15 @@
 # @mondomob/gae-js-datastore
 
+## 3.1.0
+
+### Minor Changes
+
+- 447b80d: Support kindless queries in DataLoader by passing null kind
+
+### Patch Changes
+
+- e6a13c0: Fix bug where storing unindexed Key properties would throw an error
+
 ## 3.0.0
 
 ### Major Changes
