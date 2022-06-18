@@ -45,3 +45,9 @@ export const deleteKind = async (datastore: Datastore, kind: string): Promise<vo
     await deleteKind(datastore, kind);
   }
 };
+
+export const deleteKinds = async (datastore: Datastore, ...kinds: string[]): Promise<void> => {
+  for (const kind of kinds) {
+    await deleteKind(datastore, kind);
+  }
+};

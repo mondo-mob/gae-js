@@ -1,5 +1,5 @@
 import { DatastoreEntity, DatastoreLoader, DatastorePayload } from "./datastore-loader";
-import { connectDatastoreEmulator, deleteKind } from "./test-utils";
+import { connectDatastoreEmulator, deleteKinds } from "./test-utils";
 import { Datastore, Key } from "@google-cloud/datastore";
 
 interface User {
@@ -16,7 +16,7 @@ describe("DatastoreLoader", () => {
     datastore = connectDatastoreEmulator();
   }, 30000);
   beforeEach(async () => {
-    await deleteKind(datastore, "users");
+    await deleteKinds(datastore, "users", "orgs", "groups", "ideas");
     loader = new DatastoreLoader(datastore);
     jest.clearAllMocks();
   });
@@ -363,6 +363,30 @@ describe("DatastoreLoader", () => {
 
       expect(results.length).toBe(1);
       expect(results[0].message).toEqual("user1");
+    });
+
+    it("support kindless queries", async () => {
+      const parentKey = datastore.key(["orgs", "org1"]);
+      await loader.insert([
+        {
+          key: datastore.key([...parentKey.path, "groups", "group1"]),
+          data: { name: `Test Group 1` },
+        },
+        {
+          key: datastore.key([...parentKey.path, "ideas", "idea1"]),
+          data: { name: `Test Idea 1` },
+        },
+      ]);
+
+      const [results] = await loader.executeQuery(null, {
+        hasAncestor: parentKey,
+      });
+
+      expect(results.length).toBe(2);
+      expect(results[0][Datastore.KEY].kind).toEqual("groups");
+      expect(results[0].name).toEqual("Test Group 1");
+      expect(results[1][Datastore.KEY].kind).toEqual("ideas");
+      expect(results[1].name).toEqual("Test Idea 1");
     });
 
     describe("limit and offset", () => {

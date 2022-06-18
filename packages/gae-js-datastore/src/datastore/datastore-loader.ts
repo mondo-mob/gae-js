@@ -129,10 +129,10 @@ export class DatastoreLoader {
   }
 
   public async executeQuery<T>(
-    kind: string,
+    kind: string | null,
     options: Partial<QueryOptions<T>>
   ): Promise<[DatastoreEntity[], RunQueryInfo]> {
-    let query = this.datastore.createQuery(kind);
+    let query = this.datastore.createQuery(kind ? kind : undefined);
 
     if (options.select) {
       query = query.select(asArray(options.select));
