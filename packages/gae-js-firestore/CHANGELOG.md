@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 2.1.0
+
+### Minor Changes
+
+- 1af3495: New function to add post-commit actions to execute after transaction commit, or immediately if there is no current transaction
+
 ## 2.0.0
 
 ### Major Changes
