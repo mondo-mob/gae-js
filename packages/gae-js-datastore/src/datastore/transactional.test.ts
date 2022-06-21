@@ -185,11 +185,15 @@ describe("Transactional", () => {
       });
     });
 
-    it("returns true if transaction not active", async () => {
+    it("returns false if transaction not active", async () => {
       await runWithRequestStorage(async () => {
         datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
         expect(isTransactionActive()).toBe(false);
       });
+    });
+
+    it("returns false if no datastore loader request storage set", async () => {
+      expect(isTransactionActive()).toBe(false);
     });
   });
 });

@@ -1,7 +1,13 @@
 import { FirestoreLoader } from "./firestore-loader";
 import { Firestore } from "@google-cloud/firestore";
 import { connectFirestore, deleteCollection, RepositoryItem } from "../__test/test-utils";
-import { execPostCommit, isTransactionActive, PostCommitError, runInTransaction, Transactional } from "./transactional";
+import {
+  execPostCommitOrNow,
+  isTransactionActive,
+  PostCommitError,
+  runInTransaction,
+  Transactional,
+} from "./transactional";
 import { FirestoreRepository } from "./firestore-repository";
 import { runWithRequestStorage } from "@mondomob/gae-js-core";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
@@ -185,23 +191,27 @@ describe("Transactional", () => {
       });
     });
 
-    it("returns true if transaction not active", async () => {
+    it("returns false if transaction not active", async () => {
       await runWithRequestStorage(async () => {
         firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
         expect(isTransactionActive()).toBe(false);
       });
     });
+
+    it("returns false if no firestore loader request storage set", async () => {
+      expect(isTransactionActive()).toBe(false);
+    });
   });
 
-  describe("execPostCommit", () => {
+  describe("execPostCommitOrNow", () => {
     it("executes action after commit, when in transaction", async () => {
       const executions: string[] = [];
 
       await testTransactionalSupport(() =>
         runInTransaction(async () => {
-          await execPostCommit(() => executions.push("post-commit-1"));
+          await execPostCommitOrNow(() => executions.push("post-commit-1"));
           executions.push("action-1");
-          await execPostCommit(() => executions.push("post-commit-2"));
+          await execPostCommitOrNow(() => executions.push("post-commit-2"));
           executions.push("action-2");
           executions.push("action-3");
         })
@@ -216,9 +226,9 @@ describe("Transactional", () => {
       await expect(() =>
         testTransactionalSupport(() =>
           runInTransaction(async () => {
-            await execPostCommit(() => executions.push("post-commit-1"));
+            await execPostCommitOrNow(() => executions.push("post-commit-1"));
             executions.push("action-1");
-            await execPostCommit(() => executions.push("post-commit-2"));
+            await execPostCommitOrNow(() => executions.push("post-commit-2"));
             executions.push("action-2");
             throw new Error("Something went wrong");
           })
@@ -232,9 +242,9 @@ describe("Transactional", () => {
       const executions: string[] = [];
 
       await testTransactionalSupport(async () => {
-        await execPostCommit(() => executions.push("post-commit-1"));
+        await execPostCommitOrNow(() => executions.push("post-commit-1"));
         executions.push("action-1");
-        await execPostCommit(() => executions.push("post-commit-2"));
+        await execPostCommitOrNow(() => executions.push("post-commit-2"));
         executions.push("action-2");
         executions.push("action-3");
       });
@@ -249,12 +259,12 @@ describe("Transactional", () => {
       try {
         await testTransactionalSupport(() =>
           runInTransaction(async () => {
-            await execPostCommit(() => executions.push("post-commit-0"));
-            await execPostCommit(() => {
+            await execPostCommitOrNow(() => executions.push("post-commit-0"));
+            await execPostCommitOrNow(() => {
               throw theCause;
             });
             executions.push("action-1");
-            await execPostCommit(() => executions.push("post-commit-2"));
+            await execPostCommitOrNow(() => executions.push("post-commit-2"));
             executions.push("action-2");
             executions.push("action-3");
             return "Result of the transactional block";

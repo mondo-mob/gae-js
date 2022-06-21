@@ -40,7 +40,7 @@ const applyInTransaction = (thisArg: any, original: AnyAsync, ...args: any[]): P
  *
  * @param action the action to execute - a no-args async function.
  */
-export const execPostCommit = async (action: ActionFunction): Promise<void> => {
+export const execPostCommitOrNow = async (action: ActionFunction): Promise<void> => {
   if (isTransactionActive()) {
     getPostCommitActions().push(action);
   } else {
@@ -81,11 +81,10 @@ export const runInTransaction = <T>(fn: AnyAsync<T>): Promise<T> => {
 };
 
 /**
- * Does the current firestore loader have an active transaction?
- * - Must be run with firestoreLoaderRequestStorage enabled
+ * Is there firestoreLoaderRequestStorage enabled, and does the current loader have an active transaction?
  */
 export const isTransactionActive = (): boolean => {
-  return getLoader().isTransaction();
+  return !!firestoreLoaderRequestStorage.get()?.isTransaction();
 };
 
 export class PostCommitError<T = unknown> extends Error {

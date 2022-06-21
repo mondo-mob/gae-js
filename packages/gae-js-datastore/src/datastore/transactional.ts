@@ -59,9 +59,8 @@ export const runInTransaction = <T>(fn: AnyAsync<T>): Promise<T> => {
 };
 
 /**
- * Does the current datastore loader have an active transaction?
- * - Must be run with datastoreLoaderRequestStorage enabled
+ * Is there datastoreLoaderRequestStorage enabled, and does the current loader have an active transaction?
  */
 export const isTransactionActive = (): boolean => {
-  return getLoader().isTransaction();
+  return !!datastoreLoaderRequestStorage.get()?.isTransaction();
 };
