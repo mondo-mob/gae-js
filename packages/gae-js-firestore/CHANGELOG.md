@@ -1,5 +1,13 @@
 # @mondomob/gae-js-firestore
 
+## 3.0.0
+
+### Major Changes
+
+- f12d04e: Fix so that isTransactionActive() does not error if there is no request storage set. Instead it returns false.
+
+  If you previously depended on an error being thrown this has the potential to be breaking. This also changes `execPostCommit` released in `@mondomob/gae-js-firestore@2.1.0` to be now called `execPostCommit`.
+
 ## 2.1.0
 
 ### Minor Changes
