@@ -1,7 +1,13 @@
 import { DatastoreLoader } from "./datastore-loader";
 import { Datastore } from "@google-cloud/datastore";
 import { connectDatastoreEmulator, deleteKind, RepositoryItem } from "../__test/test-utils";
-import { isTransactionActive, runInTransaction, Transactional } from "./transactional";
+import {
+  execPostCommitOrNow,
+  isTransactionActive,
+  PostCommitError,
+  runInTransaction,
+  Transactional,
+} from "./transactional";
 import { DatastoreRepository } from "./datastore-repository";
 import { runWithRequestStorage } from "@mondomob/gae-js-core";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
@@ -196,4 +202,89 @@ describe("Transactional", () => {
       expect(isTransactionActive()).toBe(false);
     });
   });
+
+  describe("execPostCommitOrNow", () => {
+    it("executes action after commit, when in transaction", async () => {
+      const executions: string[] = [];
+
+      await testTransactionalSupport(() =>
+        runInTransaction(async () => {
+          await execPostCommitOrNow(() => executions.push("post-commit-1"));
+          executions.push("action-1");
+          await execPostCommitOrNow(() => executions.push("post-commit-2"));
+          executions.push("action-2");
+          executions.push("action-3");
+        })
+      );
+
+      expect(executions).toEqual(["action-1", "action-2", "action-3", "post-commit-1", "post-commit-2"]);
+    });
+
+    it("does not execute post-commit actions when transaction does not commit", async () => {
+      const executions: string[] = [];
+
+      await expect(() =>
+        testTransactionalSupport(() =>
+          runInTransaction(async () => {
+            await execPostCommitOrNow(() => executions.push("post-commit-1"));
+            executions.push("action-1");
+            await execPostCommitOrNow(() => executions.push("post-commit-2"));
+            executions.push("action-2");
+            throw new Error("Something went wrong");
+          })
+        )
+      ).rejects.toThrow("Something went wrong");
+
+      expect(executions).toEqual(["action-1", "action-2"]);
+    });
+
+    it("executes immediately when there is no open transaction", async () => {
+      const executions: string[] = [];
+
+      await testTransactionalSupport(async () => {
+        await execPostCommitOrNow(() => executions.push("post-commit-1"));
+        executions.push("action-1");
+        await execPostCommitOrNow(() => executions.push("post-commit-2"));
+        executions.push("action-2");
+        executions.push("action-3");
+      });
+
+      expect(executions).toEqual(["post-commit-1", "action-1", "post-commit-2", "action-2", "action-3"]);
+    });
+
+    it("throws PostCommitError with result and cause when post commit action fails", async () => {
+      const executions: string[] = [];
+      const theCause = new Error("I am the cause");
+
+      try {
+        await testTransactionalSupport(() =>
+          runInTransaction(async () => {
+            await execPostCommitOrNow(() => executions.push("post-commit-0"));
+            await execPostCommitOrNow(() => {
+              throw theCause;
+            });
+            executions.push("action-1");
+            await execPostCommitOrNow(() => executions.push("post-commit-2"));
+            executions.push("action-2");
+            executions.push("action-3");
+            return "Result of the transactional block";
+          })
+        );
+        fail("Expected error");
+      } catch (err) {
+        expect(err).toBeInstanceOf(PostCommitError);
+        const postCommitError = err as PostCommitError;
+        expect(postCommitError.cause).toBe(theCause);
+        expect(postCommitError.result).toBe("Result of the transactional block");
+      }
+
+      expect(executions).toEqual(["action-1", "action-2", "action-3", "post-commit-0"]);
+    });
+  });
+
+  const testTransactionalSupport = <T>(testFn: () => Promise<T>): Promise<T> =>
+    runWithRequestStorage(async () => {
+      datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
+      return testFn();
+    });
 });
