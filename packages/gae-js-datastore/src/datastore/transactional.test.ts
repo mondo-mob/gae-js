@@ -1,6 +1,6 @@
 import { DatastoreLoader } from "./datastore-loader";
 import { Datastore } from "@google-cloud/datastore";
-import { connectDatastoreEmulator, deleteKind, RepositoryItem } from "./test-utils";
+import { connectDatastoreEmulator, deleteKind, RepositoryItem } from "../__test/test-utils";
 import { isTransactionActive, runInTransaction, Transactional } from "./transactional";
 import { DatastoreRepository } from "./datastore-repository";
 import { runWithRequestStorage } from "@mondomob/gae-js-core";

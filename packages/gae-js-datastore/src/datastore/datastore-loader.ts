@@ -10,7 +10,13 @@ const keysEqual = (key1: Entity.Key, key2: Entity.Key) => {
   return _.isEqual(key1.path, key2.path);
 };
 
-export type Index<T> = true | { [K in keyof T]?: T[K] extends Array<any> ? Index<T[K][0]> : Index<T[K]> };
+export type Index<T> =
+  | true
+  | {
+      [K in keyof T]?: NonNullable<Required<T>[K]> extends Array<any>
+        ? Index<NonNullable<Required<T>[K]>[0]>
+        : Index<T[K]>;
+    };
 
 export interface PropertySort<T> {
   property: (keyof T | "__key__") & string;
@@ -141,6 +147,7 @@ export class DatastoreLoader {
     if (options.filters) {
       query = buildFilters(query, options.filters);
     }
+    console.log("filters", query);
 
     if (options.sort) {
       asArray(options.sort).forEach((sort) => query.order(sort.property, sort.options));

@@ -1,16 +1,11 @@
 import { Datastore, DatastoreOptions } from "@google-cloud/datastore";
-import { iots as t, configurationProvider, iotsValidator } from "@mondomob/gae-js-core";
+import { configurationProvider, iotsValidator } from "@mondomob/gae-js-core";
 import { GaeJsDatastoreConfiguration, gaeJsDatastoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
   id: string;
   name: string;
 }
-
-export const repositoryItemSchema = t.type({
-  id: t.string,
-  name: t.string,
-});
 
 export const initTestConfig = async (
   config?: Partial<GaeJsDatastoreConfiguration>

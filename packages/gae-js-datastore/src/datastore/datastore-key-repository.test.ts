@@ -1,6 +1,6 @@
 import { Datastore, Key } from "@google-cloud/datastore";
 import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
-import { connectDatastoreEmulator, deleteKind } from "./test-utils";
+import { connectDatastoreEmulator, deleteKind } from "../__test/test-utils";
 import { runInTransaction } from "./transactional";
 import {
   IndexConfig,

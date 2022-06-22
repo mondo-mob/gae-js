@@ -1,5 +1,5 @@
 import { DatastoreEntity, DatastoreLoader, DatastorePayload } from "./datastore-loader";
-import { connectDatastoreEmulator, deleteKinds } from "./test-utils";
+import { connectDatastoreEmulator, deleteKinds } from "../__test/test-utils";
 import { Datastore, Key } from "@google-cloud/datastore";
 
 interface User {

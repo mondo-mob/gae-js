@@ -57,21 +57,14 @@ export function buildExclusions<T>(input: T, schema: Index<T> = {}, path = ""): 
       .flatMap((value) => {
         return buildExclusions(value, schema, `${path}[]`);
       })
-      .push(`${path}[]`)
       .uniq()
       .value();
   } else if (Entity.isDsKey(input)) {
     return [path];
   } else if (typeof input === "object") {
-    const paths = flatMap<Record<string, unknown>, string>(input as any, (value, key) => {
+    return flatMap<Record<string, unknown>, string>(input as any, (value, key) => {
       return buildExclusions(value, (schema as any)[key], `${path}${path.length > 0 ? "." : ""}${key}`);
     });
-
-    if (path) {
-      paths.push(path);
-    }
-
-    return paths;
   }
 
   return [path];
@@ -265,6 +258,8 @@ export abstract class AbstractRepository<T extends BaseEntity, K> implements Sea
     const entitiesToSave = asArray(entities)
       .map((e) => this.validateSave(e))
       .map((e) => this.entityToPayload(e));
+
+    console.log("toSave", entitiesToSave);
 
     await mutation(this.getLoader(), entitiesToSave);
     if (this.searchOptions) {

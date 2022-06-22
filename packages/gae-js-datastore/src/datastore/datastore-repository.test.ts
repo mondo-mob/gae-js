@@ -1,6 +1,6 @@
 import { Datastore, Key } from "@google-cloud/datastore";
 import { DatastoreRepository } from "./datastore-repository";
-import { connectDatastoreEmulator, deleteKind } from "./test-utils";
+import { connectDatastoreEmulator, deleteKind } from "../__test/test-utils";
 import { runInTransaction } from "./transactional";
 import {
   IndexConfig,
@@ -70,6 +70,118 @@ describe("DatastoreRepository", () => {
       },
     });
   };
+
+  describe("index config", () => {
+    it("allows indexing string field types", async () => {
+      type Indexable = {
+        id: string;
+        stringRequired: string;
+        stringOptional?: string;
+        stringNullable: string | null;
+        stringOptionalNullable?: string | null;
+      };
+      const indexRepo = new DatastoreRepository<Indexable>(collection, {
+        datastore,
+        index: {
+          stringRequired: true,
+          stringOptional: true,
+          stringNullable: true,
+          stringOptionalNullable: true,
+        },
+      });
+      await indexRepo.query({
+        filters: {
+          stringRequired: "abc",
+          stringOptional: "abc",
+          stringNullable: "abc",
+          stringOptionalNullable: "abc",
+        },
+      });
+    });
+
+    it("allows indexing array field types", async () => {
+      type Indexable = {
+        id: string;
+        arrayRequired: string[];
+        arrayOptional?: string[];
+        arrayNullable: string[] | null;
+        arrayOptionalNullable?: string[] | null;
+      };
+      const indexRepo = new DatastoreRepository<Indexable>(collection, {
+        datastore,
+        index: {
+          arrayRequired: true,
+          arrayOptional: true,
+          arrayNullable: true,
+          arrayOptionalNullable: true,
+        },
+      });
+      await indexRepo.query({
+        filters: {
+          arrayRequired: "abc",
+          arrayOptional: "abc",
+          arrayNullable: "abc",
+          arrayOptionalNullable: "abc",
+        },
+      });
+    });
+
+    it("allows indexing nested objects field types", async () => {
+      type Nestable = {
+        stringRequired: string;
+        stringOptional?: string;
+        stringNullable: string | null;
+        stringOptionalNullable?: string | null;
+      };
+      type Indexable = {
+        id: string;
+        nestedRequired: Nestable[];
+        nestedOptional?: Nestable[];
+        nestedNullable: Nestable[] | null;
+        nestedOptionalNullable?: Nestable[] | null;
+      };
+
+      const indexRepo = new DatastoreRepository<Indexable>(collection, {
+        datastore,
+        index: {
+          nestedRequired: {
+            stringRequired: true,
+            stringOptional: true,
+            stringNullable: true,
+            stringOptionalNullable: true,
+          },
+          nestedOptional: {
+            stringRequired: true,
+            stringOptional: true,
+            stringNullable: true,
+            stringOptionalNullable: true,
+          },
+          nestedNullable: {
+            stringRequired: true,
+            stringOptional: true,
+            stringNullable: true,
+            stringOptionalNullable: true,
+          },
+          nestedOptionalNullable: {
+            stringRequired: true,
+            stringOptional: true,
+            stringNullable: true,
+            stringOptionalNullable: true,
+          },
+        },
+      });
+      await indexRepo.query({
+        filters: {
+          nestedOptionalNullable: {
+            stringRequired: "abc",
+            stringOptional: "abc",
+            stringNullable: "abc",
+            stringOptionalNullable: "abc",
+          },
+        },
+      });
+    });
+  });
 
   describe("exists", () => {
     it("returns true when a document exists", async () => {

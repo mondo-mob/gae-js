@@ -5,7 +5,7 @@ import {
   TimestampedRepository,
 } from "./timestamped-repository";
 import { runWithRequestStorage, setRequestStorageValue } from "@mondomob/gae-js-core";
-import { connectDatastoreEmulator, deleteKind } from "./test-utils";
+import { connectDatastoreEmulator, deleteKind } from "../__test/test-utils";
 import { Datastore } from "@google-cloud/datastore";
 import { omit } from "lodash";
 
