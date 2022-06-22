@@ -1,5 +1,15 @@
 # @mondomob/gae-js-datastore
 
+## 4.1.0
+
+### Minor Changes
+
+- 40bb20c: New function to add post-commit actions to execute after transaction commit, or immediately if there is no current transaction
+
+### Patch Changes
+
+- 734404f: Fix repository indexing/filtering for optional/nullable nested arrays/objects
+
 ## 4.0.0
 
 ### Major Changes
