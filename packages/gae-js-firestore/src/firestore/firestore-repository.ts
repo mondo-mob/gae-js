@@ -205,7 +205,7 @@ export class FirestoreRepository<T extends BaseEntity> {
 
   protected prepareSearchEntry(entity: T): IndexEntry {
     assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
-    return prepareIndexEntry(this.searchOptions.indexConfig, entity);
+    return prepareIndexEntry(this.searchOptions.indexConfig, entity, (e) => e.id);
   }
 
   protected prepareSearchEntries(entities: OneOrMany<T>): IndexEntry[] {
