@@ -4,9 +4,10 @@ import {
   getRequestStorageValueRequired,
   setRequestStorageValue,
 } from "./request-storage";
+import { DataValidator } from "../util";
 
 export class RequestStorageStore<T> {
-  constructor(public key: string) {}
+  constructor(public key: string, public validator?: DataValidator<T>) {}
 
   get(): T | null {
     return getRequestStorageValue(this.key);
@@ -21,6 +22,7 @@ export class RequestStorageStore<T> {
   }
 
   set(value: T): T {
-    return setRequestStorageValue(this.key, value);
+    const validated = this.validator?.(value) || value;
+    return setRequestStorageValue(this.key, validated);
   }
 }

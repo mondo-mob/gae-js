@@ -1,5 +1,6 @@
 import { runWithRequestStorage, setRequestStorageValue } from "./request-storage";
 import { RequestStorageStore } from "./request-storage-store";
+import { DataValidator } from "../util";
 
 describe("Request Storage Store", () => {
   describe("get", () => {
@@ -112,6 +113,29 @@ describe("Request Storage Store", () => {
 
     it("throws exception when no request storage active", () => {
       expect(() => setRequestStorageValue("anything", "abc")).toThrowError("No request storage found");
+    });
+
+    describe("validation", () => {
+      const alwaysPasses: DataValidator<string> = (data) => data as string;
+      const alwaysFails: DataValidator<string> = () => {
+        throw new Error("invalid");
+      };
+
+      it("sets value when validator passes", () => {
+        runWithRequestStorage(() => {
+          const passStore = new RequestStorageStore<string>("my-string", alwaysPasses);
+          expect(passStore.get()).toBeNull();
+          expect(passStore.set("abc")).toEqual("abc");
+          expect(passStore.get()).toEqual("abc");
+        });
+      });
+
+      it("throws for invalid input when validator set", () => {
+        runWithRequestStorage(() => {
+          const failStore = new RequestStorageStore<string>("my-string", alwaysFails);
+          expect(() => failStore.set("abc")).toThrow("invalid");
+        });
+      });
     });
   });
 });
