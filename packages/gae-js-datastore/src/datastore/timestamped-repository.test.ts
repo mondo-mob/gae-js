@@ -31,12 +31,14 @@ describe("TimestampedRepository", () => {
   const fixedTime = new Date("2022-03-01T12:13:14.000Z");
 
   const createItem = (id: string): TimestampedItem => ({
-    ...newTimestampedEntity(id),
+    ...newTimestampedEntity(),
+    id,
     name: `Test Item ${id}`,
   });
 
   const createItemFixedTime = (id: string): TimestampedItem => ({
-    ...newTimestampedEntity(id),
+    ...newTimestampedEntity(),
+    id,
     name: `Test Item ${id}`,
     createdAt: fixedTime,
     updatedAt: fixedTime,

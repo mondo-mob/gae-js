@@ -1,4 +1,4 @@
-import { Datastore } from "@google-cloud/datastore";
+import { Datastore, Key } from "@google-cloud/datastore";
 import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
 import { chain, first, flatMap } from "lodash";
 import {
@@ -31,21 +31,15 @@ import assert from "assert";
 
 const SEARCH_NOT_ENABLED_MSG = "Search is not configured for this repository";
 
-export interface BaseEntity {
-  id: string;
-}
-
-export interface RepositorySearchOptions<T extends BaseEntity> {
+export interface RepositorySearchOptions<T> {
   indexName: string;
   indexConfig: IndexConfig<T>;
   searchService?: SearchService;
 }
 
-export interface RepositoryOptions<T extends BaseEntity> {
+export interface AbstractRepositoryOptions<T> {
   datastore?: Datastore;
   validator?: DataValidator<T>;
-  defaultValues?: Partial<Omit<T, "id">>;
-  index?: Index<Omit<T, "id">>;
   search?: RepositorySearchOptions<T>;
 }
 
@@ -82,51 +76,58 @@ class SaveError extends Error {
   }
 }
 
-export abstract class AbstractRepository<T extends BaseEntity, K> implements Searchable<T> {
-  private readonly logger = createLogger("datastore-repository");
+export abstract class AbstractRepository<T> implements Searchable<T> {
+  public readonly logger = createLogger("datastore-repository");
   private readonly validator?: DataValidator<T>;
   private readonly datastore?: Datastore;
   protected readonly searchOptions?: RepositorySearchOptions<T>;
 
-  constructor(protected readonly kind: string, protected readonly options: RepositoryOptions<T>) {
+  constructor(protected readonly kind: string, protected readonly options: AbstractRepositoryOptions<T>) {
     this.datastore = options?.datastore;
     this.validator = options.validator;
     this.searchOptions = options?.search;
   }
 
-  public abstract idToKey(id: K): Entity.Key;
   public abstract entityToKey(entity: T): Entity.Key;
-
-  protected abstract idToSearchId(id: K): string;
-  protected abstract searchIdToId(searchId: string): K;
-  protected abstract entityToSearchId(entity: T): string;
-
-  protected abstract createEntity(datastoreEntity: DatastoreEntity): T;
   protected abstract entityToPayload(entity: T): DatastorePayload;
+  protected abstract createEntity(datastoreEntity: DatastoreEntity): T;
 
-  async getRequired(id: K): Promise<T>;
-  async getRequired(ids: ReadonlyArray<K>): Promise<T[]>;
-  async getRequired(ids: K | ReadonlyArray<K>): Promise<OneOrMany<T>> {
-    const idsArray = asArray(ids);
-    const results = await this.get(idsArray);
-    const nullIndex = results.indexOf(null);
-    if (nullIndex >= 0) {
-      const badKey = this.idToKey(idsArray[nullIndex]);
-      throw new LoadError(this.kind, badKey.path.join("|"), "invalid id");
-    }
-    return Array.isArray(ids) ? (results as ReadonlyArray<T>) : (results[0] as T);
+  protected keyToStringId(key: Key): string {
+    const keyString = JSON.stringify(key.serialized);
+    return Buffer.from(keyString).toString("base64");
   }
 
-  async exists(id: K): Promise<boolean> {
-    const results = await this.getLoader().get([this.idToKey(id)]);
+  protected stringIdToKey(encodedKey: string): Key {
+    const serialisedKey = Buffer.from(encodedKey, "base64").toString("ascii");
+    return new Key(JSON.parse(serialisedKey));
+  }
+
+  protected entityToStringId(entity: T): string {
+    return this.keyToStringId(this.entityToKey(entity));
+  }
+
+  async getRequiredByKey(key: Key): Promise<T>;
+  async getRequiredByKey(keys: ReadonlyArray<Key>): Promise<T[]>;
+  async getRequiredByKey(keys: Key | ReadonlyArray<Key>): Promise<OneOrMany<T>> {
+    const idsArray = asArray(keys);
+    const results = await this.getByKey(idsArray);
+    const nullIndex = results.indexOf(null);
+    if (nullIndex >= 0) {
+      const badKey = idsArray[nullIndex];
+      throw new LoadError(this.kind, this.friendlyKey(badKey), "not found");
+    }
+    return Array.isArray(keys) ? (results as ReadonlyArray<T>) : (results[0] as T);
+  }
+
+  async existsByKey(key: Key): Promise<boolean> {
+    const results = await this.getLoader().get([key]);
     return first(results) !== null;
   }
 
-  async get(id: K): Promise<T | null>;
-  async get(ids: ReadonlyArray<K>): Promise<ReadonlyArray<T | null>>;
-  async get(ids: K | ReadonlyArray<K>): Promise<OneOrMany<T | null>> {
-    const idArray = asArray(ids);
-    const allKeys = idArray.map((id) => this.idToKey(id));
+  async getByKey(key: Key): Promise<T | null>;
+  async getByKey(keys: ReadonlyArray<Key>): Promise<ReadonlyArray<T | null>>;
+  async getByKey(keys: Key | ReadonlyArray<Key>): Promise<OneOrMany<T | null>> {
+    const allKeys = asArray(keys);
 
     const results = await this.getLoader().get(allKeys);
 
@@ -138,7 +139,7 @@ export abstract class AbstractRepository<T extends BaseEntity, K> implements Sea
       return result;
     });
 
-    return Array.isArray(ids) ? validatedResults : validatedResults[0];
+    return Array.isArray(keys) ? validatedResults : validatedResults[0];
   }
 
   async query(options: Partial<QueryOptions<T>> = {}): Promise<QueryResponse<T>> {
@@ -205,11 +206,10 @@ export abstract class AbstractRepository<T extends BaseEntity, K> implements Sea
     return this.update(updatedEntities);
   }
 
-  async delete(...ids: K[]): Promise<void> {
-    const allIds = ids.map((id) => this.idToKey(id));
-    await this.getLoader().delete(allIds);
+  async deleteByKey(...keys: Key[]): Promise<void> {
+    await this.getLoader().delete(keys);
     if (this.searchOptions) {
-      const searchIds = ids.map((id) => this.idToSearchId(id));
+      const searchIds = keys.map((id) => this.keyToStringId(id));
       await this.getSearchService().delete(this.searchOptions.indexName, ...searchIds);
     }
   }
@@ -247,7 +247,7 @@ export abstract class AbstractRepository<T extends BaseEntity, K> implements Sea
     try {
       return this.validator(entity);
     } catch (e) {
-      throw new errorClass(this.kind, entity.id, (e as Error).message);
+      throw new errorClass(this.kind, this.friendlyKey(this.entityToKey(entity)), (e as Error).message);
     }
   };
 
@@ -259,8 +259,6 @@ export abstract class AbstractRepository<T extends BaseEntity, K> implements Sea
       .map((e) => this.validateSave(e))
       .map((e) => this.entityToPayload(e));
 
-    console.log("toSave", entitiesToSave);
-
     await mutation(this.getLoader(), entitiesToSave);
     if (this.searchOptions) {
       await this.indexForSearch(entities);
@@ -270,7 +268,7 @@ export abstract class AbstractRepository<T extends BaseEntity, K> implements Sea
 
   protected prepareSearchEntry(entity: T): IndexEntry {
     assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
-    return prepareIndexEntry(this.searchOptions.indexConfig, entity, (entity) => this.entityToSearchId(entity));
+    return prepareIndexEntry(this.searchOptions.indexConfig, entity, (entity) => this.entityToStringId(entity));
   }
 
   protected prepareSearchEntries(entities: OneOrMany<T>): IndexEntry[] {
@@ -285,13 +283,17 @@ export abstract class AbstractRepository<T extends BaseEntity, K> implements Sea
   }
 
   private async fetchSearchResults(searchIds: string[]): Promise<ReadonlyArray<T>> {
-    const ids = searchIds.map((id) => this.searchIdToId(id));
+    const keys = searchIds.map((id) => this.stringIdToKey(id));
 
-    const results = await this.get(ids);
+    const results = await this.getByKey(keys);
     if (results.some((result) => !result)) {
       this.logger.warn("Search results contained at least one null value - search index likely out of sync with db");
     }
     return results.filter((result): result is T => !!result);
+  }
+
+  private friendlyKey(key: Key | null): string {
+    return key ? key.path.join("|") : "unknown";
   }
 
   protected getDatastore(): Datastore {

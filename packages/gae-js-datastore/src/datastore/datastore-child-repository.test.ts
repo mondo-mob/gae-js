@@ -16,7 +16,7 @@ import {
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { DatastoreLoader } from "./datastore-loader";
 import { datastoreProvider } from "./datastore-provider";
-import { DatastoreKeyRepository } from "./datastore-key-repository";
+import { DatastoreChildRepository } from "./datastore-child-repository";
 
 const datastoreKey = new t.Type<Entity.Key>(
   "Entity.Key",
@@ -27,6 +27,7 @@ const datastoreKey = new t.Type<Entity.Key>(
 
 const repositoryItemSchema = t.intersection([
   t.type({
+    parentKey: datastoreKey,
     id: t.string,
     name: t.string,
   }),
@@ -41,181 +42,221 @@ const repositoryItemSchema = t.intersection([
     propKey: datastoreKey,
   }),
 ]);
-
 type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
-
+const kind = "repository-items";
 const validator = iotsValidator(repositoryItemSchema);
 
-describe("DatastoreKeyRepository", () => {
-  const collection = "repository-items";
+describe("DatastoreChildRepository", () => {
   let datastore: Datastore;
-  let repository: DatastoreKeyRepository<RepositoryItem>;
+  let repository: DatastoreChildRepository<RepositoryItem>;
+  let parentKey: Key;
 
   beforeAll(async () => (datastore = connectDatastoreEmulator()));
   beforeEach(async () => {
-    await deleteKind(datastore, collection);
-    repository = new DatastoreKeyRepository<RepositoryItem>(collection, { datastore });
+    await deleteKind(datastore, kind);
     jest.clearAllMocks();
+    repository = new DatastoreChildRepository<RepositoryItem>(kind, { datastore, parentProperty: "parentKey" });
+    parentKey = datastore.key(["parent-items", "xyz"]);
   });
 
-  const itemKey = (id: string): Key => datastore.key([collection, id]);
+  const repoWithSchema = () =>
+    new DatastoreChildRepository<RepositoryItem>(kind, { datastore, parentProperty: "parentKey", validator });
+
+  const itemKey = (id: string): Key => datastore.key(parentKey.path.concat([kind, id]));
 
   const createItem = (id: string, data?: Record<string, unknown>) => {
-    return {
-      id,
-      name: `Test Item ${id}`,
-      ...data,
-    };
+    return { parentKey, id, name: `Test Item ${id}`, ...data };
   };
 
-  const insertItem = async (id: string) => {
+  const insertItemDirect = async (id: string) => {
     return datastore.insert({
       key: itemKey(id),
-      data: {
-        name: `test${id}`,
-      },
+      data: { name: `test${id}` },
     });
   };
 
-  describe("exists", () => {
+  describe("existsByKey", () => {
     it("returns true when a document exists", async () => {
-      await insertItem("123");
-      expect(await repository.exists(itemKey("123"))).toBe(true);
+      await insertItemDirect("123");
+      expect(await repository.existsByKey(itemKey("123"))).toBe(true);
     });
 
     it("returns false when a document does not exist", async () => {
-      expect(await repository.exists(itemKey("does-not-exist-123"))).toBe(false);
+      expect(await repository.existsByKey(itemKey("does-not-exist-123"))).toBe(false);
     });
   });
 
-  describe("get", () => {
+  describe("exists", () => {
+    it("returns true when a document exists", async () => {
+      await insertItemDirect("123");
+      expect(await repository.exists(parentKey, "123")).toBe(true);
+    });
+
+    it("returns false when a document does not exist", async () => {
+      expect(await repository.exists(parentKey, "123")).toBe(false);
+    });
+  });
+
+  describe("getByKey", () => {
     it("fetches document that exists", async () => {
-      await insertItem("123");
+      await insertItemDirect("123");
 
-      const document = await repository.get(itemKey("123"));
+      const document = await repository.getByKey(itemKey("123"));
 
-      expect(document).toEqual({
-        id: "123",
-        name: "test123",
-      });
+      expect(document).toEqual({ parentKey, id: "123", name: "test123" });
     });
 
     it("returns null for document that doesn't exist", async () => {
-      const document = await repository.get(itemKey("123"));
+      const document = await repository.getByKey(itemKey("123"));
 
       expect(document).toBe(null);
     });
 
     describe("with schema", () => {
       beforeEach(() => {
-        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
-          datastore,
-          validator,
-        });
+        repository = repoWithSchema();
       });
 
       it("fetches document that exists and matches schema", async () => {
-        await insertItem("123");
+        await insertItemDirect("123");
 
-        const document = await repository.get(itemKey("123"));
+        const document = await repository.getByKey(itemKey("123"));
 
-        expect(document).toEqual({
-          id: "123",
-          name: "test123",
-        });
+        expect(document).toEqual({ parentKey, id: "123", name: "test123" });
       });
 
       it("throws for document that doesn't match schema", async () => {
         await datastore.insert({
           key: itemKey("123"),
-          data: {
-            description: "test123",
-          },
+          data: { description: "test123" },
         });
-        await expect(repository.get(itemKey("123"))).rejects.toThrow('"repository-items" with id "123" failed to load');
+
+        await expect(repository.getByKey(itemKey("123"))).rejects.toThrow(
+          '"repository-items" with id "parent-items|xyz|repository-items|123" failed to load'
+        );
       });
     });
 
     describe("with datastore client in provider", () => {
       beforeEach(() => {
         datastoreProvider.set(datastore);
-        repository = new DatastoreKeyRepository<RepositoryItem>(collection, { validator });
+        repository = new DatastoreChildRepository<RepositoryItem>(kind, { parentProperty: "parentKey", validator });
       });
 
       it("fetches document that exists and matches schema", async () => {
-        await insertItem("123");
+        await insertItemDirect("123");
 
-        const document = await repository.get(itemKey("123"));
+        const document = await repository.getByKey(itemKey("123"));
 
-        expect(document).toEqual({
-          id: "123",
-          name: "test123",
-        });
+        expect(document).toEqual({ parentKey, id: "123", name: "test123" });
       });
     });
   });
 
-  describe("getRequired", () => {
+  describe("get", () => {
     it("fetches document that exists", async () => {
-      await insertItem("123");
+      await insertItemDirect("123");
 
-      const document = await repository.getRequired(itemKey("123"));
+      const document = await repository.get(parentKey, "123");
 
-      expect(document).toEqual({
-        id: "123",
-        name: "test123",
+      expect(document).toEqual({ parentKey, id: "123", name: "test123" });
+    });
+
+    it("returns null for document that doesn't exist", async () => {
+      const document = await repository.get(parentKey, "123");
+
+      expect(document).toBe(null);
+    });
+
+    describe("with schema", () => {
+      beforeEach(() => {
+        repository = repoWithSchema();
+      });
+
+      it("fetches document that exists and matches schema", async () => {
+        await insertItemDirect("123");
+
+        const document = await repository.get(parentKey, "123");
+
+        expect(document).toEqual({ parentKey, id: "123", name: "test123" });
+      });
+
+      it("throws for document that doesn't match schema", async () => {
+        await datastore.insert({
+          key: itemKey("123"),
+          data: { description: "test123" },
+        });
+
+        await expect(repository.get(parentKey, "123")).rejects.toThrow(
+          '"repository-items" with id "parent-items|xyz|repository-items|123" failed to load'
+        );
       });
     });
 
+    describe("with datastore client in provider", () => {
+      beforeEach(() => {
+        datastoreProvider.set(datastore);
+        repository = new DatastoreChildRepository<RepositoryItem>(kind, { parentProperty: "parentKey", validator });
+      });
+
+      it("fetches document that exists and matches schema", async () => {
+        await insertItemDirect("123");
+
+        const document = await repository.get(parentKey, "123");
+
+        expect(document).toEqual({ parentKey, id: "123", name: "test123" });
+      });
+    });
+  });
+
+  describe("getRequiredByKey", () => {
+    it("fetches document that exists", async () => {
+      await insertItemDirect("123");
+
+      const document = await repository.getRequiredByKey(itemKey("123"));
+
+      expect(document).toEqual({ parentKey, id: "123", name: "test123" });
+    });
+
     it("throws for document that doesn't exist", async () => {
-      await expect(repository.getRequired(itemKey("123"))).rejects.toThrow("invalid id");
+      await expect(repository.getRequiredByKey(itemKey("123"))).rejects.toThrow("not found");
     });
 
     describe("with array", () => {
       it("fetches documents that exist", async () => {
-        await insertItem("123");
-        await insertItem("234");
+        await insertItemDirect("123");
+        await insertItemDirect("234");
 
-        const results = await repository.getRequired([itemKey("123"), itemKey("234")]);
+        const results = await repository.getRequiredByKey([itemKey("123"), itemKey("234")]);
 
         expect(results).toEqual([
-          {
-            id: "123",
-            name: "test123",
-          },
-          {
-            id: "234",
-            name: "test234",
-          },
+          { parentKey, id: "123", name: "test123" },
+          { parentKey, id: "234", name: "test234" },
         ]);
       });
 
       it("throws for any document that doesn't exist", async () => {
-        await insertItem("123");
+        await insertItemDirect("123");
 
         await expect(
-          repository.getRequired([itemKey("123"), itemKey("does-not-exist"), itemKey("also-does-not-exist")])
-        ).rejects.toThrow('"repository-items" with id "repository-items|does-not-exist" failed to load');
+          repository.getRequiredByKey([itemKey("123"), itemKey("does-not-exist"), itemKey("also-does-not-exist")])
+        ).rejects.toThrow(
+          '"repository-items" with id "parent-items|xyz|repository-items|does-not-exist" failed to load'
+        );
       });
     });
 
     describe("with schema", () => {
       beforeEach(() => {
-        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
-          datastore,
-          validator,
-        });
+        repository = repoWithSchema();
       });
 
       it("fetches document that exists and matches schema", async () => {
-        await insertItem("123");
+        await insertItemDirect("123");
 
-        const document = await repository.getRequired(itemKey("123"));
+        const document = await repository.getRequiredByKey(itemKey("123"));
 
-        expect(document).toEqual({
-          id: "123",
-          name: "test123",
-        });
+        expect(document).toEqual({ parentKey, id: "123", name: "test123" });
       });
 
       it("throws for document that doesn't match schema", async () => {
@@ -225,9 +266,63 @@ describe("DatastoreKeyRepository", () => {
             description: "test123",
           },
         });
-        await expect(repository.getRequired(itemKey("123"))).rejects.toThrow(
-          '"repository-items" with id "123" failed to load'
+        await expect(repository.getRequiredByKey(itemKey("123"))).rejects.toThrow(
+          '"repository-items" with id "parent-items|xyz|repository-items|123" failed to load'
         );
+      });
+    });
+  });
+
+  describe("getRequired", () => {
+    it("fetches document that exists", async () => {
+      await insertItemDirect("123");
+
+      const document = await repository.getRequired(parentKey, "123");
+
+      expect(document).toEqual({ parentKey, id: "123", name: "test123" });
+    });
+
+    it("throws for document that doesn't exist", async () => {
+      await expect(repository.getRequired(parentKey, "123")).rejects.toThrow("not found");
+    });
+
+    describe("with schema", () => {
+      beforeEach(() => {
+        repository = repoWithSchema();
+      });
+
+      it("fetches document that exists and matches schema", async () => {
+        await insertItemDirect("123");
+
+        const document = await repository.getRequired(parentKey, "123");
+
+        expect(document).toEqual({ parentKey, id: "123", name: "test123" });
+      });
+
+      it("throws for document that doesn't match schema", async () => {
+        await datastore.insert({
+          key: itemKey("123"),
+          data: { description: "test123" },
+        });
+
+        await expect(repository.getRequired(parentKey, "123")).rejects.toThrow(
+          '"repository-items" with id "parent-items|xyz|repository-items|123" failed to load'
+        );
+      });
+    });
+
+    describe("with datastore client in provider", () => {
+      beforeEach(() => {
+        datastoreProvider.set(datastore);
+        repository = new DatastoreChildRepository<RepositoryItem>(kind, { parentProperty: "parentKey", validator });
+      });
+
+      it("fetches document that exists and matches schema", async () => {
+        await insertItemDirect("123");
+
+        const document = await repository.getRequired(parentKey, "123");
+
+        expect(document).toEqual({ parentKey, id: "123", name: "test123" });
       });
     });
   });
@@ -236,16 +331,16 @@ describe("DatastoreKeyRepository", () => {
     it("saves documents outside of transaction", async () => {
       await repository.save([createItem("123"), createItem("234")]);
 
-      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
+      const fetched = await repository.getByKey([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
+      expect(fetched[0]).toEqual({ parentKey, id: "123", name: `Test Item 123` });
     });
 
     it("saves document with unindexed Key", async () => {
       await repository.save([createItem("123", { propKey: itemKey("234") })]);
 
-      const fetched = await repository.get(itemKey("123"));
-      expect(fetched).toEqual({ id: "123", name: `Test Item 123`, propKey: itemKey("234") });
+      const fetched = await repository.getByKey(itemKey("123"));
+      expect(fetched).toEqual({ parentKey, id: "123", name: `Test Item 123`, propKey: itemKey("234") });
     });
 
     it("saves documents in transaction", async () => {
@@ -254,72 +349,44 @@ describe("DatastoreKeyRepository", () => {
         return runInTransaction(() => repository.save([createItem("123"), createItem("234")]));
       });
 
-      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
+      const fetched = await repository.getByKey([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
+      expect(fetched[0]).toEqual({ parentKey, id: "123", name: `Test Item 123` });
     });
 
     it("overwrites document that already exists", async () => {
       await repository.save(createItem("123", { message: "create" }));
       await repository.save(createItem("123", { message: "save" }));
 
-      const fetched = await repository.get(itemKey("123"));
-      expect(fetched).toEqual({ id: "123", name: `Test Item 123`, message: "save" });
-    });
-
-    describe("with parent", () => {
-      type ItemWithParent = {
-        id: string;
-        parentItem: Entity.Key;
-        name: string;
-      };
-      let parentRepository: DatastoreKeyRepository<ItemWithParent>;
-      beforeEach(() => {
-        parentRepository = new DatastoreKeyRepository<ItemWithParent>(collection, {
-          datastore,
-          parentProperty: "parentItem",
-        });
-      });
-
-      const itemWithParentKey = (id: string, parent: string): Key =>
-        datastore.key([collection, parent, collection, id]);
-
-      it("saves documents with parent", async () => {
-        await parentRepository.save([{ ...createItem("123"), parentItem: itemKey("555") }]);
-
-        const fetched = await parentRepository.get([itemWithParentKey("123", "555")]);
-
-        expect(fetched.length).toBe(1);
-        expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, parentItem: itemKey("555") });
-      });
+      const fetched = await repository.getByKey(itemKey("123"));
+      expect(fetched).toEqual({ parentKey, id: "123", name: `Test Item 123`, message: "save" });
     });
 
     describe("with schema", () => {
       beforeEach(() => {
-        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
-          datastore,
-          validator,
-        });
+        repository = repoWithSchema();
       });
 
       it("saves document outside of transaction that matches schema", async () => {
         await repository.save([createItem("123"), createItem("234")]);
 
-        const fetched = await repository.get([itemKey("123"), itemKey("234")]);
+        const fetched = await repository.getByKey([itemKey("123"), itemKey("234")]);
         expect(fetched.length).toBe(2);
-        expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
+        expect(fetched[0]).toEqual({ parentKey, id: "123", name: `Test Item 123` });
       });
 
       it("saves document with unindexed Key", async () => {
         await repository.save([createItem("123", { propKey: itemKey("234") })]);
 
-        const fetched = await repository.get(itemKey("123"));
-        expect(fetched).toEqual({ id: "123", name: `Test Item 123`, propKey: itemKey("234") });
+        const fetched = await repository.getByKey(itemKey("123"));
+        expect(fetched).toEqual({ parentKey, id: "123", name: `Test Item 123`, propKey: itemKey("234") });
       });
 
       it("throws for document that doesn't match schema", async () => {
-        const abc = { id: "123", message: "no name" } as any as RepositoryItem;
-        await expect(repository.save(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
+        const abc = { parentKey, id: "123", message: "no name" } as any as RepositoryItem;
+        await expect(repository.save(abc)).rejects.toThrow(
+          '"repository-items" with id "parent-items|xyz|repository-items|123" failed to save'
+        );
       });
     });
   });
@@ -328,9 +395,9 @@ describe("DatastoreKeyRepository", () => {
     it("inserts documents outside of transaction", async () => {
       await repository.insert([createItem("123"), createItem("234")]);
 
-      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
+      const fetched = await repository.getByKey([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
+      expect(fetched[0]).toEqual({ parentKey, id: "123", name: `Test Item 123` });
     });
 
     it("inserts documents in transaction", async () => {
@@ -339,9 +406,9 @@ describe("DatastoreKeyRepository", () => {
         return runInTransaction(() => repository.insert([createItem("123"), createItem("234")]));
       });
 
-      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
+      const fetched = await repository.getByKey([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
+      expect(fetched[0]).toEqual({ parentKey, id: "123", name: `Test Item 123` });
     });
 
     it("throws inserting document with id that already exists", async () => {
@@ -351,23 +418,22 @@ describe("DatastoreKeyRepository", () => {
 
     describe("with schema", () => {
       beforeEach(() => {
-        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
-          datastore,
-          validator,
-        });
+        repository = repoWithSchema();
       });
 
       it("inserts documents outside of transaction that match schema", async () => {
         await repository.insert([createItem("123"), createItem("234")]);
 
-        const fetched = await repository.get([itemKey("123"), itemKey("234")]);
+        const fetched = await repository.getByKey([itemKey("123"), itemKey("234")]);
         expect(fetched.length).toBe(2);
-        expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
+        expect(fetched[0]).toEqual({ parentKey, id: "123", name: `Test Item 123` });
       });
 
       it("throws for document that doesn't match schema", async () => {
-        const abc = { id: "123", message: "no name" } as any as RepositoryItem;
-        await expect(repository.insert(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
+        const abc = { parentKey, id: "123", message: "no name" } as any as RepositoryItem;
+        await expect(repository.insert(abc)).rejects.toThrow(
+          '"repository-items" with id "parent-items|xyz|repository-items|123" failed to save'
+        );
       });
     });
   });
@@ -378,9 +444,9 @@ describe("DatastoreKeyRepository", () => {
 
       await repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })]);
 
-      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
+      const fetched = await repository.getByKey([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
+      expect(fetched[0]).toEqual({ parentKey, id: "123", name: `Test Item 123`, message: "update" });
     });
 
     it("updates documents in transaction", async () => {
@@ -393,52 +459,51 @@ describe("DatastoreKeyRepository", () => {
         );
       });
 
-      const fetched = await repository.get([itemKey("123"), itemKey("234")]);
+      const fetched = await repository.getByKey([itemKey("123"), itemKey("234")]);
       expect(fetched.length).toBe(2);
-      expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
+      expect(fetched[0]).toEqual({ parentKey, id: "123", name: `Test Item 123`, message: "update" });
     });
 
     describe("with schema", () => {
       beforeEach(async () => {
-        repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
-          datastore,
-          validator,
-        });
+        repository = repoWithSchema();
         await repository.insert([createItem("123", { message: "create" }), createItem("234", { message: "create" })]);
       });
 
       it("updates document outside of transaction that matches schema", async () => {
         await repository.update([createItem("123", { message: "update" }), createItem("234", { message: "update" })]);
 
-        const fetched = await repository.get([itemKey("123"), itemKey("234")]);
+        const fetched = await repository.getByKey([itemKey("123"), itemKey("234")]);
         expect(fetched.length).toBe(2);
-        expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123`, message: "update" });
+        expect(fetched[0]).toEqual({ parentKey, id: "123", name: `Test Item 123`, message: "update" });
       });
 
       it("throws for document that doesn't match schema", async () => {
-        const abc = { id: "123", message: "no name" } as any as RepositoryItem;
-        await expect(repository.save(abc)).rejects.toThrow('"repository-items" with id "123" failed to save');
+        const abc = { parentKey, id: "123", message: "no name" } as any as RepositoryItem;
+        await expect(repository.save(abc)).rejects.toThrow(
+          '"repository-items" with id "parent-items|xyz|repository-items|123" failed to save'
+        );
       });
     });
   });
 
   describe("delete", () => {
     it("deletes a document outside of transaction", async () => {
-      await insertItem("123");
+      await insertItemDirect("123");
 
-      await repository.delete(itemKey("123"));
+      await repository.deleteByKey(itemKey("123"));
 
       const [doc] = await datastore.get(itemKey("123"));
       expect(doc).toBe(undefined);
     });
 
     it("deletes a document in transaction", async () => {
-      await insertItem("123");
-      await insertItem("234");
+      await insertItemDirect("123");
+      await insertItemDirect("234");
 
       await runWithRequestStorage(async () => {
         datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
-        return runInTransaction(() => repository.delete(itemKey("123"), itemKey("234")));
+        return runInTransaction(() => repository.deleteByKey(itemKey("123"), itemKey("234")));
       });
 
       const [doc123] = await datastore.get(itemKey("123"));
@@ -450,7 +515,8 @@ describe("DatastoreKeyRepository", () => {
 
   describe("query", () => {
     beforeEach(() => {
-      repository = new DatastoreKeyRepository<RepositoryItem>(collection, {
+      repository = new DatastoreChildRepository<RepositoryItem>(kind, {
+        parentProperty: "parentKey",
         datastore,
         validator,
         index: {
@@ -467,9 +533,7 @@ describe("DatastoreKeyRepository", () => {
       await repository.save([createItem("123"), createItem("234")]);
 
       const [results] = await repository.query({
-        filters: {
-          name: "Test Item 234",
-        },
+        filters: { name: "Test Item 234" },
       });
 
       expect(results.length).toBe(1);
@@ -528,17 +592,27 @@ describe("DatastoreKeyRepository", () => {
       const [results] = await repository.query({ select: [] });
 
       expect(results.length).toEqual(2);
-      expect(results[0]).toEqual({ id: "123", name: "Test Item 123", prop1: "prop1", prop2: "prop2", prop3: "prop3" });
+      expect(results[0]).toEqual({
+        parentKey,
+        id: "123",
+        name: "Test Item 123",
+        prop1: "prop1",
+        prop2: "prop2",
+        prop3: "prop3",
+      });
     });
 
-    it("selects ids only when  projection query", async () => {
+    it("selects ids only when projection query", async () => {
       await repository.save([
         createItem("123", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
         createItem("234", { prop1: "prop1", prop2: "prop2", prop3: "prop3" }),
       ]);
       const [results] = await repository.query({ select: ["__key__"] });
 
-      expect(results).toEqual([{ id: "123" }, { id: "234" }]);
+      expect(results).toEqual([
+        { parentKey, id: "123" },
+        { parentKey, id: "234" },
+      ]);
     });
 
     describe("limit and offset", () => {
@@ -703,9 +777,10 @@ describe("DatastoreKeyRepository", () => {
       query: jest.fn(),
     };
 
-    const initRepo = (indexConfig: IndexConfig<RepositoryItem>): DatastoreKeyRepository<RepositoryItem> =>
-      new DatastoreKeyRepository<RepositoryItem>(collection, {
+    const initRepo = (indexConfig: IndexConfig<RepositoryItem>): DatastoreChildRepository<RepositoryItem> =>
+      new DatastoreChildRepository<RepositoryItem>(kind, {
         datastore,
+        parentProperty: "parentKey",
         validator,
         search: {
           searchService: searchService,
@@ -715,6 +790,7 @@ describe("DatastoreKeyRepository", () => {
       });
 
     const createItem = (id: string): RepositoryItem => ({
+      parentKey,
       id,
       name: id,
       prop1: `${id}_prop1`,
@@ -747,7 +823,7 @@ describe("DatastoreKeyRepository", () => {
 
         verifyIndexEntries([
           {
-            id: '{"path":["repository-items","item1"]}',
+            id: "eyJwYXRoIjpbInBhcmVudC1pdGVtcyIsInh5eiIsInJlcG9zaXRvcnktaXRlbXMiLCJpdGVtMSJdfQ==",
             fields: {
               prop1: "item1_prop1",
               prop2: "ITEM1_PROP2",
@@ -768,7 +844,7 @@ describe("DatastoreKeyRepository", () => {
 
         verifyIndexEntries([
           {
-            id: '{"path":["repository-items","item1"]}',
+            id: "eyJwYXRoIjpbInBhcmVudC1pdGVtcyIsInh5eiIsInJlcG9zaXRvcnktaXRlbXMiLCJpdGVtMSJdfQ==",
             fields: {
               prop1: "item1_prop1",
               prop2: "ITEM1_PROP2",
@@ -779,7 +855,7 @@ describe("DatastoreKeyRepository", () => {
             },
           },
           {
-            id: '{"path":["repository-items","item2"]}',
+            id: "eyJwYXRoIjpbInBhcmVudC1pdGVtcyIsInh5eiIsInJlcG9zaXRvcnktaXRlbXMiLCJpdGVtMiJdfQ==",
             fields: {
               prop1: "item2_prop1",
               prop2: "ITEM2_PROP2",
@@ -799,8 +875,8 @@ describe("DatastoreKeyRepository", () => {
 
     describe("update", () => {
       beforeEach(async () => {
-        await insertItem("item1");
-        await insertItem("item2");
+        await insertItemDirect("item1");
+        await insertItemDirect("item2");
       });
       itIndexesEntitiesForOperation("update");
     });
@@ -815,18 +891,21 @@ describe("DatastoreKeyRepository", () => {
 
     describe("delete", () => {
       it("requests index deletion (single item)", async () => {
-        await repository.delete(itemKey("item1"));
-
-        expect(searchService.delete).toHaveBeenCalledWith("item", '{"path":["repository-items","item1"]}');
-      });
-
-      it("requests index deletion (multiple items)", async () => {
-        await repository.delete(itemKey("item1"), itemKey("item2"));
+        await repository.deleteByKey(itemKey("item1"));
 
         expect(searchService.delete).toHaveBeenCalledWith(
           "item",
-          '{"path":["repository-items","item1"]}',
-          '{"path":["repository-items","item2"]}'
+          "eyJwYXRoIjpbInBhcmVudC1pdGVtcyIsInh5eiIsInJlcG9zaXRvcnktaXRlbXMiLCJpdGVtMSJdfQ=="
+        );
+      });
+
+      it("requests index deletion (multiple items)", async () => {
+        await repository.deleteByKey(itemKey("item1"), itemKey("item2"));
+
+        expect(searchService.delete).toHaveBeenCalledWith(
+          "item",
+          "eyJwYXRoIjpbInBhcmVudC1pdGVtcyIsInh5eiIsInJlcG9zaXRvcnktaXRlbXMiLCJpdGVtMSJdfQ==",
+          "eyJwYXRoIjpbInBhcmVudC1pdGVtcyIsInh5eiIsInJlcG9zaXRvcnktaXRlbXMiLCJpdGVtMiJdfQ=="
         );
       });
     });
@@ -856,7 +935,10 @@ describe("DatastoreKeyRepository", () => {
           resultCount: 2,
           limit: 10,
           offset: 10,
-          ids: ['{"path":["repository-items","item1"]}', '{"path":["repository-items","item2"]}'],
+          ids: [
+            "eyJwYXRoIjpbInBhcmVudC1pdGVtcyIsInh5eiIsInJlcG9zaXRvcnktaXRlbXMiLCJpdGVtMSJdfQ==",
+            "eyJwYXRoIjpbInBhcmVudC1pdGVtcyIsInh5eiIsInJlcG9zaXRvcnktaXRlbXMiLCJpdGVtMiJdfQ==",
+          ],
         }));
 
         await repository.save([createItem("item1"), createItem("item2")]);

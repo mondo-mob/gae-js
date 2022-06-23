@@ -1,7 +1,6 @@
 import { Datastore } from "@google-cloud/datastore";
-import { DatastoreRepository } from "./datastore-repository";
+import { DatastoreRepository, StringIdEntity } from "./datastore-repository";
 import { connectDatastoreEmulator, deleteKind } from "../__test/test-utils";
-import { BaseEntity } from "./abstract-repository";
 import { Filters } from "./filters";
 
 describe("Datastore repository indexing", () => {
@@ -14,7 +13,10 @@ describe("Datastore repository indexing", () => {
     jest.clearAllMocks();
   });
 
-  const expectQueryMatch = async <T extends BaseEntity>(repository: DatastoreRepository<T>, filters: Filters<T>) => {
+  const expectQueryMatch = async <T extends StringIdEntity>(
+    repository: DatastoreRepository<T>,
+    filters: Filters<T>
+  ) => {
     const [results] = await repository.query({ filters });
     expect(results.length).toBe(1);
     expect(results[0].id).toBe("123");

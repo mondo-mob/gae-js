@@ -1,8 +1,7 @@
-import { isReadonlyArray, createLogger, getRequestStorageValueOrDefault, OneOrMany } from "@mondomob/gae-js-core";
-import { DatastoreRepository } from "./datastore-repository";
-import { BaseEntity } from "./abstract-repository";
+import { createLogger, getRequestStorageValueOrDefault, isReadonlyArray, OneOrMany } from "@mondomob/gae-js-core";
+import { DatastoreRepository, IdEntity } from "./datastore-repository";
 
-export interface TimestampedEntity extends BaseEntity {
+export interface TimestampedEntity {
   createdAt: Date;
   updatedAt: Date;
 }
@@ -10,9 +9,8 @@ export interface TimestampedEntity extends BaseEntity {
 // A flag value we can identify and override on save - but one that is highly unlikely to conflict with a real date.
 const GENERATE_FLAG = new Date(-8640000000000000);
 
-export const newTimestampedEntity = (id: string): TimestampedEntity => {
+export const newTimestampedEntity = (): TimestampedEntity => {
   return {
-    id,
     createdAt: GENERATE_FLAG,
     updatedAt: GENERATE_FLAG,
   };
@@ -26,7 +24,7 @@ export const DISABLE_TIMESTAMP_UPDATE = "skipTimestampUpdate";
 
 const logger = createLogger("timestampedRepository");
 
-export class TimestampedRepository<T extends TimestampedEntity> extends DatastoreRepository<T> {
+export class TimestampedRepository<T extends TimestampedEntity & IdEntity> extends DatastoreRepository<T> {
   protected beforePersist(entities: OneOrMany<T>): OneOrMany<T> {
     const updated = isReadonlyArray(entities)
       ? entities.map((e) => this.updateTimestamps(e))

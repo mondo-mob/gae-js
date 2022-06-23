@@ -7,7 +7,7 @@ import { buildFilters, Filters } from "./filters";
 import { asArray, createLogger, Logger, NonFatalError, OneOrMany } from "@mondomob/gae-js-core";
 
 const keysEqual = (key1: Entity.Key, key2: Entity.Key) => {
-  return _.isEqual(key1.path, key2.path);
+  return _.isEqual(key1.path.join(":"), key2.path.join(":"));
 };
 
 export type Index<T> =
@@ -147,7 +147,6 @@ export class DatastoreLoader {
     if (options.filters) {
       query = buildFilters(query, options.filters);
     }
-    console.log("filters", query);
 
     if (options.sort) {
       asArray(options.sort).forEach((sort) => query.order(sort.property, sort.options));

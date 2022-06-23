@@ -1,37 +1,78 @@
-import { Datastore } from "@google-cloud/datastore";
-import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
-import { AbstractRepository, BaseEntity, buildExclusions, RepositoryOptions } from "./abstract-repository";
-import { DatastoreEntity, DatastorePayload } from "./datastore-loader";
+import { Datastore, Key } from "@google-cloud/datastore";
+import assert from "assert";
+import { AbstractRepository, AbstractRepositoryOptions, buildExclusions } from "./abstract-repository";
+import { asArray, isReadonlyArray, OneOrMany } from "@mondomob/gae-js-core";
+import { DatastoreEntity, DatastorePayload, Index } from "./datastore-loader";
 import { omit } from "lodash";
 
-export class DatastoreRepository<T extends BaseEntity> extends AbstractRepository<T, string> {
-  constructor(protected readonly kind: string, protected readonly options: RepositoryOptions<T>) {
+export interface StringIdEntity {
+  id: string;
+}
+export interface NumberIdEntity {
+  id?: number | null;
+}
+export type IdEntity = StringIdEntity | NumberIdEntity;
+export type IdType = string | number;
+
+export interface RepositoryOptions<T extends IdEntity> extends AbstractRepositoryOptions<T> {
+  defaultValues?: Partial<Omit<T, "id">>;
+  index?: Index<Omit<T, "id">>;
+}
+
+export class DatastoreRepository<T extends IdEntity> extends AbstractRepository<T> {
+  constructor(protected readonly kind: string, protected readonly options: RepositoryOptions<T> = {}) {
     super(kind, options);
   }
 
-  public idToKey(id: string): Entity.Key {
-    return this.getDatastore().key([this.kind, id]);
+  public idToKey(id: IdType | null | undefined): Key {
+    return id ? this.getDatastore().key([this.kind, id]) : this.getDatastore().key([this.kind]);
   }
 
-  public entityToKey(entity: T): Entity.Key {
-    return this.getDatastore().key([this.kind, entity.id]);
+  public entityToKey(entity: T): Key {
+    return this.idToKey(entity.id);
   }
 
-  protected idToSearchId(id: string): string {
-    return id;
+  protected entityToStringId(entity: T): string {
+    return `${entity.id}`;
   }
 
-  protected searchIdToId(searchId: string): string {
-    return searchId;
+  protected keyToStringId(key: Key): string {
+    const stringId = key.name || key.id;
+    assert.ok(stringId, "key must have name or id");
+    return stringId;
   }
 
-  protected entityToSearchId(entity: T): string {
-    return entity.id;
+  protected stringIdToKey(searchId: string): Key {
+    return this.idToKey(searchId);
+  }
+
+  async getRequired(id: IdType): Promise<T>;
+  async getRequired(ids: ReadonlyArray<IdType>): Promise<T[]>;
+  async getRequired(ids: IdType | ReadonlyArray<IdType>): Promise<OneOrMany<T>> {
+    return isReadonlyArray(ids)
+      ? this.getRequiredByKey(ids.map((id) => this.idToKey(id)))
+      : this.getRequiredByKey(this.idToKey(ids));
+  }
+
+  async exists(id: IdType): Promise<boolean> {
+    return super.existsByKey(this.idToKey(id));
+  }
+
+  async get(id: IdType): Promise<T | null>;
+  async get(ids: ReadonlyArray<IdType>): Promise<ReadonlyArray<T | null>>;
+  async get(ids: IdType | ReadonlyArray<IdType>): Promise<OneOrMany<T | null>> {
+    return isReadonlyArray(ids) ? this.getByKey(ids.map((id) => this.idToKey(id))) : this.getByKey(this.idToKey(ids));
+  }
+
+  async delete(...ids: IdType[]): Promise<void> {
+    const keys = asArray(ids).map((id) => this.idToKey(id));
+    return super.deleteByKey(...keys);
   }
 
   protected createEntity(datastoreEntity: DatastoreEntity): T {
+    const key = datastoreEntity[Datastore.KEY];
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const id = datastoreEntity[Datastore.KEY].name!;
+    const id = key.name || parseInt(key.id!);
     const data = omit(datastoreEntity, Datastore.KEY);
     return { ...(this.options.defaultValues as any), ...data, id };
   }
