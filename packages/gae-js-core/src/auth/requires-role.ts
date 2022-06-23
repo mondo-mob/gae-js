@@ -1,5 +1,5 @@
 import { Handler } from "express";
-import { userRequestStorage } from "./user-request-storage";
+import { userRequestStorageProvider } from "./user-request-storage-provider";
 import { ForbiddenError, UnauthorisedError } from "../error";
 
 /**
@@ -8,12 +8,13 @@ import { ForbiddenError, UnauthorisedError } from "../error";
 export const requiresRole =
   (role: string): Handler =>
   (req, res, next) => {
-    const user = userRequestStorage.get();
+    const userStorage = userRequestStorageProvider.get();
+    const user = userStorage.get();
     if (!user) {
       return next(new UnauthorisedError("No authenticated user"));
     }
 
-    if (user.roles.includes(role)) {
+    if ((user.roles || []).includes(role)) {
       return next();
     }
 

@@ -1,5 +1,5 @@
 import { Handler } from "express";
-import { BaseUser, createLogger, UnauthorisedError, userRequestStorage } from "@mondomob/gae-js-core";
+import { BaseUser, createLogger, UnauthorisedError, userRequestStorageProvider } from "@mondomob/gae-js-core";
 import * as firebaseAdmin from "firebase-admin";
 
 const convertIdTokenToUser = (idToken: firebaseAdmin.auth.DecodedIdToken): BaseUser => ({
@@ -25,7 +25,7 @@ export const verifyFirebaseUser = (firebaseAdmin: firebaseAdmin.app.App, options
         const idToken = await firebaseAdmin.auth().verifyIdToken(authHeader.substring(7));
         const user = userConverter(idToken);
         logger.info(`Verified firebase token for user ${user.id} with roles ${user.roles}`);
-        userRequestStorage.set(user);
+        userRequestStorageProvider.get().set(user);
       } catch (e: any) {
         next(new UnauthorisedError(`Error verifying token: ${e.message}`));
       }
