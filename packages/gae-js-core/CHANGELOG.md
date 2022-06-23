@@ -1,5 +1,24 @@
 # @mondomob/gae-js-core
 
+## 3.0.0
+
+### Major Changes
+
+- 98927e8: The BaseUser typings have been loosened to provide more compatibility with real user types.
+
+  The default userRequestStorage has been removed. Instead, consumers must initialise the `userRequestStorageProvider` with the app specific user storage.
+
+  ```typescript
+  const userStorage = new RequestStorageStore<AppUser>("_APPUSER", appUserSchema);
+  userRequestStorageProvider.set(userStorage);
+  ```
+
+- 0040e76: Remove default search id generator when preparing search index. Consumers must now pass id factory param.
+
+### Minor Changes
+
+- e2c5732: RequestStorageStore can be initialised with a DataValidator which is run whenever a value is set
+
 ## 2.1.0
 
 ### Minor Changes

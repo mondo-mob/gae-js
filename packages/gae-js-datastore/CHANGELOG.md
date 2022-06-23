@@ -1,5 +1,24 @@
 # @mondomob/gae-js-datastore
 
+## 5.0.0
+
+### Major Changes
+
+- f39d0ed: Remove deprecated filter option `hasAnscestor`, use `hasAncestor` instead
+- e5b6432: Refactor of repositories to improve support for child entities and allow entities using numeric ids.
+
+  - All repositories now have "byKey" methods. e.g. `getByKey`, `deleteByKey`
+  - Repositories can support entities with string and numeric ids
+  - `DatastoreKeyRepository` has been renamed `DatastoreChildRepository` to better represent its purpose and
+    `parentProperty` configuration is now required.
+
+### Patch Changes
+
+- Updated dependencies [e2c5732]
+- Updated dependencies [98927e8]
+- Updated dependencies [0040e76]
+  - @mondomob/gae-js-core@3.0.0
+
 ## 4.1.0
 
 ### Minor Changes

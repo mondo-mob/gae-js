@@ -1,5 +1,15 @@
 # @mondomob/gae-js-firestore
 
+## 4.0.0
+
+### Patch Changes
+
+- 980d78b: Pass explicit id generator function for firestore repository search index preparation
+- Updated dependencies [e2c5732]
+- Updated dependencies [98927e8]
+- Updated dependencies [0040e76]
+  - @mondomob/gae-js-core@3.0.0
+
 ## 3.0.0
 
 ### Major Changes

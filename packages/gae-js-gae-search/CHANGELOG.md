@@ -1,5 +1,14 @@
 # @mondomob/gae-js-gae-search
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [e2c5732]
+- Updated dependencies [98927e8]
+- Updated dependencies [0040e76]
+  - @mondomob/gae-js-core@3.0.0
+
 ## 2.0.0
 
 ### Major Changes
