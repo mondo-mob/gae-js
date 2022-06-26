@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 5.0.1
+
+### Patch Changes
+
+- f892e40: Fix datastore querying by Key value
+
 ## 5.0.0
 
 ### Major Changes
