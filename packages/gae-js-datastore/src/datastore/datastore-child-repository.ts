@@ -37,6 +37,10 @@ export class DatastoreChildRepository<T extends IdEntity> extends AbstractReposi
     return this.getByKey(this.idToKey(parent, id));
   }
 
+  async delete(parent: Key, id: IdType): Promise<void> {
+    return this.deleteByKey(this.idToKey(parent, id));
+  }
+
   protected createEntity(datastoreEntity: DatastoreEntity): T {
     const key = datastoreEntity[Datastore.KEY];
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -487,7 +487,7 @@ describe("DatastoreChildRepository", () => {
     });
   });
 
-  describe("delete", () => {
+  describe("deleteByKey", () => {
     it("deletes a document outside of transaction", async () => {
       await insertItemDirect("123");
 
@@ -504,6 +504,34 @@ describe("DatastoreChildRepository", () => {
       await runWithRequestStorage(async () => {
         datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
         return runInTransaction(() => repository.deleteByKey(itemKey("123"), itemKey("234")));
+      });
+
+      const [doc123] = await datastore.get(itemKey("123"));
+      expect(doc123).toBe(undefined);
+      const [doc234] = await datastore.get(itemKey("234"));
+      expect(doc234).toBe(undefined);
+    });
+  });
+
+  describe("delete", () => {
+    it("deletes a document outside of transaction", async () => {
+      await insertItemDirect("123");
+
+      await repository.delete(parentKey, "123");
+
+      const [doc] = await datastore.get(itemKey("123"));
+      expect(doc).toBe(undefined);
+    });
+
+    it("deletes a document in transaction", async () => {
+      await insertItemDirect("123");
+      await insertItemDirect("234");
+
+      await runWithRequestStorage(async () => {
+        datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
+        return runInTransaction(() =>
+          Promise.all([repository.delete(parentKey, "123"), repository.delete(parentKey, "234")])
+        );
       });
 
       const [doc123] = await datastore.get(itemKey("123"));
