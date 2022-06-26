@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 5.1.0
+
+### Minor Changes
+
+- 354e1d4: Add DatastoreChildRepository.delete method to allow deleting by parent key and id
+
 ## 5.0.1
 
 ### Patch Changes
