@@ -525,6 +525,7 @@ describe("DatastoreChildRepository", () => {
           prop2: true,
           prop3: true,
           propArray: true,
+          propKey: true,
         },
       });
     });
@@ -562,6 +563,33 @@ describe("DatastoreChildRepository", () => {
 
       const [results] = await repository.query({
         filters: { propArray: { op: "=", value: "ROLE_2" } },
+      });
+
+      expect(results.length).toBe(1);
+      expect(results[0].name).toEqual("Test Item 123");
+    });
+
+    it("filters by key", async () => {
+      await repository.save([createItem("123", { propKey: itemKey("567") }), createItem("234")]);
+
+      const [results] = await repository.query({
+        filters: { propKey: itemKey("567") },
+      });
+
+      expect(results.length).toBe(1);
+      expect(results[0].name).toEqual("Test Item 123");
+    });
+
+    it("filters by key using complex filter", async () => {
+      await repository.save([createItem("123", { propKey: itemKey("567") }), createItem("234")]);
+
+      const [results] = await repository.query({
+        filters: {
+          propKey: {
+            op: "=",
+            value: itemKey("567"),
+          },
+        },
       });
 
       expect(results.length).toBe(1);
