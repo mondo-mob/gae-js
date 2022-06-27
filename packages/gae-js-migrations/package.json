@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "3.0.0",
-    "@mondomob/gae-js-firestore": "4.0.0",
+    "@mondomob/gae-js-firestore": "4.1.0",
     "@google-cloud/firestore": "5.0.2",
     "@types/lodash": "4.14.182"
   },

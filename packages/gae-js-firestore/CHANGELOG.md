@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 4.1.0
+
+### Minor Changes
+
+- 3fd2029: Create custom sub-type for not found errors to allow easier matching in client codebases
+
 ## 4.0.0
 
 ### Patch Changes
