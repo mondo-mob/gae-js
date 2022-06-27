@@ -17,6 +17,7 @@ import { firestoreProvider } from "./firestore-provider";
 import { FirestoreRepository } from "./firestore-repository";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { connectFirestore, deleteCollection } from "../__test/test-utils";
+import { RepositoryNotFoundError } from "./repository-error";
 import { runInTransaction } from "./transactional";
 
 const repositoryItemSchema = t.intersection([
@@ -196,7 +197,7 @@ describe("FirestoreRepository", () => {
     });
 
     it("throws for document that doesn't exist", async () => {
-      await expect(repository.getRequired("123")).rejects.toThrow("invalid id");
+      await expect(repository.getRequired("123")).rejects.toThrowError(new RepositoryNotFoundError(collection, "123"));
     });
 
     describe("with array", () => {

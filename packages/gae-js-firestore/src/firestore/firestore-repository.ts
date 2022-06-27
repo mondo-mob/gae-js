@@ -1,28 +1,28 @@
-import { Firestore, DocumentReference } from "@google-cloud/firestore";
-import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
-import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
-import { QueryOptions, QueryResponse } from "./firestore-query";
+import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import {
   asArray,
+  createLogger,
+  IndexConfig,
+  IndexEntry,
   iots as t,
   iotsReporter as reporter,
   isLeft,
   OneOrMany,
-  SearchFields,
-  Sort,
   Page,
+  prepareIndexEntry,
+  SearchFields,
+  searchProvider,
   SearchResults,
   SearchService,
-  searchProvider,
-  IndexEntry,
-  prepareIndexEntry,
-  IndexConfig,
-  createLogger,
+  Sort,
 } from "@mondomob/gae-js-core";
-import { first } from "lodash";
-import { RepositoryError } from "./repository-error";
-import { firestoreProvider } from "./firestore-provider";
 import assert from "assert";
+import { first } from "lodash";
+import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
+import { firestoreProvider } from "./firestore-provider";
+import { QueryOptions, QueryResponse } from "./firestore-query";
+import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
+import { RepositoryError, RepositoryNotFoundError } from "./repository-error";
 
 const SEARCH_NOT_ENABLED_MSG = "Search is not configured for this repository";
 
@@ -62,7 +62,7 @@ export class FirestoreRepository<T extends BaseEntity> {
     const results = await this.get(idsArray);
     const nullIndex = results.indexOf(null);
     if (nullIndex >= 0) {
-      throw new RepositoryError("load", this.collectionPath, idsArray[nullIndex], ["invalid id"]);
+      throw new RepositoryNotFoundError(this.collectionPath, idsArray[nullIndex]);
     }
     return isArrayParam ? (results as ReadonlyArray<T>) : (results[0] as T);
   }
