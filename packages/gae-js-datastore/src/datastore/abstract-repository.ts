@@ -155,6 +155,16 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
     ];
   }
 
+  async queryList(options?: Partial<QueryOptions<T>>): Promise<ReadonlyArray<T>> {
+    const [results] = await this.query(options);
+    return results;
+  }
+
+  async queryFirst(options?: Partial<QueryOptions<T>>): Promise<T | null> {
+    const [results] = await this.query(options);
+    return results.length > 0 ? results[0] : null;
+  }
+
   async save(entities: T): Promise<T>;
   async save(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
   async save(entities: OneOrMany<T>): Promise<OneOrMany<T>> {

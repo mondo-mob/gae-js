@@ -687,6 +687,51 @@ describe("DatastoreRepository", () => {
     });
   });
 
+  describe("queryList", () => {
+    beforeEach(() => {
+      repository = new DatastoreRepository<RepositoryItem>(collection, {
+        datastore,
+        validator,
+        index: {
+          name: true,
+        },
+      });
+    });
+
+    it("filters by exact match and returns entities", async () => {
+      await repository.save([createItem("123"), createItem("234")]);
+
+      const results = await repository.queryList({
+        filters: { name: "Test Item 234" },
+      });
+
+      expect(results.length).toBe(1);
+      expect(results[0].name).toEqual("Test Item 234");
+    });
+  });
+
+  describe("queryFirst", () => {
+    beforeEach(() => {
+      repository = new DatastoreRepository<RepositoryItem>(collection, {
+        datastore,
+        validator,
+        index: {
+          name: true,
+        },
+      });
+    });
+
+    it("returns first query result", async () => {
+      await repository.save([createItem("123"), createItem("234")]);
+
+      const result = await repository.queryFirst({
+        sort: { property: "name", options: { descending: true } },
+      });
+
+      expect(result?.name).toEqual("Test Item 234");
+    });
+  });
+
   describe("with search enabled", () => {
     const searchService: SearchService = {
       index: jest.fn(),
