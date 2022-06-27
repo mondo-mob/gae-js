@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 5.2.0
+
+### Minor Changes
+
+- 5205046: Add queryList and queryFirst repository convenience methods
+
 ## 5.1.0
 
 ### Minor Changes
