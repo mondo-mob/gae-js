@@ -25,11 +25,8 @@ export const DISABLE_TIMESTAMP_UPDATE = "skipTimestampUpdate";
 const logger = createLogger("timestampedRepository");
 
 export class TimestampedRepository<T extends TimestampedEntity> extends FirestoreRepository<T> {
-  protected beforePersist(entities: OneOrMany<T>): OneOrMany<T> {
-    const updated = isReadonlyArray(entities)
-      ? entities.map((e) => this.updateTimestamps(e))
-      : this.updateTimestamps(entities);
-    return super.beforePersist(updated);
+  protected beforePersist(entity: T): T {
+    return super.beforePersist(this.updateTimestamps(entity));
   }
 
   private updateTimestamps(entity: T) {

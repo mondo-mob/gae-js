@@ -15,6 +15,7 @@ import {
   SearchResults,
   SearchService,
   Sort,
+  isReadonlyArray,
 } from "@mondomob/gae-js-core";
 import assert from "assert";
 import { first } from "lodash";
@@ -107,24 +108,37 @@ export class FirestoreRepository<T extends BaseEntity> {
   async save(entities: T): Promise<T>;
   async save(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
   async save(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
-    return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.set(e));
+    return this.applyMutation(this.beforePersistBatch(entities), (loader, e) => loader.set(e));
   }
 
   async insert(entities: T): Promise<T>;
   async insert(entities: ReadonlyArray<T>): Promise<ReadonlyArray<T>>;
   async insert(entities: OneOrMany<T>): Promise<OneOrMany<T>> {
-    return this.applyMutation(this.beforePersist(entities), (loader, e) => loader.create(e));
+    return this.applyMutation(this.beforePersistBatch(entities), (loader, e) => loader.create(e));
   }
 
   /**
    * Common hook to allow sub-classes to do any transformations necessary before insert/update/save/upsert.
    *
-   * By default this just returns the same entities and does not change input.
+   * By default this just returns the same entity and does not change input.
    *
-   * @param entities Entities that will be persisted, optionally with any transformations.
+   * @param entity The entity to be persisted. This is either the source entity, or if the persist was called with an array then this is called for each one.
    */
-  protected beforePersist(entities: OneOrMany<T>): OneOrMany<T> {
-    return entities;
+  protected beforePersist(entity: T): T {
+    return entity;
+  }
+
+  /**
+   * If sub-classes need a hook before a holistic batch is persisted then this is the hook. Most times you should use beforePersist instead.
+   *
+   * Overriding this function without calling super.beforePersistBatch() will render any other beforePersist hooks useless. By default this calls
+   * beforePersist for each instance.
+   *
+   * @param entities One or many entity instances
+   * @protected
+   */
+  protected beforePersistBatch(entities: OneOrMany<T>): OneOrMany<T> {
+    return isReadonlyArray(entities) ? entities.map((e) => this.beforePersist(e)) : this.beforePersist(entities);
   }
 
   async delete(...ids: string[]): Promise<void> {
