@@ -1,5 +1,16 @@
 # @mondomob/gae-js-tasks
 
+## 5.0.0
+
+### Major Changes
+
+- 1e9a6bd: Remove leading slash from tasks names. We always add a slash so this prevents accidental double slashes in final urls.
+
+### Patch Changes
+
+- Updated dependencies [3b8ae34]
+  - @mondomob/gae-js-core@4.0.0
+
 ## 4.0.0
 
 ### Patch Changes

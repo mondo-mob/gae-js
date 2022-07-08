@@ -1,5 +1,12 @@
 # @mondomob/gae-js-storage
 
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies [3b8ae34]
+  - @mondomob/gae-js-core@4.0.0
+
 ## 3.0.0
 
 ### Patch Changes
