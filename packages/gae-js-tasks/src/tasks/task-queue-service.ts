@@ -48,7 +48,7 @@ export class TaskQueueService {
 
     const task = {
       appEngineHttpRequest: {
-        relativeUri: `${this.pathPrefix}/${taskName}`,
+        relativeUri: `${this.fullTaskName(taskName)}`,
         headers: {
           "Content-Type": "application/json",
         },
@@ -82,7 +82,7 @@ export class TaskQueueService {
     if (!this.configuration.host) {
       throw new Error('Cannot resolve local queue path - please configure "host"');
     }
-    const endpoint = `${this.configuration.host}${this.pathPrefix}/${taskName}`;
+    const endpoint = `${this.configuration.host}${this.fullTaskName(taskName)}`;
     this.logger.info(`Dispatching local task to ${endpoint}`);
 
     // Intentionally don't return this promise because we want the task to be executed
@@ -106,5 +106,10 @@ export class TaskQueueService {
       .catch((e) => {
         this.logger.error(e, `Task failed to execute`);
       });
+  }
+
+  private fullTaskName(taskName: string): string {
+    const noLeadingSlash = taskName.startsWith("/") ? taskName.slice(1) : taskName;
+    return `${this.pathPrefix}/${noLeadingSlash}`;
   }
 }

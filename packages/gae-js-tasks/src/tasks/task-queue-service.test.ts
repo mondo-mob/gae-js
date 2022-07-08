@@ -40,6 +40,12 @@ describe("TaskQueueService", () => {
         await waitUntil(() => scope.isDone());
       });
 
+      it("ignores leading slash on task name", async () => {
+        const scope = nock("http://localhost").post("/tasks/local-task").reply(204);
+        await taskQueueService.enqueue("/local-task");
+        await waitUntil(() => scope.isDone());
+      });
+
       interface TestPayload {
         some: string;
       }
@@ -60,6 +66,12 @@ describe("TaskQueueService", () => {
       it("posts to local task service with body", async () => {
         const scope = nock("http://localhost").post("/admin/tasks/local-task", { some: "data" }).reply(204);
         await taskQueueService.enqueue("local-task", { some: "data" });
+        await waitUntil(() => scope.isDone());
+      });
+
+      it("ignores leading slash on task name", async () => {
+        const scope = nock("http://localhost").post("/admin/tasks/local-task").reply(204);
+        await taskQueueService.enqueue("/local-task");
         await waitUntil(() => scope.isDone());
       });
     });
