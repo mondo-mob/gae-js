@@ -41,7 +41,7 @@ app.use(verifyFirebaseUser(firebaseAdmin));
 app.get(
   "/demo-items",
   requiresUser(),                   // <-- Util middleware that enforces a valid user
-  handleAsync(async (req, res) => { // <-- Util middleware that lets you write async handlers
+  asyncMiddleware(async (req, res) => { // <-- Util middleware that lets you write async handlers
     const repository = new FirestoreRepository<DemoItem>("demo-items");
     logger.info("listing demo-items from firestore");
     const list = await repository.query();

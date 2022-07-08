@@ -219,4 +219,4 @@ app.get("/cron-handler", verifyCron, (req, res) => {});
 ### Other stuff
 Other (hopefully) useful things to help you along the way and stop reinventing the wheel
 
-handleAsync?
+asyncMiddleware?

@@ -180,7 +180,7 @@ Follow these steps to upgrade the configuration to new recommended approach:
 
 ### Patch Changes
 
-- 8bead9e: Update handleAsync typings to be compatible with Express Handler type
+- 8bead9e: Update asyncMiddleware typings to be compatible with Express Handler type
 
 ## 1.0.0
 

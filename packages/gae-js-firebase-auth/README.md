@@ -39,7 +39,7 @@ app.user("/endpoint1", (req, res) => {
 app.get(
   "/roles",
   requiresUser(),
-  handleAsync(async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const user = userRequestStorage.get();
     res.send(`You have roles ${user.roles}`);
   })
@@ -49,7 +49,7 @@ app.get(
 app.put(
   "/roles",
   requiresRole("ADMIN"),
-  handleAsync(async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const user = userRequestStorage.get();
     const { body } = req;
     await admin.auth().setCustomUserClaims(user.id, { roles: body.roles });
