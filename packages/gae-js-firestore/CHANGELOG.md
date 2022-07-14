@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 6.1.0
+
+### Minor Changes
+
+- 6e46015: Add synchronous version of execPostCommitOrNow so callers don't get warnings of unresolved promises when not necessary: execPostCommitOrNowSync
+
 ## 6.0.0
 
 ### Patch Changes
