@@ -1,16 +1,17 @@
-import { FirestoreLoader } from "./firestore-loader";
 import { Firestore } from "@google-cloud/firestore";
+import { runWithRequestStorage } from "@mondomob/gae-js-core";
 import { connectFirestore, deleteCollection, RepositoryItem } from "../__test/test-utils";
+import { FirestoreLoader } from "./firestore-loader";
+import { FirestoreRepository } from "./firestore-repository";
+import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import {
   execPostCommitOrNow,
+  execPostCommitOrNowSync,
   isTransactionActive,
   PostCommitError,
   runInTransaction,
   Transactional,
 } from "./transactional";
-import { FirestoreRepository } from "./firestore-repository";
-import { runWithRequestStorage } from "@mondomob/gae-js-core";
-import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 
 class TransactionalService {
   constructor(
@@ -209,9 +210,9 @@ describe("Transactional", () => {
 
       await testTransactionalSupport(() =>
         runInTransaction(async () => {
-          await execPostCommitOrNow(() => executions.push("post-commit-1"));
+          await execPostCommitOrNow(async () => executions.push("post-commit-1"));
           executions.push("action-1");
-          await execPostCommitOrNow(() => executions.push("post-commit-2"));
+          await execPostCommitOrNow(async () => executions.push("post-commit-2"));
           executions.push("action-2");
           executions.push("action-3");
         })
@@ -228,7 +229,7 @@ describe("Transactional", () => {
           runInTransaction(async () => {
             await execPostCommitOrNow(() => executions.push("post-commit-1"));
             executions.push("action-1");
-            await execPostCommitOrNow(() => executions.push("post-commit-2"));
+            await execPostCommitOrNow(async () => executions.push("post-commit-2"));
             executions.push("action-2");
             throw new Error("Something went wrong");
           })
@@ -282,7 +283,86 @@ describe("Transactional", () => {
     });
   });
 
-  const testTransactionalSupport = <T>(testFn: () => Promise<T>): Promise<T> =>
+  describe("execPostCommitOrNowSync", () => {
+    it("executes action after commit, when in transaction", async () => {
+      const executions: string[] = [];
+
+      await testTransactionalSupport(() =>
+        runInTransaction(async () => {
+          execPostCommitOrNowSync(() => executions.push("post-commit-1"));
+          executions.push("action-1");
+          execPostCommitOrNowSync(() => executions.push("post-commit-2"));
+          executions.push("action-2");
+          executions.push("action-3");
+        })
+      );
+
+      expect(executions).toEqual(["action-1", "action-2", "action-3", "post-commit-1", "post-commit-2"]);
+    });
+
+    it("does not execute post-commit actions when transaction does not commit", async () => {
+      const executions: string[] = [];
+
+      await expect(() =>
+        testTransactionalSupport(() =>
+          runInTransaction(() => {
+            execPostCommitOrNowSync(() => executions.push("post-commit-1"));
+            executions.push("action-1");
+            execPostCommitOrNowSync(() => executions.push("post-commit-2"));
+            executions.push("action-2");
+            throw new Error("Something went wrong");
+          })
+        )
+      ).rejects.toThrow("Something went wrong");
+
+      expect(executions).toEqual(["action-1", "action-2"]);
+    });
+
+    it("executes immediately when there is no open transaction", async () => {
+      const executions: string[] = [];
+
+      await testTransactionalSupport(() => {
+        execPostCommitOrNowSync(() => executions.push("post-commit-1"));
+        executions.push("action-1");
+        execPostCommitOrNowSync(() => executions.push("post-commit-2"));
+        executions.push("action-2");
+        executions.push("action-3");
+      });
+
+      expect(executions).toEqual(["post-commit-1", "action-1", "post-commit-2", "action-2", "action-3"]);
+    });
+
+    it("throws PostCommitError with result and cause when post commit action fails", async () => {
+      const executions: string[] = [];
+      const theCause = new Error("I am the cause");
+
+      try {
+        await testTransactionalSupport(() =>
+          runInTransaction(async () => {
+            execPostCommitOrNowSync(() => executions.push("post-commit-0"));
+            execPostCommitOrNowSync(() => {
+              throw theCause;
+            });
+            executions.push("action-1");
+            execPostCommitOrNowSync(() => executions.push("post-commit-2"));
+            executions.push("action-2");
+            executions.push("action-3");
+            return "Result of the transactional block";
+          })
+        );
+        fail("Expected error");
+      } catch (err) {
+        expect(err).toBeInstanceOf(PostCommitError);
+        const postCommitError = err as PostCommitError;
+        expect(postCommitError.cause).toBe(theCause);
+        expect(postCommitError.result).toBe("Result of the transactional block");
+      }
+
+      expect(executions).toEqual(["action-1", "action-2", "action-3", "post-commit-0"]);
+    });
+  });
+
+  const testTransactionalSupport = <T>(testFn: () => Promise<T> | T): Promise<T> =>
     runWithRequestStorage(async () => {
       firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
       return testFn();

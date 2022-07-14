@@ -49,6 +49,21 @@ export const execPostCommitOrNow = async (action: ActionFunction): Promise<void>
 };
 
 /**
+ * Executes an action after commit if there is a transaction present, otherwise immediately if there is not.
+ *
+ * This version of the function does not use promises
+ *
+ * @param action the action to execute - a no-args synchronous function.
+ */
+export const execPostCommitOrNowSync = (action: () => unknown): void => {
+  if (isTransactionActive()) {
+    getPostCommitActions().push(action);
+  } else {
+    action();
+  }
+};
+
+/**
  * Method decorator to run a function within a transaction.
  * - Must be run with firestoreLoaderRequestStorage enabled
  * - If not already in a transactional context a new one will be created
