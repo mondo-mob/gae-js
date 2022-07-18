@@ -1,5 +1,16 @@
 # @mondomob/gae-js-core
 
+## 4.1.0
+
+### Minor Changes
+
+- 1b29016: Add `routeNotFound` util middleware with common boilerplate to return NotFoundError
+- 5edc59c: Add `startServer` util with common boilerplate for starting express server.
+
+### Patch Changes
+
+- 8a4649c: Update dependencies
+
 ## 4.0.0
 
 ### Major Changes

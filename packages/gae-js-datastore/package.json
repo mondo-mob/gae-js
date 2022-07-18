@@ -32,7 +32,7 @@
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "4.0.0",
+    "@mondomob/gae-js-core": "4.1.0",
     "@google-cloud/datastore": "6.6.2",
     "@types/lodash": "4.14.182",
     "google-datastore-emulator": "5.2.0"

@@ -28,7 +28,7 @@
     "@mondomob/gae-js-core": "^4.0.0"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "4.0.0",
+    "@mondomob/gae-js-core": "4.1.0",
     "@types/node-fetch": "2.6.1",
     "nock": "13.2.4"
   }
