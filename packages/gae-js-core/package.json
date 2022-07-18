@@ -22,8 +22,8 @@
   "license": "MIT",
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
-    "@google-cloud/logging-bunyan": "4.0.0",
-    "@google-cloud/secret-manager": "3.12.0",
+    "@google-cloud/logging-bunyan": "4.1.0",
+    "@google-cloud/secret-manager": "4.0.0",
     "@types/bunyan": "1.8.8",
     "bunyan": "1.8.15",
     "fp-ts": "2.12.1",
