@@ -18,15 +18,15 @@ export type Index<T> =
         : Index<T[K]>;
     };
 
-export interface PropertySort<T> {
-  property: (keyof T | "__key__") & string;
+export interface PropertySort {
+  property: string;
   options?: OrderOptions;
 }
 
 export interface QueryOptions<T> {
   select: OneOrMany<(keyof T | "__key__") & string>;
   filters: Filters<T>;
-  sort: OneOrMany<PropertySort<T>>;
+  sort: OneOrMany<PropertySort>;
   groupBy: OneOrMany<keyof T & string>;
   start: string;
   end: string;
