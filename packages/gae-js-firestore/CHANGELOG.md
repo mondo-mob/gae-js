@@ -4,7 +4,7 @@
 
 ### Major Changes
 
-- fada597: Add withMutex and withMutexSilent to wrap a piece of code with mutex obtain and release. Changed shape of config options slightly.
+- fada597: Add withMutex and withMutexSilent to wrap a piece of code with mutex obtain and release. Changed shape of config options for `MutexService` slightly. No other breaking changes.
 
 ## 6.2.0
 
