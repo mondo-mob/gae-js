@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 7.0.0
+
+### Major Changes
+
+- fada597: Add withMutex and withMutexSilent to wrap a piece of code with mutex obtain and release. Changed shape of config options slightly.
+
 ## 6.2.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @mondomob/gae-js-migrations
 
+## 7.0.0
+
+### Patch Changes
+
+- fada597: Add withMutex and withMutexSilent to wrap a piece of code with mutex obtain and release. Changed shape of config options slightly.
+- Updated dependencies [fada597]
+  - @mondomob/gae-js-firestore@7.0.0
+
 ## 6.0.1
 
 ### Patch Changes
