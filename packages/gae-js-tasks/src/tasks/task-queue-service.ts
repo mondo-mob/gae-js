@@ -38,7 +38,6 @@ export class TaskQueueService {
     if (!location) {
       throw new Error('Cannot resolve queue location - please configure "tasksLocation" or "location"');
     }
-    const serviceTasksOnThisVersion = !!this.configuration.serviceTasksOnThisVersion;
 
     const body = JSON.stringify(payload);
     const requestPayload = Buffer.from(body).toString("base64");
@@ -53,19 +52,12 @@ export class TaskQueueService {
           "Content-Type": "application/json",
         },
         body: requestPayload,
-        // will go to version taking traffic if not specified - enables testing offline
-        ...(serviceTasksOnThisVersion
-          ? {
-              appEngineRouting: {
-                version: process.env.GAE_VERSION,
-              },
-            }
-          : {}),
+        ...this.taskRouting(),
       },
       ...(inSeconds
         ? {
             scheduleTime: {
-              seconds: inSeconds + Date.now() / 1000,
+              seconds: inSeconds + Math.floor(Date.now() / 1000),
             },
           }
         : {}),
@@ -106,6 +98,19 @@ export class TaskQueueService {
       .catch((e) => {
         this.logger.error(e, `Task failed to execute`);
       });
+  }
+
+  private taskRouting() {
+    const { tasksRoutingService, tasksRoutingVersion } = this.configuration;
+    if (tasksRoutingVersion || tasksRoutingService) {
+      return {
+        appEngineRouting: {
+          ...(tasksRoutingService ? { service: tasksRoutingService } : {}),
+          ...(tasksRoutingVersion ? { version: tasksRoutingVersion } : {}),
+        },
+      };
+    }
+    return {};
   }
 
   private fullTaskName(taskName: string): string {

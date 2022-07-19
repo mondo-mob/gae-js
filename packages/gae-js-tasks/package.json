@@ -20,7 +20,7 @@
   },
   "author": "",
   "license": "MIT",
-  "homepage": "https://github.com/mlev/gae-js",
+  "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
     "node-fetch": "2.6.7"
   },
@@ -31,8 +31,8 @@
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "4.1.0",
-    "@google-cloud/tasks": "2.6.0",
-    "@types/node-fetch": "2.6.1",
-    "nock": "13.2.4"
+    "@google-cloud/tasks": "3.0.0",
+    "@types/node-fetch": "2.6.2",
+    "nock": "13.2.8"
   }
 }
