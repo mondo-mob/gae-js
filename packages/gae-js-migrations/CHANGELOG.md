@@ -1,5 +1,11 @@
 # @mondomob/gae-js-migrations
 
+## 6.0.1
+
+### Patch Changes
+
+- 13e7819: Add MutexService as a helper to obtain and release mutexes with a timeout, backed by a firestore collection
+
 ## 6.0.0
 
 ### Patch Changes
