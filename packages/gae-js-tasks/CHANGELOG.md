@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 6.0.0
+
+### Major Changes
+
+- 1d43bc8: Replaced `serviceTasksOnThisVersion` config option with `tasksRoutingVersion` and `tasksRoutingService` options for routing requests to a specific app version or service respectively.
+
 ## 5.0.0
 
 ### Major Changes
