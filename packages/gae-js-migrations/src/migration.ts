@@ -1,17 +1,17 @@
-import { createLogger, runWithRequestStorage, Bootstrapper } from "@mondomob/gae-js-core";
-import { migrationResultsRepository } from "./migration-results.repository";
+import { Bootstrapper, createLogger, runWithRequestStorage } from "@mondomob/gae-js-core";
 import {
   FirestoreLoader,
   firestoreLoaderRequestStorage,
   firestoreProvider,
+  MutexUnavailableError,
   newTimestampedEntity,
 } from "@mondomob/gae-js-firestore";
-import { mutexServiceProvider, MutexUnavailableError } from "./mutex";
 import { AutoMigration } from "./auto-migration";
+import { migrationResultsRepository } from "./migration-results.repository";
+import { mutexServiceProvider } from "./mutex";
 
 const logger = createLogger("migrations");
 const MUTEX_ID = "migrations";
-const MUTEX_EXPIRY_SECONDS = 5 * 60;
 
 const getMigrationsToRun = async (migrations: AutoMigration[]) => {
   const migrationResults = await migrationResultsRepository.get(migrations.map((m) => m.id));
@@ -53,7 +53,7 @@ export const runMigrations = async (migrations: AutoMigration[]) => {
   }
 
   try {
-    await mutexServiceProvider.get().obtain(MUTEX_ID, MUTEX_EXPIRY_SECONDS);
+    await mutexServiceProvider.get().obtain(MUTEX_ID);
   } catch (e) {
     if (e instanceof MutexUnavailableError) {
       logger.info(`Unable to obtain migration mutex '${MUTEX_ID}'. Skipping all migrations.`);

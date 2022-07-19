@@ -1,6 +1,7 @@
 import { CollectionReference, Firestore, Settings } from "@google-cloud/firestore";
-import { configurationProvider, iotsValidator } from "@mondomob/gae-js-core";
+import { configurationProvider, iotsValidator, runWithRequestStorage } from "@mondomob/gae-js-core";
 import { GaeJsFirestoreConfiguration, gaeJsFirestoreConfigurationSchema } from "../configuration";
+import { FirestoreLoader, firestoreLoaderRequestStorage, firestoreProvider } from "../firestore";
 
 export interface RepositoryItem {
   id: string;
@@ -41,4 +42,29 @@ export const deleteCollection = async (collection: CollectionReference): Promise
   if (docs.size === 100) {
     await deleteCollection(collection);
   }
+};
+
+export const deleteCollections = async (collectionNames: string[]): Promise<void> => {
+  for (const name of collectionNames) {
+    await deleteCollection(firestoreProvider.get().collection(name));
+  }
+};
+
+export const useFirestoreTest = (collectionsToClear: string[] = []) => {
+  beforeEach(async () => {
+    await initTestConfig();
+    const firestore = connectFirestore();
+    firestoreProvider.set(firestore);
+    await deleteCollections(collectionsToClear);
+  });
+};
+
+// Helper for standalone tests that require transaction support
+export const transactional = (testFn: () => Promise<unknown>): jest.ProvidesCallback => {
+  return () =>
+    runWithRequestStorage(async () => {
+      // We need firestore loader in request storage if we want to use gae-js transactions
+      firestoreLoaderRequestStorage.set(new FirestoreLoader(firestoreProvider.get()));
+      return testFn();
+    });
 };

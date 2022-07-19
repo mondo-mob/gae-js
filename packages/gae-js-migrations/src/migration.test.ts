@@ -1,9 +1,9 @@
 import { runMigrations } from "./migration";
 import { AutoMigration } from "./auto-migration";
 import { migrationResultsRepository } from "./migration-results.repository";
-import { newTimestampedEntity } from "@mondomob/gae-js-firestore";
+import { mutexesRepository, newTimestampedEntity } from "@mondomob/gae-js-firestore";
 import { transactional, useFirestoreTest } from "./__test/test-utils";
-import { mutexServiceProvider, mutexesRepository } from "./mutex";
+import { mutexServiceProvider } from "./mutex";
 
 describe("runMigrations", () => {
   useFirestoreTest(["mutexes", "migrations"]);

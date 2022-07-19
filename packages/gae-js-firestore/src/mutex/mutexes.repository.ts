@@ -1,4 +1,4 @@
-import { TimestampedEntity, TimestampedRepository } from "@mondomob/gae-js-firestore";
+import { TimestampedEntity, TimestampedRepository } from "../firestore";
 
 export const MUTEXES_COLLECTION_NAME = "mutexes";
 
