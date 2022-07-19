@@ -52,24 +52,22 @@ export const runMigrations = async (migrations: AutoMigration[]) => {
     return;
   }
 
-  try {
-    await mutexServiceProvider.get().obtain(MUTEX_ID);
-  } catch (e) {
-    if (e instanceof MutexUnavailableError) {
-      logger.info(`Unable to obtain migration mutex '${MUTEX_ID}'. Skipping all migrations.`);
-      return;
+  await mutexServiceProvider.get().withMutexSilent(
+    MUTEX_ID,
+    async () => {
+      const migrationsToRun = await getMigrationsToRun(migrations);
+
+      logger.info(
+        `${migrationsToRun.length} migrations to run, ${migrations.length - migrationsToRun.length} skipped.`
+      );
+      for (const migration of migrationsToRun) {
+        await runMigration(migration);
+      }
+    },
+    {
+      onMutexUnavailable: () => logger.info(`Unable to obtain migration mutex '${MUTEX_ID}'. Skipping all migrations.`),
     }
-    throw e;
-  }
-
-  const migrationsToRun = await getMigrationsToRun(migrations);
-
-  logger.info(`${migrationsToRun.length} migrations to run, ${migrations.length - migrationsToRun.length} skipped.`);
-  for (const migration of migrationsToRun) {
-    await runMigration(migration);
-  }
-
-  await mutexServiceProvider.get().release(MUTEX_ID);
+  );
 };
 
 export const bootstrapMigrations: (migrations: AutoMigration[]) => Bootstrapper =

@@ -3,28 +3,68 @@ import { newTimestampedEntity, runInTransaction } from "../firestore";
 import { MutexUnavailableError } from "./mutex-unavailable-error";
 import { Mutex, mutexesRepository } from "./mutexes.repository";
 
-interface MutexOptions {
-  defaultExpirySeconds: number;
-  prefixes?: string[];
-  prefixSeparator?: string;
-}
-
 export class MutexService {
   private readonly logger = createLogger("mutexService");
   private readonly prefix: string;
   private readonly defaultExpirySeconds: number;
 
-  constructor({ defaultExpirySeconds, prefixes = [], prefixSeparator = "::" }: MutexOptions) {
-    this.defaultExpirySeconds = defaultExpirySeconds;
+  constructor({ expirySeconds, prefixes = [], prefixSeparator = "::" }: MutexConfigOptions) {
+    this.defaultExpirySeconds = expirySeconds;
     this.prefix = prefixes.length > 0 ? `${prefixes.join(prefixSeparator)}${prefixSeparator}` : "";
+  }
+
+  /**
+   * Runs the supplied function if the mutex can be obtained. Always releases the mutex after execution.
+   * This variant does not throw an error if the mutex is already locked, instead logging or executing the
+   * defined onMutexUnavailable handler if supplied in options.
+   *
+   * @param mutexId id of the lock to obtain
+   * @param fn function to execute if mutex can be obtained.
+   * @param options mutex options (including optional onMutexUnavailable function)
+   */
+  async withMutexSilent(
+    mutexId: string,
+    fn: () => Promise<unknown> | unknown,
+    options?: MutexOptionsWithHandler
+  ): Promise<void> {
+    try {
+      await this.withMutex(mutexId, fn, options);
+    } catch (err) {
+      if (err instanceof MutexUnavailableError) {
+        if (options?.onMutexUnavailable) {
+          options.onMutexUnavailable();
+        } else {
+          this.logger.info(`Mutex ${this.mutexId(mutexId)} already taken. Execution skipped`);
+        }
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  /**
+   * Runs the supplied function if the mutex can be obtained. Always releases the mutex after execution.
+   *
+   * @param mutexId id of the lock to obtain
+   * @param fn function to execute if mutex can be obtained.
+   * @param options mutex options
+   * @throws MutexUnavailableError when mutex is already locked.
+   */
+  async withMutex<T>(mutexId: string, fn: () => Promise<T> | T, options?: MutexOptions): Promise<T> {
+    await this.obtain(mutexId, options);
+    try {
+      return await fn();
+    } finally {
+      await this.release(mutexId);
+    }
   }
 
   /**
    * Obtains a lock for the provided mutex id for the requested number of seconds.
    * @param mutexId id of the lock to obtain
-   * @param expirySeconds how long to expire the mutex if not manually released
+   * @param options mutex options
    */
-  async obtain(mutexId: string, expirySeconds: number = this.defaultExpirySeconds): Promise<Mutex> {
+  async obtain(mutexId: string, { expirySeconds = this.defaultExpirySeconds }: MutexOptions = {}): Promise<Mutex> {
     const id = this.mutexId(mutexId);
     this.logger.info(`Obtaining mutex for ${id}...`);
 
@@ -87,3 +127,19 @@ export class MutexService {
     return true;
   };
 }
+
+interface MutexConfigOptions {
+  expirySeconds: number;
+  prefixes?: string[];
+  prefixSeparator?: string;
+}
+
+interface MutexOptions {
+  expirySeconds?: number;
+}
+
+interface MutexOptionsWithHandler extends MutexOptions {
+  onMutexUnavailable?: HandlerFunction;
+}
+
+type HandlerFunction = () => unknown | Promise<unknown>;

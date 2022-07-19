@@ -93,7 +93,7 @@ describe("runMigrations", () => {
 
     it("skips all migrations if mutex unavailable", async () => {
       await transactional(async () => {
-        await mutexServiceProvider.get().obtain("migration-bootstrapper", 10);
+        await mutexServiceProvider.get().obtain("migration-bootstrapper");
 
         await runMigrations(migrations);
 

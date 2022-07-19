@@ -4,6 +4,6 @@ import { MutexService } from "@mondomob/gae-js-firestore";
 export const mutexServiceProvider = new LazyProvider(
   () =>
     new MutexService({
-      defaultExpirySeconds: 5 * 60,
+      expirySeconds: 5 * 60,
     })
 );
