@@ -1,4 +1,4 @@
-import { Bucket, Storage } from "@google-cloud/storage";
+import { Bucket, CreateResumableUploadOptions, Storage } from "@google-cloud/storage";
 import { configurationProvider, createLogger } from "@mondomob/gae-js-core";
 import { GaeJsStorageConfiguration } from "../configuration";
 import { storageProvider } from "./storage-provider";
@@ -29,13 +29,16 @@ export class StorageService {
     return this._defaultBucket;
   }
 
-  async getDefaultBucketResumableUploadUrl(fileId: string): Promise<string> {
+  async getDefaultBucketResumableUploadUrl(
+    fileId: string,
+    uploadOptions?: CreateResumableUploadOptions
+  ): Promise<string> {
     const gcsFile = this._defaultBucket.file(fileId);
-    const origin = this.configuration.storageOrigin || this.configuration.host;
+    const origin = uploadOptions?.origin || this.configuration.storageOrigin || this.configuration.host;
     if (!origin) {
       this.logger.warn('Unable to set upload origin - please configure "storageOrigin" or "host"');
     }
-    const urls = await gcsFile.createResumableUpload({ origin });
+    const urls = await gcsFile.createResumableUpload({ ...uploadOptions, origin });
     return urls[0];
   }
 

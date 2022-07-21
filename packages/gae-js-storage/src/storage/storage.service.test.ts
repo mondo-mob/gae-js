@@ -25,4 +25,11 @@ describe("StorageService", () => {
     const uploadUrl = await service.getDefaultBucketResumableUploadUrl("12345");
     expect(uploadUrl.includes("upload/storage/v1/b/test-bucket/o")).toBeTruthy();
   });
+
+  it("creates resumable upload url with content-type", async () => {
+    const uploadUrl = await service.getDefaultBucketResumableUploadUrl("12345", {
+      metadata: { contentType: "text/plain" },
+    });
+    expect(uploadUrl.includes("upload/storage/v1/b/test-bucket/o")).toBeTruthy();
+  });
 });
