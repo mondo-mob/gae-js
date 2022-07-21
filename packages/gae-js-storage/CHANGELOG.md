@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 4.1.0
+
+### Minor Changes
+
+- 40b5a9b: Support providing upload options when creating resumable upload urls
+
 ## 4.0.0
 
 ### Patch Changes
