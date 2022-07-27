@@ -1,5 +1,12 @@
 # @mondomob/gae-js-migrations
 
+## 8.0.0
+
+### Patch Changes
+
+- Updated dependencies [f89b088]
+  - @mondomob/gae-js-firestore@8.0.0
+
 ## 7.0.0
 
 ### Patch Changes

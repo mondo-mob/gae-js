@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 8.0.0
+
+### Major Changes
+
+- f89b088: Update mutexService to allow prefix to be defined a single string or string[] and remove redundant option to specify custom separator. To upgrade, replace prefixes option with prefix.
+
 ## 7.0.0
 
 ### Major Changes
