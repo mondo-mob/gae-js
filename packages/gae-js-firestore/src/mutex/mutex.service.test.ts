@@ -278,6 +278,20 @@ describe("MutexService", () => {
       );
     });
   });
+
+  describe("validation", () => {
+    it("cannot construct mutexService with prefix containing '/'", () => {
+      expect(() => new MutexService({ expirySeconds: 1, prefix: "foo/bar" })).toThrow(
+        "Mutex prefixes cannot contain '/'. Supplied prefix: foo/bar."
+      );
+    });
+
+    it("cannot construct mutexService with prefix array containing '/'", () => {
+      expect(() => new MutexService({ expirySeconds: 1, prefix: ["grandparent", "foo/bar"] })).toThrow(
+        "Mutex prefixes cannot contain '/'. Supplied prefix: grandparent,foo/bar."
+      );
+    });
+  });
 });
 
 const expectMutex = async (id: string, expectations: Partial<Mutex>) => {

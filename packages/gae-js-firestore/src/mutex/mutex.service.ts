@@ -1,4 +1,5 @@
 import { asArray, createLogger, OneOrMany } from "@mondomob/gae-js-core";
+import { toString } from "lodash";
 import { newTimestampedEntity, runInTransaction } from "../firestore";
 import { MutexUnavailableError } from "./mutex-unavailable-error";
 import { Mutex, mutexesRepository } from "./mutexes.repository";
@@ -11,6 +12,9 @@ export class MutexService {
   constructor({ expirySeconds, prefix = [] }: MutexConfigOptions) {
     this.defaultExpirySeconds = expirySeconds;
     const prefixes = asArray(prefix);
+    if (prefixes.some((p) => p.includes("/"))) {
+      throw new Error(`Mutex prefixes cannot contain '/'. Supplied prefix: ${prefix}.`);
+    }
     this.prefix = prefixes.length ? `${prefixes.join(SEPARATOR)}${SEPARATOR}` : "";
   }
 
