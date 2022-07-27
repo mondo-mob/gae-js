@@ -1,4 +1,4 @@
-import { createLogger } from "@mondomob/gae-js-core";
+import { asArray, createLogger, OneOrMany } from "@mondomob/gae-js-core";
 import { newTimestampedEntity, runInTransaction } from "../firestore";
 import { MutexUnavailableError } from "./mutex-unavailable-error";
 import { Mutex, mutexesRepository } from "./mutexes.repository";
@@ -8,9 +8,10 @@ export class MutexService {
   private readonly prefix: string;
   private readonly defaultExpirySeconds: number;
 
-  constructor({ expirySeconds, prefixes = [], prefixSeparator = "::" }: MutexConfigOptions) {
+  constructor({ expirySeconds, prefix = [] }: MutexConfigOptions) {
     this.defaultExpirySeconds = expirySeconds;
-    this.prefix = prefixes.length > 0 ? `${prefixes.join(prefixSeparator)}${prefixSeparator}` : "";
+    const prefixes = asArray(prefix);
+    this.prefix = prefixes.length ? `${prefixes.join(SEPARATOR)}${SEPARATOR}` : "";
   }
 
   /**
@@ -128,10 +129,12 @@ export class MutexService {
   };
 }
 
+// Note that you can't have a separator as "/" inside an id of firestore element with our lib
+const SEPARATOR = "::";
+
 interface MutexConfigOptions {
   expirySeconds: number;
-  prefixes?: string[];
-  prefixSeparator?: string;
+  prefix?: OneOrMany<string>;
 }
 
 interface MutexOptions {
