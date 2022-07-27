@@ -219,7 +219,7 @@ describe("MutexService", () => {
     beforeEach(() => {
       mutexService = new MutexService({
         expirySeconds: 5,
-        prefixes: ["grandparent", "parent"],
+        prefix: ["grandparent", "parent"],
       });
     });
 
@@ -229,21 +229,6 @@ describe("MutexService", () => {
         transactional(async () => {
           const mutex = await mutexService.obtain("test1", { expirySeconds: 10 });
           expect(mutex.id).toBe("grandparent::parent::test1");
-          expect(mutex.locked).toBeTruthy();
-          expect(secondsDifference(mutex.expiredAt, mutex.obtainedAt)).toBe(10);
-        })
-      );
-
-      it(
-        "obtains mutex for new id with custom separator",
-        transactional(async () => {
-          mutexService = new MutexService({
-            expirySeconds: 5,
-            prefixes: ["grandparent", "parent"],
-            prefixSeparator: "--",
-          });
-          const mutex = await mutexService.obtain("test1", { expirySeconds: 10 });
-          expect(mutex.id).toBe("grandparent--parent--test1");
           expect(mutex.locked).toBeTruthy();
           expect(secondsDifference(mutex.expiredAt, mutex.obtainedAt)).toBe(10);
         })
@@ -266,6 +251,25 @@ describe("MutexService", () => {
         transactional(async () => {
           const obtained = await mutexService.obtain("test1");
           expect(obtained.locked).toBeTruthy();
+
+          const released = await mutexService.release("test1");
+          expect(released).toBeDefined();
+          expect(released?.locked).toBeFalsy();
+        })
+      );
+    });
+
+    describe("singlePrefix", () => {
+      it(
+        "obtains and releases",
+        transactional(async () => {
+          mutexService = new MutexService({
+            expirySeconds: 5,
+            prefix: "parent",
+          });
+          const obtained = await mutexService.obtain("test1");
+          expect(obtained.locked).toBeTruthy();
+          expect(obtained.id).toBe("parent::test1");
 
           const released = await mutexService.release("test1");
           expect(released).toBeDefined();
