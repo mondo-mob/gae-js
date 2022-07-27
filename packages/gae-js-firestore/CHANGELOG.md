@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 8.0.1
+
+### Patch Changes
+
+- 640c614: Validate mutex prefixes cannot contain "/" character since these are used to construct an id which cannot contain slashes.
+
 ## 8.0.0
 
 ### Major Changes
