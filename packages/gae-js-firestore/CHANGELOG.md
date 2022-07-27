@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 8.1.0
+
+### Minor Changes
+
+- ab273bc: withMutex and withMutexSilent support array of mutex ids when called (or just a plain string as per existing)
+
 ## 8.0.1
 
 ### Patch Changes
