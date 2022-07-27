@@ -1,5 +1,4 @@
 import { asArray, createLogger, OneOrMany } from "@mondomob/gae-js-core";
-import { toString } from "lodash";
 import { newTimestampedEntity, runInTransaction } from "../firestore";
 import { MutexUnavailableError } from "./mutex-unavailable-error";
 import { Mutex, mutexesRepository } from "./mutexes.repository";
@@ -11,11 +10,8 @@ export class MutexService {
 
   constructor({ expirySeconds, prefix = [] }: MutexConfigOptions) {
     this.defaultExpirySeconds = expirySeconds;
-    const prefixes = asArray(prefix);
-    if (prefixes.some((p) => p.includes("/"))) {
-      throw new Error(`Mutex prefixes cannot contain '/'. Supplied prefix: ${prefix}.`);
-    }
-    this.prefix = prefixes.length ? `${prefixes.join(SEPARATOR)}${SEPARATOR}` : "";
+    const prefixString = joinIdElements(prefix);
+    this.prefix = prefixString && `${prefixString}${SEPARATOR}`;
   }
 
   /**
@@ -23,23 +19,24 @@ export class MutexService {
    * This variant does not throw an error if the mutex is already locked, instead logging or executing the
    * defined onMutexUnavailable handler if supplied in options.
    *
-   * @param mutexId id of the lock to obtain
+   * @param mutexId id of the lock to obtain ... one or many strings. If array supplied, they are joined using '::'.
    * @param fn function to execute if mutex can be obtained.
    * @param options mutex options (including optional onMutexUnavailable function)
    */
   async withMutexSilent(
-    mutexId: string,
+    mutexId: OneOrMany<string>,
     fn: () => Promise<unknown> | unknown,
     options?: MutexOptionsWithHandler
   ): Promise<void> {
+    const mutexIdString = joinIdElements(mutexId);
     try {
-      await this.withMutex(mutexId, fn, options);
+      await this.withMutex(mutexIdString, fn, options);
     } catch (err) {
       if (err instanceof MutexUnavailableError) {
         if (options?.onMutexUnavailable) {
           options.onMutexUnavailable();
         } else {
-          this.logger.info(`Mutex ${this.mutexId(mutexId)} already taken. Execution skipped`);
+          this.logger.info(`Mutex ${this.mutexId(mutexIdString)} already taken. Execution skipped`);
         }
       } else {
         throw err;
@@ -50,17 +47,18 @@ export class MutexService {
   /**
    * Runs the supplied function if the mutex can be obtained. Always releases the mutex after execution.
    *
-   * @param mutexId id of the lock to obtain
+   * @param mutexId id of the lock to obtain ... one or many strings. If array supplied, they are joined using '::'.
    * @param fn function to execute if mutex can be obtained.
    * @param options mutex options
    * @throws MutexUnavailableError when mutex is already locked.
    */
-  async withMutex<T>(mutexId: string, fn: () => Promise<T> | T, options?: MutexOptions): Promise<T> {
-    await this.obtain(mutexId, options);
+  async withMutex<T>(mutexId: OneOrMany<string>, fn: () => Promise<T> | T, options?: MutexOptions): Promise<T> {
+    const mutexIdString = joinIdElements(mutexId);
+    await this.obtain(mutexIdString, options);
     try {
       return await fn();
     } finally {
-      await this.release(mutexId);
+      await this.release(mutexIdString);
     }
   }
 
@@ -132,6 +130,14 @@ export class MutexService {
     return true;
   };
 }
+
+const joinIdElements = (elements: OneOrMany<string>) => {
+  const array = asArray(elements);
+  if (array.some((p) => p.includes("/"))) {
+    throw new Error(`Mutex id elements cannot contain '/'. Supplied: ${elements}.`);
+  }
+  return array.join(SEPARATOR);
+};
 
 // Note that you can't have a separator as "/" inside an id of firestore element with our lib
 const SEPARATOR = "::";

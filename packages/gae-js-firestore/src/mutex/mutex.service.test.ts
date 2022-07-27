@@ -110,6 +110,19 @@ describe("MutexService", () => {
     );
 
     it(
+      "executes using string array for id",
+      transactional(async () => {
+        await expect(mutexService.withMutex(["test1", "test2"], executorFunction)).resolves.toBe("result");
+
+        expect(executorFunction).toHaveBeenCalled();
+
+        await expectMutex("test1::test2", {
+          locked: false,
+        });
+      })
+    );
+
+    it(
       "throws when executor throws, and unlocks mutex",
       transactional(async () => {
         executorFunction = jest.fn(() => {
@@ -158,6 +171,19 @@ describe("MutexService", () => {
         expect(executorFunction).toHaveBeenCalled();
 
         await expectMutex("test1", {
+          locked: false,
+        });
+      })
+    );
+
+    it(
+      "executes using string array for id",
+      transactional(async () => {
+        await expect(mutexService.withMutexSilent(["test1", "test2"], executorFunction)).resolves.toBeUndefined();
+
+        expect(executorFunction).toHaveBeenCalled();
+
+        await expectMutex("test1::test2", {
           locked: false,
         });
       })
@@ -282,13 +308,13 @@ describe("MutexService", () => {
   describe("validation", () => {
     it("cannot construct mutexService with prefix containing '/'", () => {
       expect(() => new MutexService({ expirySeconds: 1, prefix: "foo/bar" })).toThrow(
-        "Mutex prefixes cannot contain '/'. Supplied prefix: foo/bar."
+        "Mutex id elements cannot contain '/'. Supplied: foo/bar."
       );
     });
 
     it("cannot construct mutexService with prefix array containing '/'", () => {
       expect(() => new MutexService({ expirySeconds: 1, prefix: ["grandparent", "foo/bar"] })).toThrow(
-        "Mutex prefixes cannot contain '/'. Supplied prefix: grandparent,foo/bar."
+        "Mutex id elements cannot contain '/'. Supplied: grandparent,foo/bar."
       );
     });
   });
