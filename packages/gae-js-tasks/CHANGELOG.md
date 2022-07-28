@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 7.0.0
+
+### Major Changes
+
+- 437b763: Peer dependency for @google-cloud/tasks updated to be v3
+
 ## 6.0.1
 
 ### Patch Changes
