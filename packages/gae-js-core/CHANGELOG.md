@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 4.1.1
+
+### Patch Changes
+
+- c37b973: Update internal dependencies for vulnerability fixes
+
 ## 4.1.0
 
 ### Minor Changes

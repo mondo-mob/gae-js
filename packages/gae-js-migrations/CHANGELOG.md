@@ -1,5 +1,11 @@
 # @mondomob/gae-js-migrations
 
+## 8.0.1
+
+### Patch Changes
+
+- c37b973: Update internal dependencies for vulnerability fixes
+
 ## 8.0.0
 
 ### Patch Changes

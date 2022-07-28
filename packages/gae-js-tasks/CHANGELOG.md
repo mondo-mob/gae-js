@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 6.0.1
+
+### Patch Changes
+
+- c37b973: Update internal dependencies for vulnerability fixes
+
 ## 6.0.0
 
 ### Major Changes

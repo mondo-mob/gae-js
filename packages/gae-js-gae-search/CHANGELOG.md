@@ -1,5 +1,11 @@
 # @mondomob/gae-js-gae-search
 
+## 4.0.1
+
+### Patch Changes
+
+- c37b973: Update internal dependencies for vulnerability fixes
+
 ## 4.0.0
 
 ### Patch Changes

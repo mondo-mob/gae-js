@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 7.0.1
+
+### Patch Changes
+
+- c37b973: Update internal dependencies for vulnerability fixes
+
 ## 7.0.0
 
 ### Major Changes
