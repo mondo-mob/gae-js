@@ -20,7 +20,7 @@
   },
   "author": "",
   "license": "MIT",
-  "homepage": "https://github.com/mlev/gae-js",
+  "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
     "node-fetch": "2.6.7"
   },
