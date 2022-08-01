@@ -1,12 +1,13 @@
-import { isReadonlyArray, createLogger, getRequestStorageValueOrDefault, OneOrMany } from "@mondomob/gae-js-core";
+import { createLogger, getRequestStorageValueOrDefault } from "@mondomob/gae-js-core";
 import { BaseEntity, FirestoreRepository } from "./firestore-repository";
 
 export interface TimestampedEntity extends BaseEntity {
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const GENERATE_FLAG = "GENERATE";
+// A flag value we can identify and override on save - but one that is highly unlikely to conflict with a real date.
+const GENERATE_FLAG = new Date(-8640000000000000);
 
 export const newTimestampedEntity = (id: string): TimestampedEntity => {
   return {
@@ -35,7 +36,7 @@ export class TimestampedRepository<T extends TimestampedEntity> extends Firestor
       return entity;
     }
 
-    const updateTime = new Date().toISOString();
+    const updateTime = new Date();
     if (!entity.createdAt || entity.createdAt === GENERATE_FLAG) entity.createdAt = updateTime;
     entity.updatedAt = updateTime;
     return entity;

@@ -27,7 +27,7 @@ describe("TimestampedRepository", () => {
     startTime = new Date();
   });
 
-  const fixedTime = "2022-03-01T12:13:14.000Z";
+  const fixedTime = new Date("2022-03-01T12:13:14.000Z");
 
   const createItem = (id: string): TimestampedItem => ({
     ...newTimestampedEntity(id),
@@ -41,8 +41,8 @@ describe("TimestampedRepository", () => {
     updatedAt: fixedTime,
   });
 
-  const expectNewTimestamp = (actual: string) => {
-    expect(new Date(actual) >= startTime).toBeTruthy();
+  const expectNewTimestamp = (actual: Date) => {
+    expect(actual >= startTime).toBeTruthy();
   };
 
   describe("insert", () => {
