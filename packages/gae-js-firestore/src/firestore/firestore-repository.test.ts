@@ -1,9 +1,10 @@
-import { Firestore } from "@google-cloud/firestore";
+import { Firestore, Timestamp } from "@google-cloud/firestore";
 import { StatusCode } from "@google-cloud/firestore/build/src/status-code";
 import {
   IndexConfig,
   IndexEntry,
   iots as t,
+  iotsValidator,
   Page,
   runWithRequestStorage,
   SearchFields,
@@ -19,6 +20,14 @@ import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import { RepositoryNotFoundError } from "./repository-error";
 import { runInTransaction } from "./transactional";
+import { toUpper } from "lodash";
+
+export const dateType = new t.Type<Date>(
+  "DateType",
+  (m): m is Date => m instanceof Date,
+  (m, c) => (m instanceof Date ? t.success(m) : t.failure("Value is not date", c)),
+  (a) => a
+);
 
 const repositoryItemSchema = t.intersection([
   t.type({
@@ -29,11 +38,15 @@ const repositoryItemSchema = t.intersection([
     prop1: t.string,
     prop2: t.string,
     prop3: t.string,
+    date1: dateType,
     nested: t.type({
       prop4: t.string,
+      date2: dateType,
     }),
   }),
 ]);
+
+const validator = iotsValidator(repositoryItemSchema);
 
 type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
 
@@ -85,6 +98,124 @@ describe("FirestoreRepository", () => {
       });
     });
 
+    it("transforms Firestore Timestamps to Dates", async () => {
+      const now = new Date();
+
+      await firestore.doc(`${collection}/123`).create({
+        name: "test123",
+        date1: now,
+      });
+
+      const document = await repository.getRequired("123");
+
+      expect(document.date1).toBeInstanceOf(Date);
+      expect(document).toEqual({
+        id: "123",
+        name: "test123",
+        date1: now,
+      });
+    });
+
+    it("createEntity transforms Firestore Timestamps to Dates - nested plus arrays scenario", async () => {
+      const now = new Timestamp(999, 888);
+      const src: any = {
+        name: "test123",
+        date1: now,
+        array1: ["1", now, {}],
+        array2: [now, { event: 1, dt: now }, { event: 2, dt: now }],
+        nested: {
+          date2: now,
+          nested: {
+            prop1: "x",
+            date3: now,
+            array3: [now, now],
+            array4: [now, { event: 3, sublist: [{ dt: now }] }],
+          },
+        },
+      };
+      expect(repository.createEntity("123", src)).toEqual({
+        id: "123",
+        name: "test123",
+        date1: now.toDate(),
+        array1: ["1", now.toDate(), {}],
+        array2: [now.toDate(), { event: 1, dt: now.toDate() }, { event: 2, dt: now.toDate() }],
+        nested: {
+          date2: now.toDate(),
+          nested: {
+            prop1: "x",
+            date3: now.toDate(),
+            array3: [now.toDate(), now.toDate()],
+            array4: [now.toDate(), { event: 3, sublist: [{ dt: now.toDate() }] }],
+          },
+        },
+      });
+    });
+
+    it("transforms Firestore Timestamps to Dates - nested plus arrays scenario", async () => {
+      const now = new Date();
+
+      await firestore.doc(`${collection}/123`).create({
+        name: "test123",
+        date1: now,
+        array1: ["1", now, {}],
+        array2: [now, { event: 1, dt: now }, { event: 2, dt: now }],
+        nested: {
+          date2: now,
+          nested: {
+            prop1: "x",
+            date3: now,
+            array3: [now, now],
+            array4: [now, { event: 3, sublist: [{ dt: now }] }],
+          },
+        },
+      });
+
+      const document = await repository.getRequired("123");
+
+      expect(document.date1).toBeInstanceOf(Date);
+      expect(document.nested!.date2).toBeInstanceOf(Date);
+      expect(document).toEqual({
+        id: "123",
+        name: "test123",
+        date1: now,
+        array1: ["1", now, {}],
+        array2: [now, { event: 1, dt: now }, { event: 2, dt: now }],
+        nested: {
+          date2: now,
+          nested: {
+            prop1: "x",
+            date3: now,
+            array3: [now, now],
+            array4: [now, { event: 3, sublist: [{ dt: now }] }],
+          },
+        },
+      });
+    });
+
+    it("subclass overrides the afterRead() hook", async () => {
+      class TransformOnReadRepository<T extends RepositoryItem> extends FirestoreRepository<T> {
+        protected afterRead(entity: T): T {
+          // let the default Timestamp to Date conversation occur
+          let transformed = super.afterRead(entity);
+          // apply a further transform: simply uppercase the 'name' property
+          transformed.name = toUpper(transformed.name);
+          return transformed;
+        }
+      }
+
+      const transformOnReadRepo = new TransformOnReadRepository(collection, { firestore });
+
+      const now = new Date();
+      await firestore.doc(`${collection}/123`).create({
+        name: "test123",
+        date1: now,
+      });
+
+      const document = await transformOnReadRepo.getRequired("123");
+      expect(document.date1).toEqual(now);
+      expect(document.name).toEqual("TEST123");
+    });
+
     it("returns null for document that doesn't exist", async () => {
       const document = await repository.get("123");
 
@@ -93,11 +224,15 @@ describe("FirestoreRepository", () => {
 
     describe("with array", () => {
       it("returns array with items in same order", async () => {
+        const now = new Date();
+
         await firestore.doc(`${collection}/123`).create({
           name: "test123",
+          date1: now,
         });
         await firestore.doc(`${collection}/234`).create({
           name: "test234",
+          date1: now,
         });
 
         const results = await repository.get(["123", "234"]);
@@ -106,10 +241,12 @@ describe("FirestoreRepository", () => {
           {
             id: "123",
             name: "test123",
+            date1: now,
           },
           {
             id: "234",
             name: "test234",
+            date1: now,
           },
         ]);
       });
@@ -136,13 +273,16 @@ describe("FirestoreRepository", () => {
       beforeEach(() => {
         repository = new FirestoreRepository<RepositoryItem>(collection, {
           firestore,
-          validator: repositoryItemSchema,
+          validator,
         });
       });
 
       it("fetches document that exists and matches schema", async () => {
+        const now = new Date();
+
         await firestore.doc(`${collection}/123`).create({
           name: "test123",
+          date1: now,
         });
 
         const document = await repository.get("123");
@@ -150,12 +290,20 @@ describe("FirestoreRepository", () => {
         expect(document).toEqual({
           id: "123",
           name: "test123",
+          date1: now,
         });
       });
 
-      it("throws for document that doesn't match schema", async () => {
+      it("throws for document that doesn't match schema - unknown property", async () => {
         await firestore.doc(`${collection}/123`).create({
           description: "test123",
+        });
+        await expect(repository.get("123")).rejects.toThrow('"repository-items" with id "123" failed to load');
+      });
+
+      it("throws for document that doesn't match schema - incorrect type", async () => {
+        await firestore.doc(`${collection}/123`).create({
+          date1: "not-a-date",
         });
         await expect(repository.get("123")).rejects.toThrow('"repository-items" with id "123" failed to load');
       });
@@ -238,7 +386,7 @@ describe("FirestoreRepository", () => {
       beforeEach(() => {
         repository = new FirestoreRepository<RepositoryItem>(collection, {
           firestore,
-          validator: repositoryItemSchema,
+          validator,
         });
       });
 
@@ -296,7 +444,7 @@ describe("FirestoreRepository", () => {
       beforeEach(() => {
         repository = new FirestoreRepository<RepositoryItem>(collection, {
           firestore,
-          validator: repositoryItemSchema,
+          validator,
         });
       });
 
@@ -354,7 +502,7 @@ describe("FirestoreRepository", () => {
       beforeEach(() => {
         repository = new FirestoreRepository<RepositoryItem>(collection, {
           firestore,
-          validator: repositoryItemSchema,
+          validator,
         });
       });
 
@@ -682,6 +830,7 @@ describe("FirestoreRepository", () => {
         },
       });
 
+    const fixedTime = new Date("2022-03-01T12:13:14.000Z");
     const createItem = (id: string): RepositoryItem => ({
       id,
       name: id,
@@ -690,6 +839,7 @@ describe("FirestoreRepository", () => {
       prop3: `${id}_prop3`,
       nested: {
         prop4: `${id}_prop4`,
+        date2: fixedTime,
       },
     });
 
@@ -721,6 +871,7 @@ describe("FirestoreRepository", () => {
               prop2: "ITEM1_PROP2",
               nested: {
                 prop4: "item1_prop4",
+                date2: fixedTime,
               },
               custom: "custom_item1_prop3",
             },
@@ -742,6 +893,7 @@ describe("FirestoreRepository", () => {
               prop2: "ITEM1_PROP2",
               nested: {
                 prop4: "item1_prop4",
+                date2: fixedTime,
               },
               custom: "custom_item1_prop3",
             },
@@ -753,6 +905,7 @@ describe("FirestoreRepository", () => {
               prop2: "ITEM2_PROP2",
               nested: {
                 prop4: "item2_prop4",
+                date2: fixedTime,
               },
               custom: "custom_item2_prop3",
             },

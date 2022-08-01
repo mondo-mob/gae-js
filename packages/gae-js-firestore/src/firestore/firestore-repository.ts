@@ -1,12 +1,9 @@
-import { DocumentReference, Firestore } from "@google-cloud/firestore";
+import { DocumentReference, Firestore, Timestamp } from "@google-cloud/firestore";
 import {
   asArray,
   createLogger,
   IndexConfig,
   IndexEntry,
-  iots as t,
-  iotsReporter as reporter,
-  isLeft,
   OneOrMany,
   Page,
   prepareIndexEntry,
@@ -16,9 +13,10 @@ import {
   SearchService,
   Sort,
   isReadonlyArray,
+  DataValidator,
 } from "@mondomob/gae-js-core";
 import assert from "assert";
-import { first } from "lodash";
+import { cloneDeepWith, first } from "lodash";
 import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
 import { QueryOptions, QueryResponse } from "./firestore-query";
@@ -39,13 +37,13 @@ export interface RepositorySearchOptions<T extends BaseEntity> {
 
 export interface RepositoryOptions<T extends BaseEntity> {
   firestore?: Firestore;
-  validator?: t.Type<T>;
+  validator?: DataValidator<T>;
   search?: RepositorySearchOptions<T>;
 }
 
 export class FirestoreRepository<T extends BaseEntity> {
   private readonly logger = createLogger("firestore-repository");
-  private readonly validator?: t.Type<T>;
+  private readonly validator?: DataValidator<T>;
   private readonly firestore?: Firestore;
   protected readonly searchOptions?: RepositorySearchOptions<T>;
 
@@ -103,6 +101,18 @@ export class FirestoreRepository<T extends BaseEntity> {
       const entity = this.createEntity(snapshot.ref.id, snapshot.data());
       return this.validateLoad(entity);
     });
+  }
+
+  /**
+   * Common hook to allow sub-classes to do any transformations necessary after data is read from Firestore.
+   *
+   * By default, a single transform is executed which will convert all Firestore Timestamps back to Date.
+   *
+   * @param entity The entity read from Firestore.
+   */
+  protected afterRead(entity: T): T {
+    const transformed: any = cloneDeepWith(entity, (val) => (val instanceof Timestamp ? val.toDate() : undefined));
+    return transformed;
   }
 
   async save(entities: T): Promise<T>;
@@ -173,8 +183,9 @@ export class FirestoreRepository<T extends BaseEntity> {
     return this.getFirestore().doc(`${this.collectionPath}/${name}`);
   };
 
-  private createEntity = (id: string, value: Record<string, unknown>): T => {
-    return { ...value, id } as T;
+  createEntity = (id: string, doc: Record<string, unknown>): T => {
+    const transformed: T = this.afterRead(doc as T);
+    return { ...transformed, id } as T;
   };
 
   private async applyMutation(
@@ -207,14 +218,11 @@ export class FirestoreRepository<T extends BaseEntity> {
       return entity;
     }
 
-    const validation = this.validator.decode(entity);
-
-    if (isLeft(validation)) {
-      const errors = reporter.report(validation);
-      throw new RepositoryError(operation, this.collectionPath, entity.id, errors);
+    try {
+      return this.validator(entity);
+    } catch (e) {
+      throw new RepositoryError(operation, this.collectionPath, entity.id, [(e as Error).message]);
     }
-
-    return validation.right;
   };
 
   protected prepareSearchEntry(entity: T): IndexEntry {
