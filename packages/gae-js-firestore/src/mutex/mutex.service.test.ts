@@ -326,5 +326,4 @@ const expectMutex = async (id: string, expectations: Partial<Mutex>) => {
   return mutex;
 };
 
-const secondsDifference = (srcIso: string, origIso: string) =>
-  new Date(srcIso).getSeconds() - new Date(origIso).getSeconds();
+const secondsDifference = (src: Date, orig: Date) => Math.floor((src.getTime() - orig.getTime()) / 1000);

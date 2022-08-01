@@ -80,8 +80,8 @@ export class MutexService {
       return mutexesRepository.save({
         ...newTimestampedEntity(id),
         ...mutex,
-        obtainedAt: now.toISOString(),
-        expiredAt: new Date(now.getTime() + expirySeconds * 1000).toISOString(),
+        obtainedAt: now,
+        expiredAt: new Date(now.getTime() + expirySeconds * 1000),
         locked: true,
       });
     });
@@ -106,7 +106,7 @@ export class MutexService {
       return mutexesRepository.save({
         ...mutex,
         locked: false,
-        releasedAt: new Date().toISOString(),
+        releasedAt: new Date(),
       });
     });
     this.logger.info(`Mutex released for ${id}`);
@@ -122,7 +122,7 @@ export class MutexService {
       return false;
     }
 
-    if (new Date() > new Date(mutex.expiredAt)) {
+    if (new Date() > mutex.expiredAt) {
       this.logger.warn(`Mutex ${mutex.id} is locked, but expired at ${mutex.expiredAt}.`);
       return false;
     }
