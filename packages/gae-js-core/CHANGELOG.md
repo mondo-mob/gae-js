@@ -1,5 +1,18 @@
 # @mondomob/gae-js-core
 
+## 6.0.0
+
+### Major Changes
+
+- c3437ca: Removed io-ts dependencies and all related code. It's recommended to update to use zod instead but any code
+  still dependent on io-ts should include `io-ts`, `fp-ts` and `io-ts-reporters` directly. The `iotsValidator`
+  code can be taken from the project history.
+
+### Minor Changes
+
+- c867c43: Update to use recommended Node TSConfig settings (for Node 14)
+- 0a579c2: Add `set()` method to LazyProvider. This is useful for manually initialising providers in tests.
+
 ## 5.0.0
 
 ### Major Changes

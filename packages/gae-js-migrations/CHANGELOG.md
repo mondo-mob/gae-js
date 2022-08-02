@@ -1,5 +1,19 @@
 # @mondomob/gae-js-migrations
 
+## 11.0.0
+
+### Minor Changes
+
+- c867c43: Update to use recommended Node TSConfig settings (for Node 14)
+
+### Patch Changes
+
+- Updated dependencies [c3437ca]
+- Updated dependencies [c867c43]
+- Updated dependencies [0a579c2]
+  - @mondomob/gae-js-core@6.0.0
+  - @mondomob/gae-js-firestore@11.0.0
+
 ## 10.0.0
 
 ### Major Changes
