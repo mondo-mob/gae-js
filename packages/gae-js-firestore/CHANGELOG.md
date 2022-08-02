@@ -1,5 +1,49 @@
 # @mondomob/gae-js-firestore
 
+## 10.0.0
+
+### Major Changes
+
+- f1766f6: BREAKING: Replace io-ts schemas for config with zod.
+
+  To upgrade, install `zod` and replace your config validators such as
+
+  ```typescript
+  // Define the io-ts configuration schema you want to use for your app
+  const configSchema = t.intersection([
+    // Include the schemas from the libraries you are using
+    gaeJsCoreConfigurationSchema,
+    gaeJsFirestoreConfigurationSchema,
+    // Add the other config properties you need
+    t.type({
+      something: t.string
+    })
+  ]);
+
+  // Create ConfigValidator from schema
+  const validator = iotsValidator(configSchema);
+  ```
+
+  with
+
+  ```typescript
+  // Define the zod configuration schema you want to use for your app
+  import { z } from "zod";
+  // Include the schemas from the libraries you are using (use merge if there are multiple)
+  const configSchema = gaeJsCoreConfigurationSchema.merge(gaeJsFirestoreConfigurationSchema).extend({
+    // Extend and add your own config
+    something: z.string()
+  });
+
+  // Create ConfigValidator from schema
+  const validator = zodValidator(configSchema);
+  ```
+
+### Patch Changes
+
+- Updated dependencies [f1766f6]
+  - @mondomob/gae-js-core@5.0.0
+
 ## 9.0.0
 
 ### Major Changes

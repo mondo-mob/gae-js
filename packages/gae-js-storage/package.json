@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-storage",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "description": "Tools for Google Cloud Storage",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -23,12 +23,12 @@
   "license": "MIT",
   "homepage": "https://github.com/mondo-mob/gae-js",
   "peerDependencies": {
-    "@mondomob/gae-js-core": "^4.0.0",
+    "@mondomob/gae-js-core": "^5.0.0",
     "@google-cloud/storage": "^6.0.0",
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "4.1.1",
+    "@mondomob/gae-js-core": "5.0.0",
     "@google-cloud/storage": "6.2.3"
   }
 }

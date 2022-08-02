@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-firebase-auth",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -23,11 +23,11 @@
   "license": "MIT",
   "homepage": "https://github.com/mondo-mob/gae-js",
   "peerDependencies": {
-    "@mondomob/gae-js-core": "^4.0.0",
+    "@mondomob/gae-js-core": "^5.0.0",
     "firebase-admin": ">= 10.0.0"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "4.1.1",
+    "@mondomob/gae-js-core": "5.0.0",
     "firebase-admin": "^10.3.0"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"

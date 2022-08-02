@@ -1,5 +1,12 @@
 # @mondomob/gae-js-firebase-auth
 
+## 5.0.0
+
+### Patch Changes
+
+- Updated dependencies [f1766f6]
+  - @mondomob/gae-js-core@5.0.0
+
 ## 4.0.1
 
 ### Patch Changes
