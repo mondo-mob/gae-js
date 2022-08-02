@@ -10,6 +10,10 @@ export class LazyProvider<T> {
     return this.value;
   }
 
+  set(value: T): T {
+    return (this.value = value);
+  }
+
   clear() {
     this.value = undefined;
   }
