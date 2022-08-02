@@ -1,14 +1,18 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "lib": ["ES2020"],
+    "target": "ES2020",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
     "declaration": true,
     "declarationMap": true,
     "removeComments": true,
-    "strict": true,
-    "target": "es2017",
     "sourceMap": true,
     "incremental": true,
-    "esModuleInterop": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "composite": true
