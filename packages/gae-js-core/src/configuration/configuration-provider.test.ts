@@ -1,18 +1,15 @@
-import * as t from "io-ts";
+import { z } from "zod";
+import { zodValidator } from "../util";
 import { ConfigurationProvider } from "./configuration-provider";
 import { gaeJsCoreConfigurationSchema } from "./schema";
-import { iotsValidator } from "../util/iots";
 import { ENV_VAR_CONFIG_OVERRIDES, ENV_VAR_PROJECT } from "./variables";
 
-const testConfigSchema = t.intersection([
-  gaeJsCoreConfigurationSchema,
-  t.type({
-    appName: t.string,
-  }),
-]);
-type TestConfig = t.TypeOf<typeof testConfigSchema>;
+const testConfigSchema = gaeJsCoreConfigurationSchema.extend({
+  appName: z.string(),
+});
+type TestConfig = z.infer<typeof testConfigSchema>;
 
-const validator = iotsValidator(testConfigSchema);
+const validator = zodValidator(testConfigSchema);
 
 describe("ConfigurationProvider", () => {
   beforeEach(() => {

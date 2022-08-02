@@ -1,7 +1,8 @@
-import { iots as t, GaeJsCoreConfiguration } from "@mondomob/gae-js-core";
+import { GaeJsCoreConfiguration } from "@mondomob/gae-js-core";
+import { z } from "zod";
 
-export const gaeJsGaeSearchConfigurationSchema = t.type({
-  searchServiceEndpoint: t.string,
+export const gaeJsGaeSearchConfigurationSchema = z.object({
+  searchServiceEndpoint: z.string(),
 });
 
-export type GaeJsGaeSearchConfiguration = t.TypeOf<typeof gaeJsGaeSearchConfigurationSchema> & GaeJsCoreConfiguration;
+export type GaeJsGaeSearchConfiguration = z.infer<typeof gaeJsGaeSearchConfigurationSchema> & GaeJsCoreConfiguration;

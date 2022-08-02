@@ -1,10 +1,11 @@
-import { iots as t, GaeJsCoreConfiguration } from "@mondomob/gae-js-core";
+import { GaeJsCoreConfiguration } from "@mondomob/gae-js-core";
+import { z } from "zod";
 
-export const gaeJsTasksConfigurationSchema = t.partial({
-  tasksRoutingVersion: t.string,
-  tasksRoutingService: t.string,
-  tasksLocation: t.string,
-  tasksProjectId: t.string,
+export const gaeJsTasksConfigurationSchema = z.object({
+  tasksRoutingVersion: z.string().optional(),
+  tasksRoutingService: z.string().optional(),
+  tasksLocation: z.string().optional(),
+  tasksProjectId: z.string().optional(),
 });
 
-export type GaeJsTasksConfiguration = t.TypeOf<typeof gaeJsTasksConfigurationSchema> & GaeJsCoreConfiguration;
+export type GaeJsTasksConfiguration = z.infer<typeof gaeJsTasksConfigurationSchema> & GaeJsCoreConfiguration;

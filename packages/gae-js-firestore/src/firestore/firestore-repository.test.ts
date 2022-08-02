@@ -196,7 +196,7 @@ describe("FirestoreRepository", () => {
       class TransformOnReadRepository<T extends RepositoryItem> extends FirestoreRepository<T> {
         protected afterRead(entity: T): T {
           // let the default Timestamp to Date conversation occur
-          let transformed = super.afterRead(entity);
+          const transformed = super.afterRead(entity);
           // apply a further transform: simply uppercase the 'name' property
           transformed.name = toUpper(transformed.name);
           return transformed;

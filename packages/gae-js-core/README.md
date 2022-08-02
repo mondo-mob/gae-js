@@ -103,22 +103,19 @@ Basic setup:
 
 2. In your app create the typings for your desired configuration and a ConfigValidator instance.
 This can be any function that takes some unknown data and returns a typed instance of your configuration.
-e.g. the library contains a pre-built io-ts validator:
+e.g. the library contains a pre-built zod validator:
 
 ```typescript
-// Define the io-ts configuration schema you want to use for your app
-const configSchema = t.intersection([
-  // Include the schemas from the libraries you are using
-  gaeJsCoreConfigurationSchema,
-  gaeJsFirestoreConfigurationSchema,
-  // Add the other config properties you need
-  t.type({
-    something: t.string,
-  }),
-]);
+// Define the zod configuration schema you want to use for your app
+import { z } from "zod";
+// Include the schemas from the libraries you are using (use merge if there are multiple)
+const configSchema = gaeJsCoreConfigurationSchema.merge(gaeJsFirestoreConfigurationSchema).extend({
+  // Extend and add your own config
+  something: z.string(),
+});
 
 // Create ConfigValidator from schema
-const validator = iotsValidator(configSchema);
+const validator = zodValidator(configSchema);
 ```
 
 3. Initialise the configuration

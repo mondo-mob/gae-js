@@ -1,6 +1,5 @@
 import { CollectionReference, Firestore, Settings } from "@google-cloud/firestore";
-import { configurationProvider, iotsValidator, runWithRequestStorage } from "@mondomob/gae-js-core";
-import ProvidesCallback = jest.ProvidesCallback;
+import { configurationProvider, runWithRequestStorage, zodValidator } from "@mondomob/gae-js-core";
 import {
   FirestoreLoader,
   firestoreLoaderRequestStorage,
@@ -8,6 +7,7 @@ import {
   GaeJsFirestoreConfiguration,
   gaeJsFirestoreConfigurationSchema,
 } from "@mondomob/gae-js-firestore";
+import ProvidesCallback = jest.ProvidesCallback;
 
 export const initTestConfig = async (
   config?: Partial<GaeJsFirestoreConfiguration>
@@ -19,7 +19,9 @@ export const initTestConfig = async (
     firestorePort: 9000,
     ...config,
   });
-  await configurationProvider.init({ validator: iotsValidator(gaeJsFirestoreConfigurationSchema) });
+  await configurationProvider.init({
+    validator: zodValidator<GaeJsFirestoreConfiguration>(gaeJsFirestoreConfigurationSchema),
+  });
   return configurationProvider.get<GaeJsFirestoreConfiguration>();
 };
 

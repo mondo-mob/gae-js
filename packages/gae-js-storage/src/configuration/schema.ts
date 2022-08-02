@@ -1,20 +1,19 @@
-import { GaeJsCoreConfiguration, iots as t } from "@mondomob/gae-js-core";
+import { GaeJsCoreConfiguration } from "@mondomob/gae-js-core";
+import { z } from "zod";
 
-export const gaeJsStorageConfigurationSchema = t.intersection([
-  t.type({
-    storageDefaultBucket: t.string,
-  }),
-  t.partial({
-    storageApiEndpoint: t.string,
-    // Emulator host is separate from the api endpoint because to connect to Firebase storage emulator
-    // you need to set the STORAGE_EMULATOR_HOST environment variable instead
-    storageEmulatorHost: t.string,
-    storageCredentials: t.type({
-      clientEmail: t.string,
-      privateKey: t.string,
-    }),
-    storageOrigin: t.string,
-  }),
-]);
+export const gaeJsStorageConfigurationSchema = z.object({
+  storageDefaultBucket: z.string(),
+  storageApiEndpoint: z.string().optional(),
+  // Emulator host is separate from the api endpoint because to connect to Firebase storage emulator
+  // you need to set the STORAGE_EMULATOR_HOST environment variable instead
+  storageEmulatorHost: z.string().optional(),
+  storageCredentials: z
+    .object({
+      clientEmail: z.string(),
+      privateKey: z.string(),
+    })
+    .optional(),
+  storageOrigin: z.string().optional(),
+});
 
-export type GaeJsStorageConfiguration = t.TypeOf<typeof gaeJsStorageConfigurationSchema> & GaeJsCoreConfiguration;
+export type GaeJsStorageConfiguration = z.infer<typeof gaeJsStorageConfigurationSchema> & GaeJsCoreConfiguration;

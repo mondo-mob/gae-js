@@ -1,22 +1,19 @@
+import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
+import { z } from "zod";
+import { withEnvVars } from "../__test/test-utils";
+import { zodValidator } from "../util";
 import { ConfigurationOptions, ConfigValidator, initialiseConfiguration } from "./configuration";
-import { iots } from "../util";
 import { gaeJsCoreConfigurationSchema } from "./schema";
 import { ENV_VAR_CONFIG_ENV, ENV_VAR_CONFIG_OVERRIDES, ENV_VAR_PROJECT } from "./variables";
-import { iotsValidator } from "../util/iots";
-import { withEnvVars } from "../__test/test-utils";
 import SpyInstance = jest.SpyInstance;
-import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 
-const configSchema = iots.intersection([
-  gaeJsCoreConfigurationSchema,
-  iots.type({
-    customString: iots.string,
-  }),
-]);
+const configSchema = gaeJsCoreConfigurationSchema.extend({
+  customString: z.string(),
+});
 
-type Config = iots.TypeOf<typeof configSchema>;
+type Config = z.infer<typeof configSchema>;
 
-const validator = iotsValidator(configSchema);
+const validator = zodValidator(configSchema);
 
 const withOptions = (overrides?: Partial<ConfigurationOptions<Config>>): ConfigurationOptions<Config> => ({
   projectId: "gae-js-jest",

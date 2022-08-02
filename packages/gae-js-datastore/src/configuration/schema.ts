@@ -1,11 +1,9 @@
-import { iots as t, gaeJsCoreConfigurationSchema } from "@mondomob/gae-js-core";
+import { gaeJsCoreConfigurationSchema } from "@mondomob/gae-js-core";
+import { z } from "zod";
 
-export const gaeJsDatastoreConfigurationSchema = t.intersection([
-  gaeJsCoreConfigurationSchema,
-  t.partial({
-    datastoreProjectId: t.string,
-    datastoreApiEndpoint: t.string,
-  }),
-]);
+export const gaeJsDatastoreConfigurationSchema = gaeJsCoreConfigurationSchema.extend({
+  datastoreProjectId: z.string().optional(),
+  datastoreApiEndpoint: z.string().optional(),
+});
 
-export type GaeJsDatastoreConfiguration = t.TypeOf<typeof gaeJsDatastoreConfigurationSchema>;
+export type GaeJsDatastoreConfiguration = z.infer<typeof gaeJsDatastoreConfigurationSchema>;

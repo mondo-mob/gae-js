@@ -1,12 +1,10 @@
-import { iots as t, gaeJsCoreConfigurationSchema } from "@mondomob/gae-js-core";
+import { gaeJsCoreConfigurationSchema } from "@mondomob/gae-js-core";
+import { z } from "zod";
 
-export const gaeJsFirestoreConfigurationSchema = t.intersection([
-  gaeJsCoreConfigurationSchema,
-  t.partial({
-    firestoreProjectId: t.string,
-    firestoreHost: t.string,
-    firestorePort: t.number,
-  }),
-]);
+export const gaeJsFirestoreConfigurationSchema = gaeJsCoreConfigurationSchema.extend({
+  firestoreProjectId: z.string().optional(),
+  firestoreHost: z.string().optional(),
+  firestorePort: z.number().optional(),
+});
 
-export type GaeJsFirestoreConfiguration = t.TypeOf<typeof gaeJsFirestoreConfigurationSchema>;
+export type GaeJsFirestoreConfiguration = z.infer<typeof gaeJsFirestoreConfigurationSchema>;

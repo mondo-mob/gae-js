@@ -1,15 +1,15 @@
-import { configurationProvider, iots as t, gaeJsCoreConfigurationSchema, iotsValidator } from "@mondomob/gae-js-core";
+import { configurationProvider, gaeJsCoreConfigurationSchema, zodValidator } from "@mondomob/gae-js-core";
 import { GaeJsTasksConfiguration, gaeJsTasksConfigurationSchema } from "../configuration";
 
 export const initTestConfig = async (config?: Partial<GaeJsTasksConfiguration>): Promise<GaeJsTasksConfiguration> => {
-  const schema = t.intersection([gaeJsCoreConfigurationSchema, gaeJsTasksConfigurationSchema]);
+  const schema = gaeJsCoreConfigurationSchema.merge(gaeJsTasksConfigurationSchema);
   process.env.GAEJS_PROJECT = "tasks-tests";
   process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
     host: "http://localhost",
     location: "local",
     ...config,
   });
-  await configurationProvider.init({ validator: iotsValidator(schema) });
+  await configurationProvider.init({ validator: zodValidator<GaeJsTasksConfiguration>(schema) });
   return configurationProvider.get<GaeJsTasksConfiguration>();
 };
 

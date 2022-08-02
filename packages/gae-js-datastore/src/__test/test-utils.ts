@@ -1,5 +1,5 @@
 import { Datastore, DatastoreOptions } from "@google-cloud/datastore";
-import { configurationProvider, iotsValidator } from "@mondomob/gae-js-core";
+import { configurationProvider, zodValidator } from "@mondomob/gae-js-core";
 import { GaeJsDatastoreConfiguration, gaeJsDatastoreConfigurationSchema } from "../configuration";
 
 export interface RepositoryItem {
@@ -17,7 +17,9 @@ export const initTestConfig = async (
     datastoreApiEndpoint: "localhost:8081",
     ...config,
   });
-  await configurationProvider.init({ validator: iotsValidator(gaeJsDatastoreConfigurationSchema) });
+  await configurationProvider.init({
+    validator: zodValidator<GaeJsDatastoreConfiguration>(gaeJsDatastoreConfigurationSchema),
+  });
   return configurationProvider.get<GaeJsDatastoreConfiguration>();
 };
 

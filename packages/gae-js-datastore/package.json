@@ -14,7 +14,7 @@
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",
     "test": "jest --runInBand",
-    "test:ci": "jest --config=./jest-ci.config.js"
+    "test:ci": "jest --runInBand --config=./jest-ci.config.js"
   },
   "publishConfig": {
     "access": "public"

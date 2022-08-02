@@ -1,15 +1,11 @@
-import * as t from "io-ts";
+import { z } from "zod";
 
-export const gaeJsCoreConfigurationSchema = t.intersection([
-  t.type({
-    projectId: t.string,
-  }),
-  t.partial({
-    environment: t.string,
-    host: t.string,
-    location: t.string,
-    secretsProjectId: t.string,
-  }),
-]);
+export const gaeJsCoreConfigurationSchema = z.object({
+  projectId: z.string(),
+  environment: z.string().optional(),
+  host: z.string().optional(),
+  location: z.string().optional(),
+  secretsProjectId: z.string().optional(),
+});
 
-export type GaeJsCoreConfiguration = t.TypeOf<typeof gaeJsCoreConfigurationSchema>;
+export type GaeJsCoreConfiguration = z.infer<typeof gaeJsCoreConfigurationSchema>;
