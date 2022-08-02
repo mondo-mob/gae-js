@@ -10,11 +10,11 @@
   "scripts": {
     "build": "tsc --build --verbose tsconfig.prod.json",
     "clean": "rm -rf dist/ coverage/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
-    "firestore:start": "firebase emulators:start --project firestore-tests",
+    "firestore:start": "npx --yes firebase-tools emulators:start --project firestore-tests",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",
-    "test": "jest",
-    "test:ci": "firebase emulators:exec --only firestore --project firestore-tests jest"
+    "test": "jest --runInBand",
+    "test:ci": "firebase emulators:exec --only firestore --project firestore-tests \"jest --runInBand\""
   },
   "publishConfig": {
     "access": "public"
