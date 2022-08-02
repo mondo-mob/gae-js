@@ -1,50 +1,43 @@
 import { Datastore, Key } from "@google-cloud/datastore";
-import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
 import { connectDatastoreEmulator, deleteKind } from "../__test/test-utils";
 import { runInTransaction } from "./transactional";
 import {
   IndexConfig,
   IndexEntry,
-  iots as t,
-  iotsValidator,
   Page,
   runWithRequestStorage,
   SearchFields,
   SearchService,
   Sort,
+  zodValidator,
 } from "@mondomob/gae-js-core";
 import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
 import { DatastoreLoader } from "./datastore-loader";
 import { datastoreProvider } from "./datastore-provider";
 import { DatastoreChildRepository } from "./datastore-child-repository";
+import { z } from "zod";
 
-const datastoreKey = new t.Type<Entity.Key>(
-  "Entity.Key",
-  (input): input is Entity.Key => typeof input === "object",
-  (input) => t.success(input as Entity.Key),
-  (value: Entity.Key) => value
-);
+const datastoreKey = z.instanceof(Key);
 
-const repositoryItemSchema = t.intersection([
-  t.type({
-    parentKey: datastoreKey,
-    id: t.string,
-    name: t.string,
-  }),
-  t.partial({
-    prop1: t.string,
-    prop2: t.string,
-    prop3: t.string,
-    nested: t.type({
-      prop4: t.string,
-    }),
-    propArray: t.array(t.string),
-    propKey: datastoreKey,
-  }),
-]);
-type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
+const repositoryItemSchema = z.object({
+  parentKey: datastoreKey,
+  id: z.string(),
+  name: z.string(),
+  prop1: z.string().optional(),
+  prop2: z.string().optional(),
+  prop3: z.string().optional(),
+  nested: z
+    .object({
+      prop4: z.string(),
+    })
+    .optional(),
+  propArray: z.array(z.string()).optional(),
+  propKey: datastoreKey.optional(),
+});
+
+type RepositoryItem = z.infer<typeof repositoryItemSchema>;
 const kind = "repository-items";
-const validator = iotsValidator(repositoryItemSchema);
+const validator = zodValidator(repositoryItemSchema.passthrough());
 
 describe("DatastoreChildRepository", () => {
   let datastore: Datastore;

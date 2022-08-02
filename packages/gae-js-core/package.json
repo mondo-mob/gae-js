@@ -26,12 +26,8 @@
     "@google-cloud/secret-manager": "4.0.0",
     "@types/bunyan": "1.8.8",
     "bunyan": "1.8.15",
-    "fp-ts": "2.12.1",
-    "io-ts": "^2.2.17",
-    "io-ts-reporters": "^2.0.1",
     "lodash": "4.17.21",
-    "zod": "^3.17.10",
-    "zod-to-ts": "^1.1.1"
+    "zod": "3.17.10"
   },
   "peerDependencies": {
     "express": ">= 4.17.1"

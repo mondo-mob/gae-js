@@ -3,14 +3,14 @@ import { StatusCode } from "@google-cloud/firestore/build/src/status-code";
 import {
   IndexConfig,
   IndexEntry,
-  iots as t,
-  iotsValidator,
   Page,
   runWithRequestStorage,
   SearchFields,
   SearchService,
   Sort,
+  zodValidator,
 } from "@mondomob/gae-js-core";
+import { z } from "zod";
 import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { isFirestoreError } from "./firestore-errors";
 import { FirestoreLoader } from "./firestore-loader";
@@ -22,33 +22,24 @@ import { RepositoryNotFoundError } from "./repository-error";
 import { runInTransaction } from "./transactional";
 import { toUpper } from "lodash";
 
-export const dateType = new t.Type<Date>(
-  "DateType",
-  (m): m is Date => m instanceof Date,
-  (m, c) => (m instanceof Date ? t.success(m) : t.failure("Value is not date", c)),
-  (a) => a
-);
+const repositoryItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  prop1: z.string().optional(),
+  prop2: z.string().optional(),
+  prop3: z.string().optional(),
+  date1: z.date().optional(),
+  nested: z
+    .object({
+      prop4: z.string(),
+      date2: z.date(),
+    })
+    .optional(),
+});
 
-const repositoryItemSchema = t.intersection([
-  t.type({
-    id: t.string,
-    name: t.string,
-  }),
-  t.partial({
-    prop1: t.string,
-    prop2: t.string,
-    prop3: t.string,
-    date1: dateType,
-    nested: t.type({
-      prop4: t.string,
-      date2: dateType,
-    }),
-  }),
-]);
+const validator = zodValidator(repositoryItemSchema);
 
-const validator = iotsValidator(repositoryItemSchema);
-
-type RepositoryItem = t.TypeOf<typeof repositoryItemSchema>;
+type RepositoryItem = z.infer<typeof repositoryItemSchema>;
 
 describe("FirestoreRepository", () => {
   const collection = "repository-items";
@@ -173,7 +164,7 @@ describe("FirestoreRepository", () => {
       const document = await repository.getRequired("123");
 
       expect(document.date1).toBeInstanceOf(Date);
-      expect(document.nested!.date2).toBeInstanceOf(Date);
+      expect(document.nested?.date2).toBeInstanceOf(Date);
       expect(document).toEqual({
         id: "123",
         name: "test123",
