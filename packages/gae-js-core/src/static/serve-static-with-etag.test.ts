@@ -1,11 +1,11 @@
 import express from "express";
 import request from "supertest";
-import { serveStaticWithEtag } from "./serve-static-with-etag";
+import { serveStaticWithEtag, StaticEtagOptions } from "./serve-static-with-etag";
 import { generateHash } from "./utils";
 
-const initApp = (folder = "src/static") => {
+const initApp = ({ folder = "src/static", options }: { folder?: string; options?: StaticEtagOptions } = {}) => {
   const app = express();
-  app.use(serveStaticWithEtag(folder));
+  app.use(serveStaticWithEtag(folder, options));
   app.get("/", (req, res) => res.send("NOT STATIC"));
   return app;
 };
@@ -15,6 +15,16 @@ describe("serveStaticWithEtag", () => {
     const app = initApp();
     const expectedHash = await generateHash("src/static/index.ts");
     await request(app).get("/index.ts").expect(200).expect("etag", `"${expectedHash}"`);
+  });
+
+  it("ignores paths provided by config and omits logs with quiet mode", async () => {
+    const app = initApp({
+      options: {
+        ignorePaths: ["/index.ts"],
+        quiet: true,
+      },
+    });
+    await request(app).get("/index.ts").expect(404);
   });
 
   it("returns known file without last-modified header", async () => {
@@ -31,7 +41,9 @@ describe("serveStaticWithEtag", () => {
   });
 
   it("ignores invalid folder", async () => {
-    const app = initApp("not-a-folder");
+    const app = initApp({
+      folder: "not-a-folder",
+    });
 
     await request(app).get("/").expect(200).expect("NOT STATIC");
   });

@@ -19,7 +19,14 @@ const HASH_UNSET = "HASH_UNSET";
  * @example
  * app.use(serveStaticWithEtag(`${__dirname}/public`))
  */
-export const serveStaticWithEtag = (root: string, options?: { ignorePaths: string[] }): Handler => {
+export interface StaticEtagOptions {
+  ignorePaths?: string[];
+  quiet?: boolean;
+}
+export const serveStaticWithEtag = (
+  root: string,
+  { ignorePaths = [], quiet = false }: StaticEtagOptions = {}
+): Handler => {
   const logger = createLogger("serveStaticWithEtag");
   const rootFolder = path.resolve(root);
   const validFiles: Record<string, string> = {};
@@ -31,9 +38,11 @@ export const serveStaticWithEtag = (root: string, options?: { ignorePaths: strin
 
   const initFilesPromise = fetchFileList(rootFolder).then((allFiles) => {
     allFiles
-      .filter((file) => !options?.ignorePaths?.some((path) => file.startsWith(path)))
+      .filter((file) => !ignorePaths.some((path) => file.startsWith(path)))
       .forEach((file) => (validFiles[file] = HASH_UNSET));
-    logger.info("Serving static files: ", Object.keys(validFiles));
+    if (!quiet) {
+      logger.info("Serving static files: ", Object.keys(validFiles));
+    }
   });
 
   return async (req, res, next) => {
@@ -43,12 +52,16 @@ export const serveStaticWithEtag = (root: string, options?: { ignorePaths: strin
 
     if (validFiles[requestPath]) {
       if (validFiles[requestPath] === HASH_UNSET) {
-        logger.debug(`Generating md5 hash for file ${fullFilePath}`);
+        if (!quiet) {
+          logger.debug(`Generating md5 hash for file ${fullFilePath}`);
+        }
         validFiles[requestPath] = await generateHash(fullFilePath);
       }
 
       const etag = `"${validFiles[requestPath]}"`;
-      logger.info(`Sending file ${fullFilePath} with etag ${etag}`);
+      if (!quiet) {
+        logger.info(`Sending file ${fullFilePath} with etag ${etag}`);
+      }
       return res.sendFile(fullFilePath, { headers: { etag }, lastModified: false }, (err) => {
         return err ? next(err) : next();
       });
