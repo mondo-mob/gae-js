@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 6.1.0
+
+### Minor Changes
+
+- 6233001: Add quiet mode to middleware to serve static files with etag
+
 ## 6.0.0
 
 ### Major Changes
