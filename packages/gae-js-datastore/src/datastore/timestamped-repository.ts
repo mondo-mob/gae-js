@@ -38,9 +38,12 @@ export class TimestampedRepository<T extends TimestampedEntity & IdEntity> exten
       return entity;
     }
 
-    const updateTime = new Date();
-    if (!entity.createdAt || entity.createdAt === GENERATE_FLAG) entity.createdAt = updateTime;
-    entity.updatedAt = updateTime;
-    return entity;
+    const updatedAt = new Date();
+    const { createdAt } = entity;
+    return {
+      ...entity,
+      updatedAt,
+      createdAt: createdAt && createdAt !== GENERATE_FLAG ? createdAt : updatedAt,
+    };
   }
 }
