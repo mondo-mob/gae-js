@@ -1,9 +1,11 @@
-import { DocumentReference, Firestore, Timestamp } from "@google-cloud/firestore";
+import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import {
   asArray,
   createLogger,
+  DataValidator,
   IndexConfig,
   IndexEntry,
+  isReadonlyArray,
   OneOrMany,
   Page,
   prepareIndexEntry,
@@ -12,21 +14,25 @@ import {
   SearchResults,
   SearchService,
   Sort,
-  isReadonlyArray,
-  DataValidator,
 } from "@mondomob/gae-js-core";
 import assert from "assert";
-import { cloneDeepWith, first } from "lodash";
+import { first } from "lodash";
 import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
 import { QueryOptions, QueryResponse } from "./firestore-query";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { RepositoryError, RepositoryNotFoundError } from "./repository-error";
+import { timestampToDateTransformer, transformDeep, ValueTransformer } from "./value-transformers";
 
 const SEARCH_NOT_ENABLED_MSG = "Search is not configured for this repository";
 
 export interface BaseEntity {
   id: string;
+}
+
+export interface ValueTransformers<T> {
+  read: ValueTransformer<T>[];
+  write: ValueTransformer<T>[];
 }
 
 export interface RepositorySearchOptions<T extends BaseEntity> {
@@ -39,6 +45,7 @@ export interface RepositoryOptions<T extends BaseEntity> {
   firestore?: Firestore;
   validator?: DataValidator<T>;
   search?: RepositorySearchOptions<T>;
+  valueTransformers?: ValueTransformers<T>;
 }
 
 export class FirestoreRepository<T extends BaseEntity> {
@@ -46,11 +53,24 @@ export class FirestoreRepository<T extends BaseEntity> {
   private readonly validator?: DataValidator<T>;
   private readonly firestore?: Firestore;
   protected readonly searchOptions?: RepositorySearchOptions<T>;
+  private readonly valueTransformers: ValueTransformers<T>;
 
-  constructor(protected readonly collectionPath: string, options?: RepositoryOptions<T>) {
-    this.validator = options?.validator;
-    this.firestore = options?.firestore;
-    this.searchOptions = options?.search;
+  constructor(
+    protected readonly collectionPath: string,
+    {
+      validator,
+      firestore,
+      search,
+      valueTransformers = {
+        write: [],
+        read: [timestampToDateTransformer()],
+      },
+    }: RepositoryOptions<T> = {}
+  ) {
+    this.validator = validator;
+    this.firestore = firestore;
+    this.searchOptions = search;
+    this.valueTransformers = valueTransformers;
   }
 
   async getRequired(id: string): Promise<T>;
@@ -111,8 +131,7 @@ export class FirestoreRepository<T extends BaseEntity> {
    * @param entity The entity read from Firestore.
    */
   protected afterRead(entity: T): T {
-    const transformed: any = cloneDeepWith(entity, (val) => (val instanceof Timestamp ? val.toDate() : undefined));
-    return transformed;
+    return transformDeep(entity, this.valueTransformers.read);
   }
 
   async save(entities: T): Promise<T>;
@@ -135,7 +154,7 @@ export class FirestoreRepository<T extends BaseEntity> {
    * @param entity The entity to be persisted. This is either the source entity, or if the persist was called with an array then this is called for each one.
    */
   protected beforePersist(entity: T): T {
-    return entity;
+    return transformDeep(entity, this.valueTransformers.write);
   }
 
   /**

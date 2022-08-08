@@ -423,6 +423,16 @@ describe("FirestoreRepository", () => {
       expect(fetched[0]).toEqual({ id: "123", name: `Test Item 123` });
     });
 
+    it("saves and returns date fields", async () => {
+      const fixedTime = new Date("2022-03-01T12:13:14.000Z");
+
+      const result = await repository.save(createItem("123", { dateField: fixedTime }));
+
+      const fetched = await repository.get("123");
+      expect(result).toEqual(fetched);
+      expect(fetched).toEqual({ id: "123", name: `Test Item 123`, dateField: fixedTime });
+    });
+
     it("overwrites document that already exists", async () => {
       await repository.save(createItem("123", { message: "create" }));
       await repository.save(createItem("123", { message: "save" }));
@@ -967,6 +977,77 @@ describe("FirestoreRepository", () => {
             expect.objectContaining({ id: "item1" }),
             expect.objectContaining({ id: "item2" }),
           ]),
+        });
+      });
+    });
+
+    describe("with value transformers", () => {
+      beforeEach(() => {
+        repository = new FirestoreRepository<RepositoryItem>(collection, {
+          firestore,
+          valueTransformers: {
+            read: [
+              {
+                test: ({ key }) => key === "prop4",
+                transform: ({ src }) => `READ: ${src}`,
+              },
+            ],
+            write: [
+              {
+                test: ({ key }) => key === "prop4",
+                transform: ({ src }) => src.length,
+              },
+            ],
+          },
+        });
+      });
+
+      describe("get", () => {
+        it("does not include default date conversion when custom transformers supplied", async () => {
+          const now = new Date();
+
+          await firestore.doc(`${collection}/123`).create({
+            name: "test123",
+            date1: now,
+          });
+
+          const document = await repository.getRequired("123");
+
+          expect(document.date1).toBeInstanceOf(Timestamp);
+          expect(document).toEqual({
+            id: "123",
+            name: "test123",
+            date1: Timestamp.fromDate(now),
+          });
+        });
+      });
+
+      describe("save and get", () => {
+        it("saves using transformer for prop4 and gets with transform", async () => {
+          const now = new Date();
+
+          await repository.save({
+            id: "123",
+            name: "test123",
+            nested: {
+              prop4: "convert-to-length-20",
+              date2: now,
+            },
+          });
+
+          const result = await firestore.doc(`${collection}/123`).get();
+          expect(result.get("nested.prop4")).toBe(20);
+          expect(result.get("name")).toBe("test123");
+
+          const document = await repository.getRequired("123");
+          expect(document).toEqual({
+            id: "123",
+            name: "test123",
+            nested: {
+              prop4: "READ: 20",
+              date2: Timestamp.fromDate(now),
+            },
+          });
         });
       });
     });
