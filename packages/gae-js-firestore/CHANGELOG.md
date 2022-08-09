@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 11.1.1
+
+### Patch Changes
+
+- 74ff6b3: Firestore repository fixes to ensure read/write transformers are applied correctly without affecting search and that mutations return entity/entities with read transformers applied
+
 ## 11.1.0
 
 ### Minor Changes
