@@ -21,6 +21,7 @@ import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import { RepositoryNotFoundError } from "./repository-error";
 import { runInTransaction } from "./transactional";
 import { toUpper } from "lodash";
+import { DateTransformers } from "./value-transformers";
 
 const repositoryItemSchema = z.object({
   id: z.string(),
@@ -829,6 +830,11 @@ describe("FirestoreRepository", () => {
           indexName: "item",
           indexConfig,
         },
+        valueTransformers: {
+          // These are standard, but adding them explicitly for test visibility
+          write: [DateTransformers.write()],
+          read: [DateTransformers.read()],
+        },
       });
 
     const fixedTime = new Date("2022-03-01T12:13:14.000Z");
@@ -859,7 +865,7 @@ describe("FirestoreRepository", () => {
         expect(searchService.index).toHaveBeenCalledWith("item", entries);
       };
 
-      it("indexes fields in repository config (single item)", async () => {
+      it("indexes fields in repository config before transformation (single item)", async () => {
         const item = createItem("item1");
 
         await (repository as any)[operation](item);
@@ -880,7 +886,7 @@ describe("FirestoreRepository", () => {
         ]);
       });
 
-      it("indexes fields in repository config (multiple items)", async () => {
+      it("indexes fields in repository config before transformation (multiple items)", async () => {
         const item1 = createItem("item1");
         const item2 = createItem("item2");
 
@@ -1026,7 +1032,7 @@ describe("FirestoreRepository", () => {
         it("saves using transformer for prop4 and gets with transform", async () => {
           const now = new Date();
 
-          await repository.save({
+          const saveResult = await repository.save({
             id: "123",
             name: "test123",
             nested: {
@@ -1040,6 +1046,7 @@ describe("FirestoreRepository", () => {
           expect(result.get("name")).toBe("test123");
 
           const document = await repository.getRequired("123");
+          expect(saveResult.nested?.prop4).toEqual(document.nested?.prop4);
           expect(document).toEqual({
             id: "123",
             name: "test123",

@@ -22,7 +22,7 @@ import { firestoreProvider } from "./firestore-provider";
 import { QueryOptions, QueryResponse } from "./firestore-query";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { RepositoryError, RepositoryNotFoundError } from "./repository-error";
-import { timestampToDateTransformer, transformDeep, ValueTransformer } from "./value-transformers";
+import { DateTransformers, transformDeep, ValueTransformer } from "./value-transformers";
 
 const SEARCH_NOT_ENABLED_MSG = "Search is not configured for this repository";
 
@@ -62,8 +62,8 @@ export class FirestoreRepository<T extends BaseEntity> {
       firestore,
       search,
       valueTransformers = {
-        write: [],
-        read: [timestampToDateTransformer()],
+        write: [DateTransformers.write()],
+        read: [DateTransformers.read()],
       },
     }: RepositoryOptions<T> = {}
   ) {
@@ -154,7 +154,7 @@ export class FirestoreRepository<T extends BaseEntity> {
    * @param entity The entity to be persisted. This is either the source entity, or if the persist was called with an array then this is called for each one.
    */
   protected beforePersist(entity: T): T {
-    return transformDeep(entity, this.valueTransformers.write);
+    return entity;
   }
 
   /**
@@ -167,7 +167,7 @@ export class FirestoreRepository<T extends BaseEntity> {
    * @protected
    */
   protected beforePersistBatch(entities: OneOrMany<T>): OneOrMany<T> {
-    return isReadonlyArray(entities) ? entities.map((e) => this.beforePersist(e)) : this.beforePersist(entities);
+    return mapOneOrMany(entities, (e) => this.beforePersist(e));
   }
 
   async delete(...ids: string[]): Promise<void> {
@@ -211,7 +211,8 @@ export class FirestoreRepository<T extends BaseEntity> {
     entities: OneOrMany<T>,
     mutation: (loader: FirestoreLoader, entities: ReadonlyArray<FirestorePayload>) => Promise<any>
   ): Promise<OneOrMany<T>> {
-    const entitiesToSave = asArray(entities)
+    const transformedEntities = mapOneOrMany(entities, (entity) => transformDeep(entity, this.valueTransformers.write));
+    const entitiesToSave = asArray(transformedEntities)
       .map(this.validateSave)
       .map(
         (data: T) =>
@@ -225,7 +226,8 @@ export class FirestoreRepository<T extends BaseEntity> {
     if (this.searchOptions) {
       await this.indexForSearch(entities);
     }
-    return entities;
+
+    return mapOneOrMany(transformedEntities, (e) => this.afterRead(e));
   }
 
   private validateLoad = (entity: T) => this.validateEntity(entity, "load");
@@ -281,3 +283,6 @@ export class FirestoreRepository<T extends BaseEntity> {
     return this.searchOptions?.searchService ?? searchProvider.get();
   };
 }
+
+const mapOneOrMany = <T, R>(src: OneOrMany<T>, mapFn: (single: T) => R): OneOrMany<R> =>
+  isReadonlyArray(src) ? src.map(mapFn) : mapFn(src);

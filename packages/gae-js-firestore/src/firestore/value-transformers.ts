@@ -1,10 +1,20 @@
 import { Timestamp } from "@google-cloud/firestore";
 import { cloneDeepWith } from "lodash";
 
-export const timestampToDateTransformer = <T>(): ValueTransformer<T> => ({
+const dateToTimestampTransformer = <T>(): ValueTransformer<T> => ({
+  test: ({ src }) => src instanceof Date,
+  transform: ({ src }) => Timestamp.fromDate(src),
+});
+
+const timestampToDateTransformer = <T>(): ValueTransformer<T> => ({
   test: ({ src }) => src instanceof Timestamp,
   transform: ({ src }) => src.toDate(),
 });
+
+export const DateTransformers = {
+  write: dateToTimestampTransformer,
+  read: timestampToDateTransformer,
+};
 
 /**
  * @property {any} src  The original source value.

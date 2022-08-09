@@ -1,4 +1,5 @@
-import { transformDeep, ValueTransformer } from "./value-transformers";
+import { Timestamp } from "@google-cloud/firestore";
+import { DateTransformers, transformDeep, ValueTransformer } from "./value-transformers";
 
 describe("value-transformers", () => {
   describe("transformDeep", () => {
@@ -61,6 +62,30 @@ describe("value-transformers", () => {
         foo: "bar",
         num: 1,
         arr: ["Same as foo!"],
+      });
+    });
+  });
+
+  describe("DateTransformers", () => {
+    describe("read", () => {
+      it("converts timestamp to date", () => {
+        const src = {
+          date: Timestamp.fromDate(new Date()),
+        };
+        expect(transformDeep(src, [DateTransformers.read()])).toEqual({
+          date: src.date.toDate(),
+        });
+      });
+    });
+
+    describe("write", () => {
+      it("converts date to timestamp", () => {
+        const src = {
+          date: new Date(),
+        };
+        expect(transformDeep(src, [DateTransformers.write()])).toEqual({
+          date: Timestamp.fromDate(src.date),
+        });
       });
     });
   });

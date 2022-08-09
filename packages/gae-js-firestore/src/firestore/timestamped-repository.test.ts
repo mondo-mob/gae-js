@@ -41,7 +41,7 @@ describe("TimestampedRepository", () => {
     updatedAt: fixedTime,
   });
 
-  const expectNewTimestamp = (actual: Date) => {
+  const expectNewDate = (actual: Date) => {
     expect(actual >= startTime).toBeTruthy();
   };
 
@@ -55,8 +55,8 @@ describe("TimestampedRepository", () => {
       const inserted = await repository.getRequired("123");
 
       expect(inserted.createdAt).toEqual(inserted.updatedAt);
-      expectNewTimestamp(inserted.createdAt);
-      expectNewTimestamp(inserted.updatedAt);
+      expectNewDate(inserted.createdAt);
+      expectNewDate(inserted.updatedAt);
     });
 
     it("adds createdAt and updatedAt if generate flag set", async () => {
@@ -66,8 +66,8 @@ describe("TimestampedRepository", () => {
       const inserted = await repository.getRequired("123");
 
       expect(inserted.createdAt).toEqual(inserted.updatedAt);
-      expectNewTimestamp(inserted.createdAt);
-      expectNewTimestamp(inserted.updatedAt);
+      expectNewDate(inserted.createdAt);
+      expectNewDate(inserted.updatedAt);
     });
   });
 
@@ -84,8 +84,8 @@ describe("TimestampedRepository", () => {
       await repository.save(fetched);
       const updated = await repository.getRequired("123");
       expect(updated.createdAt).toEqual(updated.updatedAt);
-      expectNewTimestamp(updated.createdAt);
-      expectNewTimestamp(updated.updatedAt);
+      expectNewDate(updated.createdAt);
+      expectNewDate(updated.updatedAt);
     });
 
     it("updates a single item", async () => {
@@ -96,7 +96,7 @@ describe("TimestampedRepository", () => {
 
       const updated = await repository.getRequired("123");
       expect(updated.createdAt).toEqual(fixedTime);
-      expectNewTimestamp(updated.updatedAt);
+      expectNewDate(updated.updatedAt);
     });
 
     it("updates array of items", async () => {
@@ -107,9 +107,9 @@ describe("TimestampedRepository", () => {
 
       const updated = await repository.getRequired(["123", "234"]);
       expect(updated[0].createdAt).toEqual(fixedTime);
-      expectNewTimestamp(updated[1].createdAt);
-      expectNewTimestamp(updated[0].updatedAt);
-      expectNewTimestamp(updated[1].updatedAt);
+      expectNewDate(updated[1].createdAt);
+      expectNewDate(updated[0].updatedAt);
+      expectNewDate(updated[1].updatedAt);
     });
 
     it("skips update if flag set", async () => {
