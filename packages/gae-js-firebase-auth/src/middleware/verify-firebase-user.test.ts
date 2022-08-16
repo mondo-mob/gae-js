@@ -1,5 +1,5 @@
 import express, { ErrorRequestHandler, Handler } from "express";
-import admin from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
 import { verifyFirebaseUser, VerifyOptions } from "./verify-firebase-user";
 import request from "supertest";
 import {
@@ -28,7 +28,7 @@ const exposeErrors: ErrorRequestHandler = (err, req, res, next) => {
   error = err;
   next();
 };
-const firebaseAdmin = admin.initializeApp({ projectId: "auth-tests" });
+const firebaseAdmin = initializeApp({ projectId: "auth-tests" });
 
 const initApp = (mwOptions?: VerifyOptions) => {
   process.env.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099";
@@ -87,9 +87,10 @@ describe("verifyFirebaseUser", () => {
       expect(error).toBeInstanceOf(UnauthorisedError);
     });
   });
+
   describe("custom user converter", () => {
     const app = initApp({
-      userConverter: (idToken) => {
+      userConverter: async (idToken) => {
         return {
           id: idToken.uid,
           email: idToken.email,

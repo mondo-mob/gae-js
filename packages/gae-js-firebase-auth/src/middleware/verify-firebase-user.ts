@@ -1,19 +1,20 @@
 import { Handler } from "express";
+import { App } from "firebase-admin/app";
+import { DecodedIdToken, getAuth } from "firebase-admin/auth";
 import { BaseUser, createLogger, UnauthorisedError, userRequestStorageProvider } from "@mondomob/gae-js-core";
-import * as firebaseAdmin from "firebase-admin";
 
-const convertIdTokenToUser = (idToken: firebaseAdmin.auth.DecodedIdToken): BaseUser => ({
+const convertIdTokenToUser = async (idToken: DecodedIdToken): Promise<BaseUser> => ({
   id: idToken.uid,
   email: idToken.email,
   roles: idToken.roles || [],
 });
 
 export interface VerifyOptions {
-  userConverter?: (idToken: firebaseAdmin.auth.DecodedIdToken) => BaseUser;
+  userConverter?: (idToken: DecodedIdToken) => Promise<BaseUser>;
 }
 
-export const verifyFirebaseUser = (firebaseAdmin: firebaseAdmin.app.App, options?: VerifyOptions): Handler => {
-  const logger = createLogger("firebaseAuthUser");
+export const verifyFirebaseUser = (firebaseAdmin: App, options?: VerifyOptions): Handler => {
+  const logger = createLogger("verifyFirebaseUser");
 
   const userConverter = options?.userConverter || convertIdTokenToUser;
 
@@ -22,8 +23,8 @@ export const verifyFirebaseUser = (firebaseAdmin: firebaseAdmin.app.App, options
     if (authHeader && authHeader.startsWith("Bearer ")) {
       try {
         logger.debug("Verifying Bearer token from Authorization header");
-        const idToken = await firebaseAdmin.auth().verifyIdToken(authHeader.substring(7));
-        const user = userConverter(idToken);
+        const idToken = await getAuth().verifyIdToken(authHeader.substring(7));
+        const user = await userConverter(idToken);
         logger.info(`Verified firebase token for user ${user.id} with roles ${user.roles}`);
         userRequestStorageProvider.get().set(user);
       } catch (e: any) {
