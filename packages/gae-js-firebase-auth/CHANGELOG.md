@@ -1,5 +1,12 @@
 # @mondomob/gae-js-firebase-auth
 
+## 7.0.0
+
+### Major Changes
+
+- 83018f7: - verifyFirebaseUser middleware user converter function now async to allow operations like fetching from db
+  - update to Firebase admin 11
+
 ## 6.0.0
 
 ### Minor Changes
