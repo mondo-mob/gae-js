@@ -1,5 +1,12 @@
 # @mondomob/gae-js-core
 
+## 6.2.0
+
+### Minor Changes
+
+- f482e88: Add missing export for environment variable constants
+- 2526f2e: Add missing export for validator utils
+
 ## 6.1.0
 
 ### Minor Changes

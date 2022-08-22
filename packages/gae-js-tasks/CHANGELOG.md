@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 9.1.0
+
+### Minor Changes
+
+- 234e7d2: Add support for `inSeconds` for local tasks
+
 ## 9.0.0
 
 ### Minor Changes
