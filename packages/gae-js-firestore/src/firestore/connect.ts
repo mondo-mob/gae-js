@@ -1,4 +1,6 @@
-import { Firestore, Settings } from "@google-cloud/firestore";
+import { Firestore, Settings, v1 as firestoreV1 } from "@google-cloud/firestore";
+import { FirestoreAdminClient } from "@google-cloud/firestore/types/v1/firestore_admin_client";
+import { ClientOptions } from "google-gax";
 import { configurationProvider, createLogger, runningOnGcp } from "@mondomob/gae-js-core";
 import { GaeJsFirestoreConfiguration } from "../configuration";
 
@@ -7,31 +9,60 @@ export interface FirestoreConnectOptions {
   firestoreSettings?: Settings;
 }
 
+export interface FirestoreAdminConnectOptions {
+  configuration?: GaeJsFirestoreConfiguration;
+  clientOptions?: ClientOptions;
+}
+
+const getProjectId = (config: GaeJsFirestoreConfiguration): string | undefined =>
+  runningOnGcp()
+    ? // On GCP if you do not specify a firestoreProjectId the client will auto connect to the hosting project
+      config.firestoreProjectId || undefined
+    : // Outside GCP we fall back to the application project id
+      config.firestoreProjectId || config.projectId;
+
+/**
+ * Connect a standard Firestore Client.
+ */
 export const connectFirestore = (options?: FirestoreConnectOptions): Firestore => {
   const logger = createLogger("connectFirestore");
-  const configuration = options?.configuration || configurationProvider.get<GaeJsFirestoreConfiguration>();
+  const config = options?.configuration || configurationProvider.get<GaeJsFirestoreConfiguration>();
 
-  if (runningOnGcp()) {
-    logger.info("Running in deployed environment");
-    return new Firestore({
-      projectId: configuration.firestoreProjectId || undefined,
+  // If firestoreHost specified then assume connecting to an emulator
+  if (config.firestoreHost) {
+    const settings: Settings = {
+      projectId: getProjectId(config),
+      host: config.firestoreHost,
+      port: config.firestorePort,
+      ssl: false,
+      credentials: { client_email: "firestore@example.com", private_key: "{}" },
       ...options?.firestoreSettings,
-    });
+    };
+    logger.info(`Connecting to firestore emulator: ${settings.projectId}@${settings.host}:${settings.port}`);
+    return new Firestore(settings);
   }
 
-  const firestoreSettings: Settings = {
-    projectId: configuration.firestoreProjectId,
-    host: configuration.firestoreHost,
-    port: configuration.firestorePort,
+  // Otherwise we connect to Firestore as per configuration
+  const settings: Settings = {
+    projectId: getProjectId(config),
     ...options?.firestoreSettings,
   };
-  logger.info(
-    "Connecting to firestore in non-deployed environment: " +
-      `${firestoreSettings.projectId}@${firestoreSettings.host}:${firestoreSettings.port}`
-  );
-  return new Firestore({
-    ...firestoreSettings,
-    ssl: false,
-    credentials: { client_email: "firestore@example.com", private_key: "{}" },
-  });
+  logger.info(`Connecting Firestore Client for project ${settings.projectId || "(default)"}`);
+  return new Firestore(settings);
+};
+
+/**
+ * Creates a Firestore Admin Client. e.g. for admin operations like imports/exports.
+ * NOTE: This currently only works for real Firestore - i.e. not the emulator
+ */
+export const connectFirestoreAdmin = (options?: FirestoreAdminConnectOptions): FirestoreAdminClient => {
+  const logger = createLogger("connectFirestoreAdmin");
+  const config = options?.configuration || configurationProvider.get<GaeJsFirestoreConfiguration>();
+
+  const clientOptions: ClientOptions = {
+    projectId: getProjectId(config),
+    ...options?.clientOptions,
+  };
+  logger.info(`Connecting Firestore Admin Client for project ${clientOptions.projectId || "(default)"}`);
+  return new firestoreV1.FirestoreAdminClient(clientOptions);
 };

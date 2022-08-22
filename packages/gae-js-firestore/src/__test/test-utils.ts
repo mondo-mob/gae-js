@@ -8,18 +8,24 @@ export interface RepositoryItem {
   name: string;
 }
 
-export const initTestConfig = async (
+export const initTestConfig = async (config: Record<string, unknown> = {}): Promise<GaeJsFirestoreConfiguration> => {
+  await configurationProvider.init({
+    validator: zodValidator(gaeJsFirestoreConfigurationSchema),
+    projectId: "firestore-tests",
+    overrides: config,
+  });
+  return configurationProvider.get<GaeJsFirestoreConfiguration>();
+};
+
+export const initEmulatorConfig = async (
   config?: Partial<GaeJsFirestoreConfiguration>
 ): Promise<GaeJsFirestoreConfiguration> => {
-  process.env.GAEJS_PROJECT = "firestore-tests";
-  process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
+  return initTestConfig({
     firestoreProjectId: "firestore-tests",
     firestoreHost: "0.0.0.0",
     firestorePort: 9000,
     ...config,
   });
-  await configurationProvider.init({ validator: zodValidator(gaeJsFirestoreConfigurationSchema) });
-  return configurationProvider.get<GaeJsFirestoreConfiguration>();
 };
 
 export const connectFirestore = (settings?: Settings): Firestore => {
@@ -52,7 +58,7 @@ export const deleteCollections = async (collectionNames: string[]): Promise<void
 
 export const useFirestoreTest = (collectionsToClear: string[] = []) => {
   beforeEach(async () => {
-    await initTestConfig();
+    await initEmulatorConfig();
     const firestore = connectFirestore();
     firestoreProvider.set(firestore);
     await deleteCollections(collectionsToClear);

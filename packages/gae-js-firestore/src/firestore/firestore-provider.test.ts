@@ -1,10 +1,10 @@
 import { Firestore } from "@google-cloud/firestore";
-import { connectFirestore, initTestConfig } from "../__test/test-utils";
+import { connectFirestore, initEmulatorConfig } from "../__test/test-utils";
 import { FirestoreProvider } from "./firestore-provider";
 
 describe("FirestoreProvider", () => {
   beforeAll(async () => {
-    await initTestConfig();
+    await initEmulatorConfig();
   });
 
   it("auto inits firestore from env config", async () => {
