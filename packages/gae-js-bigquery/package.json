@@ -1,0 +1,32 @@
+{
+  "name": "@mondomob/gae-js-bigquery",
+  "version": "0.0.0",
+  "description": "Tools for Google BigQuery",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc --build --verbose tsconfig.prod.json",
+    "clean": "rm -rf dist/ coverage/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
+    "format": "prettier --write \"./src/**/*.ts\"",
+    "prepublishOnly": "npm run build",
+    "test": "jest --runInBand",
+    "test:ci": "jest --runInBand"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "",
+  "license": "MIT",
+  "homepage": "https://github.com/mondo-mob/gae-js",
+  "peerDependencies": {
+    "@google-cloud/bigquery": ">=6.0.0",
+    "@mondomob/gae-js-core": "^6.0.0"
+  },
+  "devDependencies": {
+    "@google-cloud/bigquery": "6.0.2",
+    "@mondomob/gae-js-core": "6.1.0"
+  }
+}
