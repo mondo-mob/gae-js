@@ -26,7 +26,7 @@ export class TaskQueueService {
     if (runningOnGcp()) {
       await this.appEngineQueue(taskName, payload, inSeconds);
     } else {
-      await this.localQueue(taskName, payload);
+      await this.localQueue(taskName, payload, inSeconds);
     }
   }
 
@@ -70,24 +70,27 @@ export class TaskQueueService {
     });
   }
 
-  private async localQueue(taskName: string, payload: object = {}) {
+  private async localQueue(taskName: string, payload: object = {}, inSeconds = 0) {
     if (!this.configuration.host) {
       throw new Error('Cannot resolve local queue path - please configure "host"');
     }
     const endpoint = `${this.configuration.host}${this.fullTaskName(taskName)}`;
-    this.logger.info(`Dispatching local task to ${endpoint}`);
+    this.logger.info(`Dispatching local task to ${endpoint} with delay ${inSeconds}s`);
 
     // Intentionally don't return this promise because we want the task to be executed
     // asynchronously - i.e. a tiny bit like a task queue would work. Otherwise if the caller
     // awaits this fetch then it will wait for the entire downstream process to complete.
-    fetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: {
-        "content-type": "application/json",
-        "x-appengine-taskname": taskName,
-      },
-    })
+    new Promise((resolve) => setTimeout(resolve, inSeconds * 1000))
+      .then(() => {
+        return fetch(endpoint, {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: {
+            "content-type": "application/json",
+            "x-appengine-taskname": taskName,
+          },
+        });
+      })
       .then(async (result) => {
         if (result.ok) {
           this.logger.info(`Task completed with status ${result.status}`);
