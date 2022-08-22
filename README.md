@@ -176,3 +176,16 @@ npm run build
 npx changeset publish
 git push --follow-tags
 ```
+
+### Adding new packages
+
+There's nothing automated to do this. Essentially you just need to add a new package to `/packages` folder but
+these steps should save some time:
+
+- Create new folder in `/packages`. e.g. `/packages/gae-js-new-thing`
+- Copy `package.json`, `tsconfig.json`, `tsconfig.prod.json`, `jest.config.json` from one of the existing packages
+- Update `package.json` to match desired name, version, dependencies, etc
+- Update `tsconfig.json` to match desired project references.
+- Create file src/index.ts and export some constant
+- Run `npm install` from root folder
+- Run `npm run build` from project folder
