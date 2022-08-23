@@ -12,13 +12,13 @@ export class StorageService {
   private readonly _storage: Storage;
   private readonly _defaultBucket: Bucket;
   private readonly logger = createLogger("storageService");
-  private readonly configuration;
+  private readonly configuration: GaeJsStorageConfiguration;
 
   constructor(options?: StorageServiceOptions) {
     this._storage = options?.storage || storageProvider.get();
     this.configuration = options?.configuration || configurationProvider.get<GaeJsStorageConfiguration>();
-    this.logger.info(`Default Google Cloud Storage bucket: ${this.configuration.storageDefaultBucket}`);
-    this._defaultBucket = this.storage.bucket(this.configuration.storageDefaultBucket);
+    this.logger.info(`Default Google Cloud Storage bucket: ${this.configuration.storage.defaultBucket}`);
+    this._defaultBucket = this.storage.bucket(this.configuration.storage.defaultBucket);
   }
 
   get storage(): Storage {
@@ -34,7 +34,7 @@ export class StorageService {
     uploadOptions?: CreateResumableUploadOptions
   ): Promise<string> {
     const gcsFile = this._defaultBucket.file(fileId);
-    const origin = uploadOptions?.origin || this.configuration.storageOrigin || this.configuration.host;
+    const origin = uploadOptions?.origin || this.configuration.storage.origin || this.configuration.host;
     if (!origin) {
       this.logger.warn('Unable to set upload origin - please configure "storageOrigin" or "host"');
     }

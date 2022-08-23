@@ -8,9 +8,11 @@ export const initTestConfig = async (
   const schema = gaeJsCoreConfigurationSchema.merge(gaeJsStorageConfigurationSchema);
   process.env.GAEJS_PROJECT = "storage-tests";
   process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
-    storageOrigin: "localhost",
-    storageDefaultBucket: "test-bucket",
-    storageEmulatorHost: "http://localhost:9199",
+    storage: {
+      origin: "localhost",
+      defaultBucket: "test-bucket",
+      emulatorHost: "http://localhost:9199",
+    },
     ...config,
   });
   await configurationProvider.init({ validator: zodValidator<GaeJsStorageConfiguration>(schema) });

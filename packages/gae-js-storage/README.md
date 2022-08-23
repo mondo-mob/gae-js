@@ -12,11 +12,13 @@ npm install @mondomob/gae-js-storage
 
 ### Configuration
 
-- `storageDefaultBucket`: (required) The default bucket to use for storage
-- `storageApiEndpoint`: (optional) The storage API endpoint to use - rarely used
-- `storageCredentials`: (optional) User/Service Account Credentials - mainly used for local development (see Local Development below)
-- `storageEmulatorHost`: (optional) The emulator host to connect to (only if using emulator)
-- `storageOrigin`: (optionla) specific origin to use for upload urls. Defaults to core `host` configuration.
+All relevant configuration is within the _required_ `storage` object.
+
+- `storage.defaultBucket`: (required) The default bucket to use for storage
+- `storage.apiEndpoint`: (optional) The storage API endpoint to use - rarely used
+- `storage.credentials`: (optional) User/Service Account Credentials - mainly used for local development (see Local Development below)
+- `storage.emulatorHost`: (optional) The emulator host to connect to (only if using emulator)
+- `storage.origin`: (optionla) specific origin to use for upload urls. Defaults to core `host` configuration.
 
 ### StorageProvider
 
@@ -26,7 +28,9 @@ Step 1: Add default bucket to your config
 
 ```json
 {
-  "storageDefaultBucket": "my-test-bucket"
+  "storage": {
+     "defaultBucket": "my-test-bucket"
+  }
 }
 ```
 
@@ -79,10 +83,13 @@ is provided as part of these credentials. If you need to support this you have a
 ```json
 {
   "secretsProjectId": "project-with-secret",
-  "storageCredentials": {
-    "clientEmail": "local-storage@project-with-service-account.iam.gserviceaccount.com",
-    "privateKey": "SECRET(LOCAL_STORAGE_KEY)"
-  }
+   "storage": {
+      "defaultBucket": "my-test-bucket",
+      "credentials": {
+         "clientEmail": "local-storage@project-with-service-account.iam.gserviceaccount.com",
+         "privateKey": "SECRET(LOCAL_STORAGE_KEY)"
+      } 
+   }
 }
 ```
 
