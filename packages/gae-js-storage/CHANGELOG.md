@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 7.0.0
+
+### Major Changes
+
+- 245a509: BREAKING: All config resides within "storage" object. Replace "storageAbc" config keys with { "storage": { "abc": ...} }.
+
 ## 6.0.0
 
 ### Minor Changes
