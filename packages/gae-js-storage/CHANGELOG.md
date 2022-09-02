@@ -1,5 +1,13 @@
 # @mondomob/gae-js-storage
 
+## 7.1.0
+
+### Minor Changes
+
+- bf18ee1: Add `parseStorageUri` util for parsing gs:// type uri into bucket and object name
+- 71c24f6: `defaultBucket` configuration now optional. If not provided StorageService will fallback to `{projectId}.appspot.com`.
+- b60b2bf: Update dependencies
+
 ## 7.0.0
 
 ### Major Changes
@@ -35,8 +43,8 @@
     gaeJsFirestoreConfigurationSchema,
     // Add the other config properties you need
     t.type({
-      something: t.string
-    })
+      something: t.string,
+    }),
   ]);
 
   // Create ConfigValidator from schema
@@ -51,7 +59,7 @@
   // Include the schemas from the libraries you are using (use merge if there are multiple)
   const configSchema = gaeJsCoreConfigurationSchema.merge(gaeJsFirestoreConfigurationSchema).extend({
     // Extend and add your own config
-    something: z.string()
+    something: z.string(),
   });
 
   // Create ConfigValidator from schema
