@@ -13,11 +13,11 @@ export const connectStorage = (options?: StorageConnectOptions): Storage => {
 
   logger.info("Initialising Storage");
   const storageSettings: StorageOptions = {
-    apiEndpoint: configuration.apiEndpoint || undefined,
+    apiEndpoint: configuration?.apiEndpoint || undefined,
     ...options?.storageOptions,
   };
 
-  if (configuration.credentials) {
+  if (configuration?.credentials) {
     logger.info(`Using custom storage credentials`);
     storageSettings.credentials = {
       client_email: configuration.credentials.clientEmail,
@@ -25,7 +25,7 @@ export const connectStorage = (options?: StorageConnectOptions): Storage => {
     };
   }
 
-  const emulatorHost = configuration.emulatorHost;
+  const emulatorHost = configuration?.emulatorHost;
   if (emulatorHost) {
     logger.info(`Using storage emulator: ${emulatorHost}`);
     process.env.STORAGE_EMULATOR_HOST = emulatorHost;

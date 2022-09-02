@@ -17,8 +17,19 @@ export class StorageService {
   constructor(options?: StorageServiceOptions) {
     this._storage = options?.storage || storageProvider.get();
     this.configuration = options?.configuration || configurationProvider.get<GaeJsStorageConfiguration>();
-    this.logger.info(`Default Google Cloud Storage bucket: ${this.configuration.storage.defaultBucket}`);
-    this._defaultBucket = this.storage.bucket(this.configuration.storage.defaultBucket);
+    let defaultBucket = this.configuration.storage?.defaultBucket;
+    if (defaultBucket) {
+      this.logger.info(`Using default Google Cloud Storage bucket: ${defaultBucket}`);
+    } else {
+      defaultBucket = `${this.configuration.projectId}.appspot.com`;
+      this.logger.info(`No default bucket configured - falling back to project bucket: ${defaultBucket}`);
+    }
+    this._defaultBucket = this.storage.bucket(defaultBucket);
+    this._defaultBucket.exists().then((exists) => {
+      if (!exists) {
+        this.logger.error(`Default bucket ${defaultBucket} doesn't exist - please create it or configure valid bucket`);
+      }
+    });
   }
 
   get storage(): Storage {
@@ -34,7 +45,7 @@ export class StorageService {
     uploadOptions?: CreateResumableUploadOptions
   ): Promise<string> {
     const gcsFile = this._defaultBucket.file(fileId);
-    const origin = uploadOptions?.origin || this.configuration.storage.origin || this.configuration.host;
+    const origin = uploadOptions?.origin || this.configuration.storage?.origin || this.configuration.host;
     if (!origin) {
       this.logger.warn('Unable to set upload origin - please configure "storageOrigin" or "host"');
     }
