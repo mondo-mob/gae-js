@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 11.3.0
+
+### Minor Changes
+
+- 4108374: Mutex service obtain() and release() supports multiple id elements
+
 ## 11.2.0
 
 ### Minor Changes
