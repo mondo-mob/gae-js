@@ -53,12 +53,11 @@ export class MutexService {
    * @throws MutexUnavailableError when mutex is already locked.
    */
   async withMutex<T>(mutexId: OneOrMany<string>, fn: () => Promise<T> | T, options?: MutexOptions): Promise<T> {
-    const mutexIdString = joinIdElements(mutexId);
-    await this.obtain(mutexIdString, options);
+    await this.obtain(mutexId, options);
     try {
       return await fn();
     } finally {
-      await this.release(mutexIdString);
+      await this.release(mutexId);
     }
   }
 
@@ -67,8 +66,11 @@ export class MutexService {
    * @param mutexId id of the lock to obtain
    * @param options mutex options
    */
-  async obtain(mutexId: string, { expirySeconds = this.defaultExpirySeconds }: MutexOptions = {}): Promise<Mutex> {
-    const id = this.mutexId(mutexId);
+  async obtain(
+    mutexId: OneOrMany<string>,
+    { expirySeconds = this.defaultExpirySeconds }: MutexOptions = {}
+  ): Promise<Mutex> {
+    const id = this.mutexId(joinIdElements(mutexId));
     this.logger.info(`Obtaining mutex for ${id}...`);
 
     const result = await runInTransaction(async () => {
@@ -93,8 +95,8 @@ export class MutexService {
    * Releases a mutex with the provided id
    * @param mutexId the id of the mutex to release
    */
-  async release(mutexId: string): Promise<Mutex | null> {
-    const id = this.mutexId(mutexId);
+  async release(mutexId: OneOrMany<string>): Promise<Mutex | null> {
+    const id = this.mutexId(joinIdElements(mutexId, false));
     this.logger.info(`Releasing mutex for ${id}...`);
 
     const result = await runInTransaction(async () => {
@@ -131,12 +133,12 @@ export class MutexService {
   };
 }
 
-const joinIdElements = (elements: OneOrMany<string>) => {
-  const array = asArray(elements);
-  if (array.some((p) => p.includes("/"))) {
+const joinIdElements = (elements: OneOrMany<string>, validate = true): string => {
+  const joined = asArray(elements).join(SEPARATOR);
+  if (validate && joined.includes("/")) {
     throw new Error(`Mutex id elements cannot contain '/'. Supplied: ${elements}.`);
   }
-  return array.join(SEPARATOR);
+  return joined;
 };
 
 // Note that you can't have a separator as "/" inside an id of firestore element with our lib

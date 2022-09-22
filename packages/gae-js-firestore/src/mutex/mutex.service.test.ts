@@ -66,6 +66,18 @@ describe("MutexService", () => {
         expect(mutex.locked).toBeTruthy();
       })
     );
+
+    it("cannot obtain mutex with id containing '/'", async () => {
+      await expect(mutexService.obtain("foo/bar")).rejects.toThrow(
+        "Mutex id elements cannot contain '/'. Supplied: foo/bar."
+      );
+    });
+
+    it("cannot obtain mutex with id elements containing '/'", async () => {
+      await expect(mutexService.obtain(["foo", "foo/bar"])).rejects.toThrow(
+        "Mutex id elements cannot contain '/'. Supplied: foo,foo/bar."
+      );
+    });
   });
 
   describe("release", () => {
@@ -261,6 +273,16 @@ describe("MutexService", () => {
       );
 
       it(
+        "obtains mutex for new id with multiple elements",
+        transactional(async () => {
+          const mutex = await mutexService.obtain(["test1", "test23"], { expirySeconds: 10 });
+          expect(mutex.id).toBe("grandparent::parent::test1::test23");
+          expect(mutex.locked).toBeTruthy();
+          expect(secondsDifference(mutex.expiredAt, mutex.obtainedAt)).toBe(10);
+        })
+      );
+
+      it(
         "obtains mutex for new id with default expiry seconds",
         transactional(async () => {
           const mutex = await mutexService.obtain("test1");
@@ -279,6 +301,18 @@ describe("MutexService", () => {
           expect(obtained.locked).toBeTruthy();
 
           const released = await mutexService.release("test1");
+          expect(released).toBeDefined();
+          expect(released?.locked).toBeFalsy();
+        })
+      );
+
+      it(
+        "releases active mutex with multiple elements",
+        transactional(async () => {
+          const obtained = await mutexService.obtain(["test1", "test23"]);
+          expect(obtained.locked).toBeTruthy();
+
+          const released = await mutexService.release(["test1", "test23"]);
           expect(released).toBeDefined();
           expect(released?.locked).toBeFalsy();
         })
