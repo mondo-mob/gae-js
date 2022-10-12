@@ -1,6 +1,5 @@
 import { Firestore, Settings, v1 as firestoreV1 } from "@google-cloud/firestore";
 import { FirestoreAdminClient } from "@google-cloud/firestore/types/v1/firestore_admin_client";
-import { ClientOptions } from "google-gax";
 import { configurationProvider, createLogger, runningOnGcp } from "@mondomob/gae-js-core";
 import { GaeJsFirestoreConfiguration } from "../configuration";
 
@@ -9,9 +8,12 @@ export interface FirestoreConnectOptions {
   firestoreSettings?: Settings;
 }
 
+// the proper google-gax typings are a bit temperamental - so extracting types from client sdk
+type AdminClientOptions = ConstructorParameters<typeof firestoreV1.FirestoreAdminClient>[0];
+
 export interface FirestoreAdminConnectOptions {
   configuration?: GaeJsFirestoreConfiguration;
-  clientOptions?: ClientOptions;
+  clientOptions?: AdminClientOptions;
 }
 
 const getProjectId = (config: GaeJsFirestoreConfiguration): string | undefined =>
@@ -59,10 +61,13 @@ export const connectFirestoreAdmin = (options?: FirestoreAdminConnectOptions): F
   const logger = createLogger("connectFirestoreAdmin");
   const config = options?.configuration || configurationProvider.get<GaeJsFirestoreConfiguration>();
 
-  const clientOptions: ClientOptions = {
+  const clientOptions: AdminClientOptions = {
     projectId: getProjectId(config),
     ...options?.clientOptions,
   };
   logger.info(`Connecting Firestore Admin Client for project ${clientOptions.projectId || "(default)"}`);
-  return new firestoreV1.FirestoreAdminClient(clientOptions);
+  return new firestoreV1.FirestoreAdminClient({
+    projectId: getProjectId(config),
+    ...options?.clientOptions,
+  });
 };
