@@ -1,2 +1,2 @@
-export * from './bootstrap.service'
-export * from './bootstrapper'
+export * from "./bootstrap.service";
+export * from "./bootstrapper";
