@@ -1,5 +1,5 @@
 import DataLoader from "dataloader";
-import _ from "lodash";
+import { castArray, chunk, cloneDeep } from "lodash";
 import {
   DocumentData,
   DocumentReference,
@@ -10,7 +10,6 @@ import {
   Transaction,
   WriteBatch,
 } from "@google-cloud/firestore";
-import { asArray } from "@mondomob/gae-js-core";
 import { QueryOptions } from "./firestore-query";
 
 export interface FirestorePayload {
@@ -18,7 +17,7 @@ export interface FirestorePayload {
   data: DocumentData;
 }
 
-const cloneDocument = (data: DocumentData | null) => _.cloneDeep(data);
+const cloneDocument = (data: DocumentData | null) => cloneDeep(data);
 
 /**
  * Updates loader cache value with given data.
@@ -106,7 +105,7 @@ export class FirestoreLoader {
     }
 
     if (options.sort) {
-      asArray(options.sort).forEach((sort) => (query = query.orderBy(sort.property, sort.direction)));
+      castArray(options.sort).forEach((sort) => (query = query.orderBy(sort.property, sort.direction)));
     }
 
     if (options.limit) {
@@ -163,10 +162,10 @@ export class FirestoreLoader {
       const txn = this.transaction;
       values.forEach((value) => transactionOperation(txn, value));
     } else {
-      const entityChunks: T[][] = _.chunk(values, batchSize);
-      const pendingModifications = entityChunks.map((chunk: T[]) => {
+      const entityChunks: T[][] = chunk(values, batchSize);
+      const pendingModifications = entityChunks.map((entityChunk: T[]) => {
         const batch = this.firestore.batch();
-        chunk.forEach((value) => batchOperation(batch, value));
+        entityChunk.forEach((value) => batchOperation(batch, value));
         return batch.commit();
       });
       await Promise.all(pendingModifications);

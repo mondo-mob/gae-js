@@ -2,12 +2,12 @@ import { Datastore, Transaction } from "@google-cloud/datastore";
 import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
 import { OrderOptions, RunQueryInfo } from "@google-cloud/datastore/build/src/query";
 import DataLoader from "dataloader";
-import * as _ from "lodash";
 import { buildFilters, Filters } from "./filters";
-import { asArray, createLogger, Logger, NonFatalError, OneOrMany } from "@mondomob/gae-js-core";
+import { createLogger, Logger, NonFatalError, OneOrMany } from "@mondomob/gae-js-core";
+import { castArray, chunk, isEqual } from "lodash";
 
 const keysEqual = (key1: Entity.Key, key2: Entity.Key) => {
-  return _.isEqual(key1.path.join(":"), key2.path.join(":"));
+  return isEqual(key1.path.join(":"), key2.path.join(":"));
 };
 
 export type Index<T> =
@@ -139,7 +139,7 @@ export class DatastoreLoader {
     let query = this.datastore.createQuery(kind ? kind : undefined);
 
     if (options.select) {
-      query = query.select(asArray(options.select));
+      query = query.select(castArray(options.select));
     }
 
     if (options.filters) {
@@ -147,11 +147,11 @@ export class DatastoreLoader {
     }
 
     if (options.sort) {
-      asArray(options.sort).forEach((sort) => query.order(sort.property, sort.options));
+      castArray(options.sort).forEach((sort) => query.order(sort.property, sort.options));
     }
 
     if (options.groupBy) {
-      query.groupBy(asArray(options.groupBy));
+      query.groupBy(castArray(options.groupBy));
     }
 
     if (options.start) {
@@ -234,8 +234,8 @@ export class DatastoreLoader {
     updateLoader: (loader: DataLoader<Entity.Key, DatastoreEntity | null>, value: T) => void,
     batchSize = 100
   ) {
-    const entityChunks: T[][] = _.chunk(values, batchSize);
-    const pendingModifications = entityChunks.map((chunk: T[]) => operation(this.datastore, chunk));
+    const entityChunks: T[][] = chunk(values, batchSize);
+    const pendingModifications = entityChunks.map((entityChunk: T[]) => operation(this.datastore, entityChunk));
     await Promise.all(pendingModifications);
 
     values.forEach((value) => updateLoader(this.loader, value));

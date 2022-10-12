@@ -1,7 +1,8 @@
-import { asArray, OneOrMany } from "@mondomob/gae-js-core";
+import { OneOrMany } from "@mondomob/gae-js-core";
 import { Operator } from "@google-cloud/datastore/build/src/query";
 import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
 import { Key } from "@google-cloud/datastore";
+import { castArray } from "lodash";
 
 type NotUndefined<T> = T extends undefined ? never : T;
 
@@ -40,7 +41,7 @@ interface Query {
   filter(path: string, value: any): this;
 }
 
-const isNestedObject = (value: unknown): value is Record<string, unknown> => {
+const isNestedObject = (value: unknown): boolean => {
   return (
     !isComplexFilter(value) &&
     typeof value === "object" &&
@@ -56,11 +57,11 @@ export const buildFilters = <T, Q extends Query>(query: Q, filters: Filters<T>, 
       throw new Error(`Attempt to filter by undefined value for property '${pathPrefix}${key}'`);
     }
 
-    if (isNestedObject(value)) {
+    if (value !== null && isNestedObject(value)) {
       return buildFilters(query, value, pathPrefix + `${key}.`);
     }
 
-    const parameterFilters = asArray(value);
+    const parameterFilters = castArray(value);
 
     for (const filter of parameterFilters) {
       if (isComplexFilter(filter)) {

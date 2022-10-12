@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "6.2.0",
-    "@types/node-fetch": "2.6.1",
-    "nock": "13.2.4"
+    "@types/node-fetch": "2.6.2",
+    "nock": "13.2.9"
   }
 }

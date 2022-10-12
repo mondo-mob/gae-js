@@ -1,6 +1,5 @@
 import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import {
-  asArray,
   createLogger,
   DataValidator,
   IndexConfig,
@@ -16,7 +15,7 @@ import {
   Sort,
 } from "@mondomob/gae-js-core";
 import assert from "assert";
-import { first } from "lodash";
+import { castArray, first } from "lodash";
 import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
 import { QueryOptions, QueryResponse } from "./firestore-query";
@@ -94,7 +93,7 @@ export class FirestoreRepository<T extends BaseEntity> {
   async get(id: string): Promise<T | null>;
   async get(ids: ReadonlyArray<string>): Promise<ReadonlyArray<T | null>>;
   async get(ids: string | ReadonlyArray<string>): Promise<OneOrMany<T | null>> {
-    const idArray = asArray(ids);
+    const idArray = castArray(ids);
     const allKeys = idArray.map(this.documentRef);
 
     const results = await this.getLoader().get(allKeys);
@@ -212,7 +211,7 @@ export class FirestoreRepository<T extends BaseEntity> {
     mutation: (loader: FirestoreLoader, entities: ReadonlyArray<FirestorePayload>) => Promise<any>
   ): Promise<OneOrMany<T>> {
     const transformedEntities = mapOneOrMany(entities, (entity) => transformDeep(entity, this.valueTransformers.write));
-    const entitiesToSave = asArray(transformedEntities)
+    const entitiesToSave = castArray(transformedEntities)
       .map(this.validateSave)
       .map(
         (data: T) =>
@@ -253,7 +252,7 @@ export class FirestoreRepository<T extends BaseEntity> {
 
   protected prepareSearchEntries(entities: OneOrMany<T>): IndexEntry[] {
     assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
-    return asArray(entities).map((entity) => this.prepareSearchEntry(entity));
+    return castArray(entities).map((entity) => this.prepareSearchEntry(entity));
   }
 
   private indexForSearch(entities: OneOrMany<T>) {

@@ -1,7 +1,8 @@
-import { asArray, createLogger, OneOrMany } from "@mondomob/gae-js-core";
+import { createLogger, OneOrMany } from "@mondomob/gae-js-core";
 import { newTimestampedEntity, runInTransaction } from "../firestore";
 import { MutexUnavailableError } from "./mutex-unavailable-error";
 import { Mutex, mutexesRepository } from "./mutexes.repository";
+import { castArray } from "lodash";
 
 export class MutexService {
   private readonly logger = createLogger("mutexService");
@@ -134,7 +135,7 @@ export class MutexService {
 }
 
 const joinIdElements = (elements: OneOrMany<string>, validate = true): string => {
-  const joined = asArray(elements).join(SEPARATOR);
+  const joined = castArray(elements).join(SEPARATOR);
   if (validate && joined.includes("/")) {
     throw new Error(`Mutex id elements cannot contain '/'. Supplied: ${elements}.`);
   }

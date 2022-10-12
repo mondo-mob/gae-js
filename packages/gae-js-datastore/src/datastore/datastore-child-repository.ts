@@ -62,7 +62,7 @@ export class DatastoreChildRepository<T extends IdEntity> extends AbstractReposi
 
   private getParentKey(entity: T): Key | null {
     if (this.options.parentProperty) {
-      const parentKey = entity[this.options.parentProperty];
+      const parentKey = entity[this.options.parentProperty] as any;
       if (Entity.isDsKey(parentKey)) {
         return parentKey;
       }

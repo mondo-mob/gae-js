@@ -29,6 +29,6 @@
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "6.2.0",
-    "@google-cloud/storage": "6.4.2"
+    "@google-cloud/storage": "6.5.2"
   }
 }

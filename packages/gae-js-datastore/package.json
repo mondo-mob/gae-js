@@ -28,14 +28,13 @@
   },
   "peerDependencies": {
     "@mondomob/gae-js-core": "^6.0.0",
-    "@google-cloud/datastore": "^6.6.0",
+    "@google-cloud/datastore": ">= 6.6.0",
     "express": ">= 4.17.1"
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "6.2.0",
-    "@google-cloud/datastore": "6.6.2",
-    "@types/lodash": "4.14.182",
-    "google-datastore-emulator": "5.2.0"
+    "@google-cloud/datastore": "7.0.0",
+    "google-datastore-emulator": "6.0.0"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"
 }

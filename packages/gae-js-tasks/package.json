@@ -31,8 +31,8 @@
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "6.2.0",
-    "@google-cloud/tasks": "3.0.0",
+    "@google-cloud/tasks": "3.0.2",
     "@types/node-fetch": "2.6.2",
-    "nock": "13.2.8"
+    "nock": "13.2.9"
   }
 }

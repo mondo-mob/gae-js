@@ -1,8 +1,7 @@
 import { Datastore, Key } from "@google-cloud/datastore";
 import { entity as Entity } from "@google-cloud/datastore/build/src/entity";
-import { chain, first, flatMap } from "lodash";
+import { castArray, chain, first, flatMap } from "lodash";
 import {
-  asArray,
   createLogger,
   DataValidator,
   IndexConfig,
@@ -53,7 +52,7 @@ export function buildExclusions<T>(input: T, schema: Index<T> = {}, path = ""): 
       })
       .uniq()
       .value();
-  } else if (Entity.isDsKey(input)) {
+  } else if (Entity.isDsKey(input as object)) {
     return [path];
   } else if (typeof input === "object") {
     return flatMap<Record<string, unknown>, string>(input as any, (value, key) => {
@@ -109,7 +108,7 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
   async getRequiredByKey(key: Key): Promise<T>;
   async getRequiredByKey(keys: ReadonlyArray<Key>): Promise<T[]>;
   async getRequiredByKey(keys: Key | ReadonlyArray<Key>): Promise<OneOrMany<T>> {
-    const idsArray = asArray(keys);
+    const idsArray = castArray(keys);
     const results = await this.getByKey(idsArray);
     const nullIndex = results.indexOf(null);
     if (nullIndex >= 0) {
@@ -127,7 +126,7 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
   async getByKey(key: Key): Promise<T | null>;
   async getByKey(keys: ReadonlyArray<Key>): Promise<ReadonlyArray<T | null>>;
   async getByKey(keys: Key | ReadonlyArray<Key>): Promise<OneOrMany<T | null>> {
-    const allKeys = asArray(keys);
+    const allKeys = castArray(keys);
 
     const results = await this.getLoader().get(allKeys);
 
@@ -265,7 +264,7 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
     entities: OneOrMany<T>,
     mutation: (loader: DatastoreLoader, entities: ReadonlyArray<DatastorePayload>) => Promise<any>
   ): Promise<OneOrMany<T>> {
-    const entitiesToSave = asArray(entities)
+    const entitiesToSave = castArray(entities)
       .map((e) => this.validateSave(e))
       .map((e) => this.entityToPayload(e));
 
@@ -283,7 +282,7 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
 
   protected prepareSearchEntries(entities: OneOrMany<T>): IndexEntry[] {
     assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
-    return asArray(entities).map((entity) => this.prepareSearchEntry(entity));
+    return castArray(entities).map((entity) => this.prepareSearchEntry(entity));
   }
 
   private indexForSearch(entities: OneOrMany<T>) {

@@ -1,9 +1,9 @@
 import { Datastore, Key } from "@google-cloud/datastore";
 import assert from "assert";
 import { AbstractRepository, AbstractRepositoryOptions, buildExclusions } from "./abstract-repository";
-import { asArray, isReadonlyArray, OneOrMany } from "@mondomob/gae-js-core";
+import { isReadonlyArray, OneOrMany } from "@mondomob/gae-js-core";
 import { DatastoreEntity, DatastorePayload, Index } from "./datastore-loader";
-import { omit } from "lodash";
+import { castArray, omit } from "lodash";
 
 export interface StringIdEntity {
   id: string;
@@ -65,7 +65,7 @@ export class DatastoreRepository<T extends IdEntity> extends AbstractRepository<
   }
 
   async delete(...ids: IdType[]): Promise<void> {
-    const keys = asArray(ids).map((id) => this.idToKey(id));
+    const keys = castArray(ids).map((id) => this.idToKey(id));
     return super.deleteByKey(...keys);
   }
 

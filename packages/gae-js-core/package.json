@@ -22,18 +22,17 @@
   "license": "MIT",
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
-    "@google-cloud/logging-bunyan": "4.1.0",
-    "@google-cloud/secret-manager": "4.0.0",
+    "@google-cloud/logging-bunyan": "4.1.3",
+    "@google-cloud/secret-manager": "4.1.3",
     "@types/bunyan": "1.8.8",
     "bunyan": "1.8.15",
     "lodash": "4.17.21",
-    "zod": "3.17.10"
+    "zod": "3.19.1"
   },
   "peerDependencies": {
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@types/lodash": "4.14.182"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"
 }

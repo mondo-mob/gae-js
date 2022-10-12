@@ -23,8 +23,8 @@
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
     "lodash": "4.17.21",
-    "luxon": "3.0.1",
-    "uuid": "8.3.2"
+    "luxon": "3.0.4",
+    "uuid": "9.0.0"
   },
   "peerDependencies": {
     "@mondomob/gae-js-bigquery": "^0.1.0",
@@ -34,16 +34,16 @@
     "@mondomob/gae-js-tasks": "^9.0.0"
   },
   "devDependencies": {
-    "@google-cloud/bigquery": "6.0.2",
-    "@google-cloud/firestore": "5.0.2",
-    "@google-cloud/storage": "6.4.2",
-    "@google-cloud/tasks": "3.0.0",
+    "@google-cloud/bigquery": "6.0.3",
+    "@google-cloud/firestore": "6.3.0",
+    "@google-cloud/storage": "6.5.2",
+    "@google-cloud/tasks": "3.0.2",
     "@mondomob/gae-js-bigquery": "0.1.0",
     "@mondomob/gae-js-core": "6.2.0",
     "@mondomob/gae-js-firestore": "11.3.0",
     "@mondomob/gae-js-storage": "7.1.0",
     "@mondomob/gae-js-tasks": "9.1.0",
-    "@types/luxon": "3.0.0",
+    "@types/luxon": "3.0.1",
     "@types/uuid": "8.3.4"
   }
 }
