@@ -1,11 +1,9 @@
 import * as protos from "@google-cloud/firestore/types/protos/firestore_admin_v1_proto_api";
-import { LROperation } from "google-gax";
 import { google } from "@google-cloud/firestore/build/protos/firestore_v1_proto_api";
 import ITimestamp = google.protobuf.ITimestamp;
 import { BackupOperation } from "../backups";
 
 type ExportMetadata = protos.google.firestore.admin.v1.IExportDocumentsMetadata;
-type ExportOperation = LROperation<protos.google.firestore.admin.v1.IExportDocumentsResponse, ExportMetadata>;
 
 export const toISOTime = (timestamp?: ITimestamp | null): string | null => {
   if (!timestamp || !timestamp.seconds) return null;
@@ -14,7 +12,11 @@ export const toISOTime = (timestamp?: ITimestamp | null): string | null => {
 
 export const mergeExportOperation = (
   backupOperation: BackupOperation,
-  exportOperation: ExportOperation
+  exportOperation: {
+    done: boolean | undefined;
+    metadata: unknown | null;
+    error: { code?: number; message?: string } | undefined;
+  }
 ): BackupOperation => {
   const meta = exportOperation.metadata as ExportMetadata;
   return {

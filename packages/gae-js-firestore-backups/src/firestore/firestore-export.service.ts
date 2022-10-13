@@ -64,7 +64,11 @@ export class FirestoreExportService {
         collectionIds,
         targetDataset: options.targetDataset,
       },
-      operation
+      {
+        done: operation.done,
+        metadata: operation.metadata,
+        error: operation.error,
+      }
     );
     await backupOperationsRepository.insert(backupOperation);
 
@@ -77,7 +81,11 @@ export class FirestoreExportService {
 
     this.logger.info(`Looking up details for operation ${backupOperation.operationName}`);
     const operation = await this.adminClient.checkExportDocumentsProgress(backupOperation.operationName);
-    const updated = mergeExportOperation(backupOperation, operation);
+    const updated = mergeExportOperation(backupOperation, {
+      done: operation.done,
+      metadata: operation.metadata,
+      error: operation.error,
+    });
     await backupOperationsRepository.save(updated);
     return updated;
   }
