@@ -13,6 +13,7 @@ export const connectStorage = (options?: StorageConnectOptions): Storage => {
 
   logger.info("Initialising Storage");
   const storageSettings: StorageOptions = {
+    projectId: configuration?.projectId || undefined,
     apiEndpoint: configuration?.apiEndpoint || undefined,
     ...options?.storageOptions,
   };

@@ -16,6 +16,8 @@ export const gaeJsStorageConfigurationSchema = gaeJsCoreConfigurationSchema.exte
         })
         .optional(),
       origin: z.string().optional(),
+      // Buckets are global but the sdk requires a default project - which may not be set when running locally
+      projectId: z.string().optional(),
     })
     .optional(),
 });
