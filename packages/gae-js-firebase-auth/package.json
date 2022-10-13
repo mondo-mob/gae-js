@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-firebase-auth",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -27,7 +27,7 @@
     "firebase-admin": ">= 11.0.0"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.2.0",
+    "@mondomob/gae-js-core": "6.3.0",
     "firebase-admin": "11.1.0"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"

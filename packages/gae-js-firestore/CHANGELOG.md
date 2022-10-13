@@ -1,5 +1,12 @@
 # @mondomob/gae-js-firestore
 
+## 11.4.0
+
+### Minor Changes
+
+- e9d9692: Update dependencies and fix typing issues picked up by typescript 4.8.4
+- d4cda1ef: Fix typings issue with latest Firestore SDK
+
 ## 11.3.0
 
 ### Minor Changes
@@ -59,8 +66,8 @@
     gaeJsFirestoreConfigurationSchema,
     // Add the other config properties you need
     t.type({
-      something: t.string
-    })
+      something: t.string,
+    }),
   ]);
 
   // Create ConfigValidator from schema
@@ -75,7 +82,7 @@
   // Include the schemas from the libraries you are using (use merge if there are multiple)
   const configSchema = gaeJsCoreConfigurationSchema.merge(gaeJsFirestoreConfigurationSchema).extend({
     // Extend and add your own config
-    something: z.string()
+    something: z.string(),
   });
 
   // Create ConfigValidator from schema

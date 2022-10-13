@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firebase-auth
 
+## 7.1.0
+
+### Minor Changes
+
+- e9d9692: Update dependencies and fix typing issues picked up by typescript 4.8.4
+
 ## 7.0.0
 
 ### Major Changes

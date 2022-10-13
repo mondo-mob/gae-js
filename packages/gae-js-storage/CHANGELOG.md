@@ -1,5 +1,12 @@
 # @mondomob/gae-js-storage
 
+## 7.2.0
+
+### Minor Changes
+
+- e9d9692: Update dependencies and fix typing issues picked up by typescript 4.8.4
+- 26f85b7: Allow specifying projectId in config. Mostly useful for local development where a default project may not be defined.
+
 ## 7.1.0
 
 ### Minor Changes
