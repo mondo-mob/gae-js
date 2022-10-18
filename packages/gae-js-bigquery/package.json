@@ -23,10 +23,12 @@
   "homepage": "https://github.com/mondo-mob/gae-js",
   "peerDependencies": {
     "@google-cloud/bigquery": ">=6.0.0",
-    "@mondomob/gae-js-core": "^6.0.0"
+    "@mondomob/gae-js-core": "^6.0.0",
+    "@mondomob/gae-js-storage": "^7.1.0"
   },
   "devDependencies": {
     "@google-cloud/bigquery": "6.0.3",
-    "@mondomob/gae-js-core": "6.3.0"
+    "@mondomob/gae-js-core": "6.3.0",
+    "@mondomob/gae-js-storage": "7.2.0"
   }
 }

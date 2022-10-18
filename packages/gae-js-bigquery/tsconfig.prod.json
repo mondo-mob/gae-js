@@ -3,6 +3,7 @@
   "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts"],
   "references": [
-    { "path": "../gae-js-core/tsconfig.prod.json" }
+    { "path": "../gae-js-core/tsconfig.prod.json" },
+    { "path": "../gae-js-storage/tsconfig.prod.json" }
   ]
 }
