@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    { "path": "../gae-js-core/tsconfig.prod.json" },
+    { "path": "../gae-js-bigquery/tsconfig.prod.json" },
+    { "path": "../gae-js-datastore/tsconfig.prod.json" },
+    { "path": "../gae-js-storage/tsconfig.prod.json" },
+    { "path": "../gae-js-tasks/tsconfig.prod.json" }
+  ]
+}
