@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-datastore-backups",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Utils for performing datastore backups",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
