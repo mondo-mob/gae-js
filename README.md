@@ -100,6 +100,10 @@ Framework for adding search capability to your data layer
 #### Other stuff
 A few other (hopefully) useful things to help you along the way and stop reinventing the wheel
 
+### gae-js-bigquery ([documentation](./packages/gae-js-bigquery/README.md))
+#### Use BigQuery in your app
+Simplifies client initialisation and common BQ tasks
+
 ### gae-js-datastore ([documentation](./packages/gae-js-datastore/README.md))
 
 #### Use Cloud Datastore (or Firestore in Datastore mode)
@@ -108,6 +112,15 @@ Access your collections through typed repositories, backed by a DataLoader imple
 #### Simple transaction support
 Use annotations on your methods to make them transactional
 
+### gae-js-datastore-backups ([documentation](./packages/gae-js-datastore-backups/README.md))
+#### Automate Datastore Exports
+Run/schedule full or partial exports of Datastore into Google Cloud Storage
+#### Import into BigQuery
+Schedule Extract and Load jobs to export from Datastore into BigQuery
+
+### gae-js-firebase-auth ([documentation](./packages/gae-js-firebase-auth/README.md))
+#### Use Firebase Auth to authenticate your users
+Middleware to verify Firebase Auth tokens and set user into the request
 
 ### gae-js-firestore ([documentation](./packages/gae-js-firestore/README.md))
 
@@ -117,21 +130,29 @@ Access your collections through typed repositories, backed by a DataLoader imple
 #### Simple transaction support
 Use annotations on your methods to make them transactional
 
-### gae-js-firebase-auth ([documentation](./packages/gae-js-firebase-auth/README.md))
-#### Use Firebase Auth to authenticate your users
-Middleware to verify Firebase Auth tokens and set user into the request
+### gae-js-firestore-backups ([documentation](./packages/gae-js-firestore-backups/README.md))
+#### Automate Firestore Exports
+Run/schedule full or partial exports of Firestore into Google Cloud Storage
+#### Import into BigQuery
+Schedule Extract and Load jobs to export from Firestore into BigQuery
 
 ### gae-js-gae-search ([documentation](./packages/gae-js-gae-search/README.md))
 #### Search service implementation for GAE Search API
 Use GAE Search API to index and search your repository data
 
+### gae-js-migrations ([documentation](./packages/gae-js-migrations/README.md))
+#### Run migrations
+Bootstrap migrations to be run when server starts or create an endpoint to trigger them. Status of migrations and mutex lock is managed with Firestore.
+
 ### gae-js-storage ([documentation](./packages/gae-js-storage/README.md))
 #### Use Cloud Storage in your app
 Simplifies client initialisation and common storage tasks
 
-### gae-js-migrations ([documentation](./packages/gae-js-migrations/README.md))
-#### Run migrations
-Bootstrap migrations to be run when server starts or create an endpoint to trigger them. Status of migrations and mutex lock is managed with Firestore. 
+### gae-js-tasks ([documentation](./packages/gae-js-tasks/README.md))
+#### Use Cloud Tasks in your app
+Simplifies client initialisation and common task operations
+
+
 
 ## Contributing
 
