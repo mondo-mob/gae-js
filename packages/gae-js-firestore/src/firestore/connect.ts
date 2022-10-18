@@ -8,14 +8,6 @@ export interface FirestoreConnectOptions {
   firestoreSettings?: Settings;
 }
 
-// the proper google-gax typings are a bit temperamental - so extracting types from client sdk
-type AdminClientOptions = ConstructorParameters<typeof firestoreV1.FirestoreAdminClient>[0];
-
-export interface FirestoreAdminConnectOptions {
-  configuration?: GaeJsFirestoreConfiguration;
-  clientOptions?: AdminClientOptions;
-}
-
 const getProjectId = (config: GaeJsFirestoreConfiguration): string | undefined =>
   runningOnGcp()
     ? // On GCP if you do not specify a firestoreProjectId the client will auto connect to the hosting project
@@ -53,6 +45,15 @@ export const connectFirestore = (options?: FirestoreConnectOptions): Firestore =
   return new Firestore(settings);
 };
 
+// The proper typings from google-gax can be flaky depending on which version gets resolved
+// It's safer to extract the types from client sdk
+type AdminClientOptions = ConstructorParameters<typeof firestoreV1.FirestoreAdminClient>[0];
+
+export interface FirestoreAdminConnectOptions {
+  configuration?: GaeJsFirestoreConfiguration;
+  clientOptions?: AdminClientOptions;
+}
+
 /**
  * Creates a Firestore Admin Client. e.g. for admin operations like imports/exports.
  * NOTE: This currently only works for real Firestore - i.e. not the emulator
@@ -66,8 +67,5 @@ export const connectFirestoreAdmin = (options?: FirestoreAdminConnectOptions): F
     ...options?.clientOptions,
   };
   logger.info(`Connecting Firestore Admin Client for project ${clientOptions.projectId || "(default)"}`);
-  return new firestoreV1.FirestoreAdminClient({
-    projectId: getProjectId(config),
-    ...options?.clientOptions,
-  });
+  return new firestoreV1.FirestoreAdminClient(clientOptions);
 };
