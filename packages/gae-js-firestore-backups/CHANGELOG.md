@@ -1,5 +1,16 @@
 # @mondomob/gae-js-firestore-backups
 
+## 1.0.0
+
+### Minor Changes
+
+- e864741: Use common BigQuery import service from gae-js-bigquery
+
+### Patch Changes
+
+- Updated dependencies [1eac8b4]
+  - @mondomob/gae-js-bigquery@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
@@ -11,7 +22,7 @@
 ### Patch Changes
 
 - Updated dependencies [e9d9692]
-    - @mondomob/gae-js-bigquery@0.2.0
+  - @mondomob/gae-js-bigquery@0.2.0
 
 ## 0.1.0
 

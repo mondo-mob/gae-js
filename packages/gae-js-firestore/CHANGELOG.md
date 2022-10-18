@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 11.4.1
+
+### Patch Changes
+
+- 9620a50: Remove code duplication and add tests for creating admin client
+
 ## 11.4.0
 
 ### Minor Changes

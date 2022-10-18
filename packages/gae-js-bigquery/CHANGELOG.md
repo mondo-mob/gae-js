@@ -1,5 +1,11 @@
 # @mondomob/gae-js-bigquery
 
+## 0.3.0
+
+### Minor Changes
+
+- 1eac8b4: Add BigQueryImportService to handle common import tasks - i.e. importing from datastore/firestore backups
+
 ## 0.2.0
 
 ### Minor Changes

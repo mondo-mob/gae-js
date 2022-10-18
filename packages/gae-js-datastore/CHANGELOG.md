@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 9.2.0
+
+### Minor Changes
+
+- 8febc1e: Fix support for connecting to non-emulator Datastore instances from outside GCP. Add support for creating DatastoreAdminClients.
+
 ## 9.1.0
 
 ### Minor Changes
