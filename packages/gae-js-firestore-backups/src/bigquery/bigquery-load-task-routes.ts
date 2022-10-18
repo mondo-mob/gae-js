@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { asyncHandler } from "@mondomob/gae-js-core";
-import { bigQueryDatastoreImportServiceProvider } from "./bigquery-datastore-import.service";
+import { bigQueryFirestoreImportServiceProvider } from "./bigquery-firestore-import.service";
 import { validateRequest } from "../util/types";
 import { bigQueryLoadRequestSchema } from "./bigquery-load-request";
 
@@ -11,9 +11,9 @@ export const bigQueryImportTaskRoutes = (router = Router()): Router => {
     TASK_BIGQUERY_LOAD_COLLECTION,
     asyncHandler(async (req, res) => {
       const options = validateRequest(bigQueryLoadRequestSchema, req.body);
-      const result = await bigQueryDatastoreImportServiceProvider
+      const result = await bigQueryFirestoreImportServiceProvider
         .get()
-        .importCollection(options.gcsObjectPath, options.dataset, options.collectionId);
+        .importCollection(options.gcsObjectPath, options.targetDataset, options.targetTable);
       res.send(result);
     })
   );

@@ -62,7 +62,7 @@ export class FirestoreExportService {
         type: options.type,
         name,
         collectionIds,
-        targetDataset: options.targetDataset,
+        ...(options.targetDataset ? { targetDataset: options.targetDataset } : undefined),
       },
       {
         done: operation.done,

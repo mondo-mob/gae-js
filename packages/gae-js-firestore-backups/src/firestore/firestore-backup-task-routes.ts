@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { asyncHandler, createLogger } from "@mondomob/gae-js-core";
-import { bigQueryDatastoreImportServiceProvider, bigQueryImportTaskRoutes } from "../bigquery";
+import { bigQueryFirestoreImportServiceProvider, bigQueryImportTaskRoutes } from "../bigquery";
 import { firestoreExportCheckRequestSchema } from "./firestore-export-check-request";
 import { firestoreExportServiceProvider } from "./firestore-export.service";
 import { validateRequest } from "../util/types";
@@ -23,7 +23,7 @@ export const firestoreBackupTaskRoutes = (router = Router()): Router => {
 
       logger.info("Firestore export complete");
       if (backupOperation.type === "EXPORT_TO_BIGQUERY") {
-        await bigQueryDatastoreImportServiceProvider.get().queueImportFromBackup(backupOperation);
+        await bigQueryFirestoreImportServiceProvider.get().queueImportFromBackup(backupOperation);
         return res.send("BigQuery load queued...");
       }
     })
