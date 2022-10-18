@@ -1,9 +1,9 @@
 import { Datastore } from "@google-cloud/datastore";
-import { connectDatastoreEmulator, initTestConfig } from "../__test/test-utils";
+import { connectDatastoreEmulator, initEmulatorConfig } from "../__test/test-utils";
 import { DatastoreProvider } from "./datastore-provider";
 
 describe("DatastoreProvider", () => {
-  beforeAll(async () => initTestConfig());
+  beforeAll(async () => initEmulatorConfig());
 
   it("auto inits datastore from env config", async () => {
     const provider = new DatastoreProvider();

@@ -3,7 +3,7 @@ const DataStoreEmulator = require("google-datastore-emulator");
 module.exports = async () => {
   const emulator = new DataStoreEmulator({
     port: 8081,
-    project: "gae-js-datastore-tests",
+    project: "datastore-tests",
     storeOnDisk: false,
   });
   console.log("Starting datastore emulator...");

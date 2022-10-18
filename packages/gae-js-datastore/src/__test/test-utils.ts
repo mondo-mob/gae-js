@@ -7,20 +7,23 @@ export interface RepositoryItem {
   name: string;
 }
 
-export const initTestConfig = async (
+export const initTestConfig = async (config: Record<string, unknown> = {}): Promise<GaeJsDatastoreConfiguration> => {
+  await configurationProvider.init({
+    validator: zodValidator(gaeJsDatastoreConfigurationSchema),
+    projectId: "datastore-tests",
+    overrides: config,
+  });
+  return configurationProvider.get<GaeJsDatastoreConfiguration>();
+};
+
+export const initEmulatorConfig = async (
   config?: Partial<GaeJsDatastoreConfiguration>
 ): Promise<GaeJsDatastoreConfiguration> => {
-  process.env.GAEJS_PROJECT = "datastore-tests";
-  process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
-    projectId: "datastore-tests",
+  return initTestConfig({
     datastoreProjectId: "datastore-tests",
     datastoreApiEndpoint: "localhost:8081",
     ...config,
   });
-  await configurationProvider.init({
-    validator: zodValidator<GaeJsDatastoreConfiguration>(gaeJsDatastoreConfigurationSchema),
-  });
-  return configurationProvider.get<GaeJsDatastoreConfiguration>();
 };
 
 export const connectDatastoreEmulator = (settings?: DatastoreOptions): Datastore => {

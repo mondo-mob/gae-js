@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc --build --verbose tsconfig.prod.json",
     "clean": "rm -rf dist/ coverage/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
-    "datastore:start": "gcloud beta emulators datastore start --consistency 1.0",
+    "datastore:start": "gcloud beta emulators datastore start --consistency 1.0 --project datastore-tests",
     "format": "prettier --write \"./src/**/*.ts\"",
     "prepublishOnly": "npm run build",
     "test": "jest --runInBand",
