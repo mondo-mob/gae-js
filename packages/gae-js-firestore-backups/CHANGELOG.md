@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore-backups
 
+## 1.0.1
+
+### Patch Changes
+
+- 3d10efa: Fix backup check endpoints not sending response when standard export completes
+
 ## 1.0.0
 
 ### Minor Changes
