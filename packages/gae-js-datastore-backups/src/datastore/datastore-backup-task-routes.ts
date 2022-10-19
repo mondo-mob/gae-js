@@ -24,8 +24,9 @@ export const datastoreBackupTaskRoutes = (router = Router()): Router => {
       logger.info("Datastore export complete");
       if (backupOperation.type === "EXPORT_TO_BIGQUERY") {
         await bigQueryDatastoreImportServiceProvider.get().queueImportFromBackup(backupOperation);
-        return res.send("BigQuery load queued...");
+        return res.send("Datastore export complete. BigQuery load queued...");
       }
+      return res.send("Datastore export complete");
     })
   );
 

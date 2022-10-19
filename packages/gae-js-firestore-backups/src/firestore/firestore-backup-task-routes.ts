@@ -24,8 +24,9 @@ export const firestoreBackupTaskRoutes = (router = Router()): Router => {
       logger.info("Firestore export complete");
       if (backupOperation.type === "EXPORT_TO_BIGQUERY") {
         await bigQueryFirestoreImportServiceProvider.get().queueImportFromBackup(backupOperation);
-        return res.send("BigQuery load queued...");
+        return res.send("Firestore export complete. BigQuery load queued...");
       }
+      return res.send("Firestore export complete");
     })
   );
 
