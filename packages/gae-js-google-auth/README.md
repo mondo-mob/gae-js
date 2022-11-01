@@ -47,3 +47,6 @@ app.post("/pubsub/poll-status", (req, res) => res.send("OK"));
 **Note:** The `email` property also supports an array of values if your endpoints should be _one of_ a set of allowed emails.
 
 If you care about the `audience` property you can also specify this property as a single value or an array.
+
+By default, this middleware will be disabled if run in an environment outside of GCP (local testing, for example). If you would like to override
+this behaviour, you can set `disableForNonGcpEnvironment` to `false`.
