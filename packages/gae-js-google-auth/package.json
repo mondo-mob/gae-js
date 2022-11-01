@@ -1,0 +1,35 @@
+{
+  "name": "@mondomob/gae-js-google-auth",
+  "version": "0.0.0",
+  "description": "Tools for Google Cloud Authentication",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc --build --verbose tsconfig.prod.json",
+    "clean": "rm -rf dist/ coverage/ tsconfig.tsbuildinfo tsconfig.prod.tsbuildinfo",
+    "format": "prettier --write \"./src/**/*.ts\"",
+    "prepublishOnly": "npm run build",
+    "test": "jest",
+    "test:ci": "jest"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "",
+  "license": "MIT",
+  "homepage": "https://github.com/mondo-mob/gae-js",
+  "dependencies": {
+    "google-auth-library": "^8.6.0",
+    "node-fetch": "2.6.7"
+  },
+  "peerDependencies": {
+    "@mondomob/gae-js-core": "^6.0.0",
+    "express": ">= 4.17.1"
+  },
+  "devDependencies": {
+    "@mondomob/gae-js-core": "6.3.0"
+  }
+}

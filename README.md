@@ -140,6 +140,10 @@ Schedule Extract and Load jobs to export from Firestore into BigQuery
 #### Search service implementation for GAE Search API
 Use GAE Search API to index and search your repository data
 
+### gae-js-google-auth ([documentation](./packages/gae-js-google-auth/README.md))
+#### Google Auth utilities
+Utilities extending on [Google Auth Library](https://github.com/googleapis/google-auth-library-nodejs#readme), such as middleware to validate Google JWT.
+
 ### gae-js-migrations ([documentation](./packages/gae-js-migrations/README.md))
 #### Run migrations
 Bootstrap migrations to be run when server starts or create an endpoint to trigger them. Status of migrations and mutex lock is managed with Firestore.
