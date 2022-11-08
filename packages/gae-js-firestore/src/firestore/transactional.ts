@@ -25,7 +25,13 @@ const applyInTransaction = (thisArg: any, original: AnyAsync, ...args: any[]): P
       });
 
       try {
-        await Promise.all(getPostCommitActions().map((anyAsync) => anyAsync()));
+        const actions = getPostCommitActions();
+        if (actions.length > 0) {
+          logger.info(`Executing ${actions.length} post-commit actions after transaction has been committed`);
+          for (const action of actions) {
+            await action();
+          }
+        }
         return result;
       } catch (err) {
         logger.warn("Post-commit error encountered", err);

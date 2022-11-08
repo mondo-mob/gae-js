@@ -205,12 +205,15 @@ describe("Transactional", () => {
   });
 
   describe("execPostCommitOrNow", () => {
-    it("executes action after commit, when in transaction", async () => {
+    it("executes actions in order after commit, when in transaction", async () => {
       const executions: string[] = [];
 
       await testTransactionalSupport(() =>
         runInTransaction(async () => {
-          await execPostCommitOrNow(async () => executions.push("post-commit-1"));
+          await execPostCommitOrNow(async () => {
+            await testSleep(100);
+            executions.push("post-commit-1");
+          });
           executions.push("action-1");
           await execPostCommitOrNow(async () => executions.push("post-commit-2"));
           executions.push("action-2");
@@ -239,11 +242,14 @@ describe("Transactional", () => {
       expect(executions).toEqual(["action-1", "action-2"]);
     });
 
-    it("executes immediately when there is no open transaction", async () => {
+    it("executes immediately when there is no open transaction and runs actions in order", async () => {
       const executions: string[] = [];
 
       await testTransactionalSupport(async () => {
-        await execPostCommitOrNow(() => executions.push("post-commit-1"));
+        await execPostCommitOrNow(async () => {
+          await testSleep(100);
+          executions.push("post-commit-1");
+        });
         executions.push("action-1");
         await execPostCommitOrNow(() => executions.push("post-commit-2"));
         executions.push("action-2");
@@ -368,3 +374,5 @@ describe("Transactional", () => {
       return testFn();
     });
 });
+
+const testSleep = (millis: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, millis));
