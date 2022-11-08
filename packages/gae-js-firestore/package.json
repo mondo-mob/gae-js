@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-firestore",
-  "version": "11.4.1",
+  "version": "11.5.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
