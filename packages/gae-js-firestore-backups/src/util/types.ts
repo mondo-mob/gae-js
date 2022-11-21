@@ -7,7 +7,7 @@ import { BadRequestError } from "@mondomob/gae-js-core";
  * @param schema schema to validate against
  * @param data request payload
  */
-export const validateRequest = <T>(schema: ZodType<T>, data: unknown): T => {
+export const validateRequest = <T>(schema: ZodType<T, z.ZodTypeDef, unknown>, data: unknown): T => {
   const decoded = schema.safeParse(data);
   if (!decoded.success) {
     throw new BadRequestError(decoded.error.message || "Invalid payload");
