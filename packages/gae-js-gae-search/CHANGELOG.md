@@ -1,5 +1,11 @@
 # @mondomob/gae-js-gae-search
 
+## 6.1.1
+
+### Patch Changes
+
+- 4fc4699: Update Typescript to 4.9.3
+
 ## 6.1.0
 
 ### Minor Changes

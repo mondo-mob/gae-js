@@ -1,5 +1,11 @@
 # @mondomob/gae-js-bigquery
 
+## 0.3.1
+
+### Patch Changes
+
+- 4fc4699: Update Typescript to 4.9.3
+
 ## 0.3.0
 
 ### Minor Changes

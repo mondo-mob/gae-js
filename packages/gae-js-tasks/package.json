@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-tasks",
-  "version": "9.2.0",
+  "version": "9.3.0",
   "description": "Tools for Google Cloud Tasks",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -30,7 +30,7 @@
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.3.0",
+    "@mondomob/gae-js-core": "6.4.0",
     "@google-cloud/tasks": "3.0.5",
     "@types/node-fetch": "2.6.2",
     "nock": "13.2.9"

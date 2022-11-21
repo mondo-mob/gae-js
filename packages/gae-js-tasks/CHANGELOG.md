@@ -1,5 +1,15 @@
 # @mondomob/gae-js-tasks
 
+## 9.3.0
+
+### Minor Changes
+
+- 58e50ef: Update dependencies where practical
+
+### Patch Changes
+
+- 4fc4699: Update Typescript to 4.9.3
+
 ## 9.2.0
 
 ### Minor Changes

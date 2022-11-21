@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 9.2.1
+
+### Patch Changes
+
+- 4fc4699: Update Typescript to 4.9.3
+
 ## 9.2.0
 
 ### Minor Changes

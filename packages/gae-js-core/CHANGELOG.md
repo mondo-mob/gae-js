@@ -1,5 +1,16 @@
 # @mondomob/gae-js-core
 
+## 6.4.0
+
+### Minor Changes
+
+- 58e50ef: Update dependencies where practical
+
+### Patch Changes
+
+- 4fc4699: Update Typescript to 4.9.3
+- de0e8e9: Update zod to 3.19.1
+
 ## 6.3.0
 
 ### Minor Changes

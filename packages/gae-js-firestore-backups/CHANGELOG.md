@@ -1,5 +1,16 @@
 # @mondomob/gae-js-firestore-backups
 
+## 1.1.0
+
+### Minor Changes
+
+- 58e50ef: Update dependencies where practical
+
+### Patch Changes
+
+- 4fc4699: Update Typescript to 4.9.3
+- de0e8e9: Update zod to 3.19.1
+
 ## 1.0.1
 
 ### Patch Changes

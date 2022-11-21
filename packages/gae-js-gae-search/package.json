@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-gae-search",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "description": "Use Appengine Search Service",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -28,7 +28,7 @@
     "@mondomob/gae-js-core": "^6.0.0"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.3.0",
+    "@mondomob/gae-js-core": "6.4.0",
     "@types/node-fetch": "2.6.2",
     "nock": "13.2.9"
   }
