@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "6.3.0",
-    "@google-cloud/firestore": "6.3.0"
+    "@google-cloud/firestore": "6.4.1"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"
 }

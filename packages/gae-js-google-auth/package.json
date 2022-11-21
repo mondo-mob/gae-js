@@ -22,7 +22,7 @@
   "license": "MIT",
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
-    "google-auth-library": "^8.6.0",
+    "google-auth-library": "^8.7.0",
     "node-fetch": "2.6.7"
   },
   "peerDependencies": {
