@@ -40,7 +40,7 @@
     "@google-cloud/tasks": "3.0.5",
     "@mondomob/gae-js-bigquery": "0.3.1",
     "@mondomob/gae-js-core": "6.4.0",
-    "@mondomob/gae-js-firestore": "11.6.0",
+    "@mondomob/gae-js-firestore": "11.6.1",
     "@mondomob/gae-js-storage": "7.3.0",
     "@mondomob/gae-js-tasks": "9.3.0",
     "@types/luxon": "3.1.0",

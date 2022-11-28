@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 11.6.1
+
+### Patch Changes
+
+- 6420c57: Slight typing improvement to isFirestoreError helper to tell compiler the assumed interface
+
 ## 11.6.0
 
 ### Minor Changes
