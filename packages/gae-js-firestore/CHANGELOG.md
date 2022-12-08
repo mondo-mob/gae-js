@@ -1,5 +1,48 @@
 # @mondomob/gae-js-firestore
 
+## 12.0.0
+
+### Major Changes
+
+- 095a0c3: Query sort supportes nested fields.
+
+  BREAKING: Query `sort` objects have a rename from `property` to `fieldPath`. This allows sorting by nested field paths instead of direct fields only.
+
+  Replace:
+
+  ```typescript
+  const results = await repository.query({
+    sort: {
+      property: "prop1",
+      direction: "desc",
+    },
+  });
+  ```
+
+  with
+
+  ```typescript
+  const results = await repository.query({
+    sort: {
+      fieldPath: "prop1",
+      direction: "desc",
+    },
+  });
+  ```
+
+  And you also now have the ability to do
+
+  ```typescript
+  const results = await repository.query({
+    sort: {
+      fieldPath: "nested.prop.prop1",
+      direction: "desc",
+    },
+  });
+  ```
+
+  Also the underlying type that represents the `sort` property has been renamed from `PropertySort` to `FieldSort` and no longer accepts a generic arg.
+
 ## 11.6.1
 
 ### Patch Changes
