@@ -341,63 +341,81 @@ describe("FirestoreLoader", () => {
     describe("ordering", () => {
       beforeEach(async () => {
         await loader.create([
-          createUserPayload("123", { category1: "AA", category2: "XX" }),
-          createUserPayload("234", { category1: "BA", category2: "XX" }),
-          createUserPayload("345", { category1: "AB", category2: "ZZ" }),
-          createUserPayload("456", { category1: "BB", category2: "YY" }),
-          createUserPayload("567", { category1: "CA", category2: "XX" }),
+          createUserPayload("123", { category1: "AA", category2: "XX", nested: { prop3: 2 } }),
+          createUserPayload("234", { category1: "BA", category2: "XX", nested: { prop3: 1 } }),
+          createUserPayload("345", { category1: "AB", category2: "ZZ", nested: { prop3: 4 } }),
+          createUserPayload("456", { category1: "BB", category2: "YY", nested: { prop3: 5 } }),
+          createUserPayload("567", { category1: "CA", category2: "XX", nested: { prop3: 3 } }),
         ]);
       });
 
       it("orders results ascending", async () => {
         const results = await loader.executeQuery("users", {
           sort: {
-            property: "category1",
+            fieldPath: "category1",
             direction: "asc",
           },
         });
 
-        expect(results.size).toBe(5);
-        expect(results.docs.map((doc) => doc.id)).toEqual(["123", "345", "234", "456", "567"]);
+        expect(results.docs.map(({ id }) => id)).toEqual(["123", "345", "234", "456", "567"]);
       });
 
       it("orders results descending", async () => {
         const results = await loader.executeQuery("users", {
           sort: {
-            property: "category1",
+            fieldPath: "category1",
             direction: "desc",
           },
         });
 
-        expect(results.size).toBe(5);
-        expect(results.docs.map((doc) => doc.id)).toEqual(["567", "456", "234", "345", "123"]);
+        expect(results.docs.map(({ id }) => id)).toEqual(["567", "456", "234", "345", "123"]);
       });
 
       it("orders by multiple fields", async () => {
         const results = await loader.executeQuery("users", {
           sort: [
             {
-              property: "category2",
+              fieldPath: "category2",
               direction: "asc",
             },
             {
-              property: "category1",
+              fieldPath: "category1",
               direction: "desc",
             },
           ],
         });
 
-        expect(results.size).toBe(5);
-        expect(results.docs.map((doc) => doc.id)).toEqual(["567", "234", "123", "456", "345"]);
+        expect(results.docs.map(({ id }) => id)).toEqual(["567", "234", "123", "456", "345"]);
+      });
+
+      it("orders results by nested field ascending", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: {
+            fieldPath: "nested.prop3",
+            direction: "asc",
+          },
+        });
+
+        expect(results.docs.map(({ id }) => id)).toEqual(["234", "123", "567", "345", "456"]);
+      });
+
+      it("orders results by nested field descending", async () => {
+        const results = await loader.executeQuery("users", {
+          sort: {
+            fieldPath: "nested.prop3",
+            direction: "desc",
+          },
+        });
+
+        expect(results.docs.map(({ id }) => id)).toEqual(["456", "345", "567", "123", "234"]);
       });
 
       it("orders results by id special key", async () => {
         const results = await loader.executeQuery("users", {
-          sort: [{ property: "category2" }, { property: FIRESTORE_ID_FIELD }],
+          sort: [{ fieldPath: "category2" }, { fieldPath: FIRESTORE_ID_FIELD }],
         });
 
-        expect(results.size).toBe(5);
-        expect(results.docs.map((doc) => doc.id)).toEqual(["123", "234", "567", "456", "345"]);
+        expect(results.docs.map(({ id }) => id)).toEqual(["123", "234", "567", "456", "345"]);
       });
     });
 
@@ -414,7 +432,7 @@ describe("FirestoreLoader", () => {
 
       it("applies startAfter", async () => {
         const results = await loader.executeQuery("users", {
-          sort: { property: "name" },
+          sort: { fieldPath: "name" },
           startAfter: ["Test User 234"],
         });
 
@@ -424,7 +442,7 @@ describe("FirestoreLoader", () => {
 
       it("applies startAt", async () => {
         const results = await loader.executeQuery("users", {
-          sort: { property: "name" },
+          sort: { fieldPath: "name" },
           startAt: ["Test User 345"],
         });
 
@@ -434,7 +452,7 @@ describe("FirestoreLoader", () => {
 
       it("applies endBefore", async () => {
         const results = await loader.executeQuery("users", {
-          sort: { property: FIRESTORE_ID_FIELD },
+          sort: { fieldPath: FIRESTORE_ID_FIELD },
           startAt: ["234"],
           endBefore: ["567"],
         });
@@ -445,7 +463,7 @@ describe("FirestoreLoader", () => {
 
       it("applies endAt", async () => {
         const results = await loader.executeQuery("users", {
-          sort: { property: FIRESTORE_ID_FIELD },
+          sort: { fieldPath: FIRESTORE_ID_FIELD },
           startAfter: ["234"],
           endAt: ["567"],
         });
@@ -456,7 +474,7 @@ describe("FirestoreLoader", () => {
 
       it("applies multiple properties", async () => {
         const results = await loader.executeQuery("users", {
-          sort: [{ property: "message" }, { property: FIRESTORE_ID_FIELD }],
+          sort: [{ fieldPath: "message" }, { fieldPath: FIRESTORE_ID_FIELD }],
           startAfter: ["msg1", "345"],
           limit: 2,
         });
@@ -468,7 +486,7 @@ describe("FirestoreLoader", () => {
 
       it("applies cursor and limit", async () => {
         const results = await loader.executeQuery("users", {
-          sort: { property: FIRESTORE_ID_FIELD },
+          sort: { fieldPath: FIRESTORE_ID_FIELD },
           startAfter: ["234"],
           limit: 2,
         });

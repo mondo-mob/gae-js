@@ -675,63 +675,81 @@ describe("FirestoreRepository", () => {
     describe("ordering", () => {
       beforeEach(async () => {
         await repository.save([
-          createItem("123", { prop1: "AA", prop2: "XX" }),
-          createItem("234", { prop1: "BA", prop2: "XX" }),
-          createItem("345", { prop1: "AB", prop2: "ZZ" }),
-          createItem("456", { prop1: "BB", prop2: "YY" }),
-          createItem("567", { prop1: "CA", prop2: "XX" }),
+          createItem("123", { prop1: "AA", prop2: "XX", nested: { prop3: 2 } }),
+          createItem("234", { prop1: "BA", prop2: "XX", nested: { prop3: 1 } }),
+          createItem("345", { prop1: "AB", prop2: "ZZ", nested: { prop3: 4 } }),
+          createItem("456", { prop1: "BB", prop2: "YY", nested: { prop3: 5 } }),
+          createItem("567", { prop1: "CA", prop2: "XX", nested: { prop3: 3 } }),
         ]);
       });
 
       it("orders results ascending", async () => {
         const results = await repository.query({
           sort: {
-            property: "prop1",
+            fieldPath: "prop1",
             direction: "asc",
           },
         });
 
-        expect(results.length).toBe(5);
-        expect(results.map((doc) => doc.id)).toEqual(["123", "345", "234", "456", "567"]);
+        expect(results.map(({ id }) => id)).toEqual(["123", "345", "234", "456", "567"]);
       });
 
       it("orders results descending", async () => {
         const results = await repository.query({
           sort: {
-            property: "prop1",
+            fieldPath: "prop1",
             direction: "desc",
           },
         });
 
-        expect(results.length).toBe(5);
-        expect(results.map((doc) => doc.id)).toEqual(["567", "456", "234", "345", "123"]);
+        expect(results.map(({ id }) => id)).toEqual(["567", "456", "234", "345", "123"]);
+      });
+
+      it("orders results by nested field ascending", async () => {
+        const results = await repository.query({
+          sort: {
+            fieldPath: "nested.prop3",
+            direction: "asc",
+          },
+        });
+
+        expect(results.map(({ id }) => id)).toEqual(["234", "123", "567", "345", "456"]);
+      });
+
+      it("orders results by nested field descending", async () => {
+        const results = await repository.query({
+          sort: {
+            fieldPath: "nested.prop3",
+            direction: "desc",
+          },
+        });
+
+        expect(results.map(({ id }) => id)).toEqual(["456", "345", "567", "123", "234"]);
       });
 
       it("orders by multiple fields", async () => {
         const results = await repository.query({
           sort: [
             {
-              property: "prop2",
+              fieldPath: "prop2",
               direction: "asc",
             },
             {
-              property: "prop1",
+              fieldPath: "prop1",
               direction: "desc",
             },
           ],
         });
 
-        expect(results.length).toBe(5);
-        expect(results.map((doc) => doc.id)).toEqual(["567", "234", "123", "456", "345"]);
+        expect(results.map(({ id }) => id)).toEqual(["567", "234", "123", "456", "345"]);
       });
 
       it("orders results by id special key", async () => {
         const results = await repository.query({
-          sort: [{ property: "prop2" }, { property: FIRESTORE_ID_FIELD }],
+          sort: [{ fieldPath: "prop2" }, { fieldPath: FIRESTORE_ID_FIELD }],
         });
 
-        expect(results.length).toBe(5);
-        expect(results.map((doc) => doc.id)).toEqual(["123", "234", "567", "456", "345"]);
+        expect(results.map(({ id }) => id)).toEqual(["123", "234", "567", "456", "345"]);
       });
     });
 
@@ -748,7 +766,7 @@ describe("FirestoreRepository", () => {
 
       it("applies startAfter", async () => {
         const results = await repository.query({
-          sort: { property: "name" },
+          sort: { fieldPath: "name" },
           startAfter: ["Test Item 234"],
         });
 
@@ -758,7 +776,7 @@ describe("FirestoreRepository", () => {
 
       it("applies startAt", async () => {
         const results = await repository.query({
-          sort: { property: "name" },
+          sort: { fieldPath: "name" },
           startAt: ["Test Item 345"],
         });
 
@@ -768,7 +786,7 @@ describe("FirestoreRepository", () => {
 
       it("applies endBefore", async () => {
         const results = await repository.query({
-          sort: { property: FIRESTORE_ID_FIELD },
+          sort: { fieldPath: FIRESTORE_ID_FIELD },
           startAt: ["234"],
           endBefore: ["567"],
         });
@@ -779,7 +797,7 @@ describe("FirestoreRepository", () => {
 
       it("applies endAt", async () => {
         const results = await repository.query({
-          sort: { property: FIRESTORE_ID_FIELD },
+          sort: { fieldPath: FIRESTORE_ID_FIELD },
           startAfter: ["234"],
           endAt: ["567"],
         });
@@ -790,7 +808,7 @@ describe("FirestoreRepository", () => {
 
       it("applies multiple properties", async () => {
         const results = await repository.query({
-          sort: [{ property: "prop1" }, { property: FIRESTORE_ID_FIELD }],
+          sort: [{ fieldPath: "prop1" }, { fieldPath: FIRESTORE_ID_FIELD }],
           startAfter: ["msg1", "345"],
           limit: 2,
         });
@@ -802,7 +820,7 @@ describe("FirestoreRepository", () => {
 
       it("applies cursor and limit", async () => {
         const results = await repository.query({
-          sort: { property: FIRESTORE_ID_FIELD },
+          sort: { fieldPath: FIRESTORE_ID_FIELD },
           startAfter: ["234"],
           limit: 2,
         });

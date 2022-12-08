@@ -8,15 +8,15 @@ export interface WhereFilter {
   value: any;
 }
 
-export interface PropertySort<T> {
-  property: (keyof T | typeof FIRESTORE_ID_FIELD) & string;
+export interface FieldSort {
+  fieldPath: string | FieldPath;
   direction?: OrderByDirection;
 }
 
 export interface QueryOptions<T> {
   filters: WhereFilter[];
   select: OneOrMany<(keyof T & string) | typeof FIRESTORE_ID_FIELD>;
-  sort: OneOrMany<PropertySort<T>>;
+  sort: OneOrMany<FieldSort>;
   startAfter: any[];
   startAt: any[];
   endBefore: any[];

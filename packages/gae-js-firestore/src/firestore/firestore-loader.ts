@@ -105,7 +105,7 @@ export class FirestoreLoader {
     }
 
     if (options.sort) {
-      castArray(options.sort).forEach((sort) => (query = query.orderBy(sort.property, sort.direction)));
+      castArray(options.sort).forEach((sort) => (query = query.orderBy(sort.fieldPath, sort.direction)));
     }
 
     if (options.limit) {
