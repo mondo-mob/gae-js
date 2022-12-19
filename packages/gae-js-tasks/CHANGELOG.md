@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 9.3.1
+
+### Patch Changes
+
+- e0428bb: Unpin all direct dependency versions
+
 ## 9.3.0
 
 ### Minor Changes

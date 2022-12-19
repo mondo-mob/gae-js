@@ -1,5 +1,11 @@
 # @mondomob/gae-js-migrations
 
+## 12.0.1
+
+### Patch Changes
+
+- e0428bb: Unpin all direct dependency versions
+
 ## 12.0.0
 
 ### Patch Changes

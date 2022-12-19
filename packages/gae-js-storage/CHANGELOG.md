@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 7.3.1
+
+### Patch Changes
+
+- 3a7c8ed: Update dependencies
+
 ## 7.3.0
 
 ### Minor Changes

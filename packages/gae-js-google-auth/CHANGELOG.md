@@ -1,5 +1,11 @@
 # @mondomob/gae-js-google-auth
 
+## 1.1.1
+
+### Patch Changes
+
+- e0428bb: Unpin all direct dependency versions
+
 ## 1.1.0
 
 ### Minor Changes

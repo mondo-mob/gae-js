@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 12.0.1
+
+### Patch Changes
+
+- e0428bb: Unpin all direct dependency versions
+
 ## 12.0.0
 
 ### Major Changes

@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-storage",
-  "version": "7.3.0",
+  "version": "7.3.1",
   "description": "Tools for Google Cloud Storage",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -28,7 +28,7 @@
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.4.0",
+    "@mondomob/gae-js-core": "6.4.1",
     "@google-cloud/storage": "6.8.0"
   }
 }

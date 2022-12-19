@@ -1,5 +1,13 @@
 # @mondomob/gae-js-core
 
+## 6.4.1
+
+### Patch Changes
+
+- 3a7c8ed: Update dependencies
+- e0428bb: Unpin all direct dependency versions
+- 5695e43: Make zod a peer dependency to reduce chance of duplicate versions
+
 ## 6.4.0
 
 ### Minor Changes

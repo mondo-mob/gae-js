@@ -1,5 +1,11 @@
 # @mondomob/gae-js-gae-search
 
+## 6.1.2
+
+### Patch Changes
+
+- e0428bb: Unpin all direct dependency versions
+
 ## 6.1.1
 
 ### Patch Changes

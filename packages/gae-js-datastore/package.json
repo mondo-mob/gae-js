@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-datastore",
-  "version": "9.2.1",
+  "version": "9.2.2",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -31,7 +31,7 @@
     "@google-cloud/datastore": ">= 6.6.0"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.4.0",
+    "@mondomob/gae-js-core": "6.4.1",
     "@google-cloud/datastore": "7.0.0",
     "google-datastore-emulator": "6.0.1"
   },

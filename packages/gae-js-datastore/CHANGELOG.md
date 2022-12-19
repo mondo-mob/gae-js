@@ -1,5 +1,12 @@
 # @mondomob/gae-js-datastore
 
+## 9.2.2
+
+### Patch Changes
+
+- 3a7c8ed: Update dependencies
+- e0428bb: Unpin all direct dependency versions
+
 ## 9.2.1
 
 ### Patch Changes
