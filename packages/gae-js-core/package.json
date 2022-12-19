@@ -26,12 +26,14 @@
     "@google-cloud/secret-manager": "4.1.4",
     "@types/bunyan": "1.8.8",
     "bunyan": "1.8.15",
-    "lodash": "4.17.21",
-    "zod": "3.20.2"
+    "lodash": "4.17.21"
   },
   "peerDependencies": {
-    "express": ">= 4.17.1"
+    "express": ">= 4.17.1",
+    "zod": "^3.19.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "zod": "3.20.2"
+  },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"
 }
