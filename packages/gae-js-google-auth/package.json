@@ -23,11 +23,10 @@
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
     "google-auth-library": "^8.7.0",
-    "node-fetch": "2.6.7"
+    "node-fetch": "^2.6.7"
   },
   "peerDependencies": {
-    "@mondomob/gae-js-core": "^6.0.0",
-    "express": ">= 4.17.1"
+    "@mondomob/gae-js-core": "^6.0.0"
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "6.4.0"

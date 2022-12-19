@@ -22,7 +22,7 @@
   "license": "MIT",
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
-    "node-fetch": "2.6.7"
+    "node-fetch": "^2.6.7"
   },
   "peerDependencies": {
     "@mondomob/gae-js-core": "^6.0.0"

@@ -23,13 +23,12 @@
   "license": "MIT",
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
-    "dataloader": "2.1.0",
-    "lodash": "4.17.21"
+    "dataloader": "^2.1.0",
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "@mondomob/gae-js-core": "^6.0.0",
-    "@google-cloud/firestore": ">= 4.15.1",
-    "express": ">= 4.17.1"
+    "@google-cloud/firestore": ">= 4.15.1"
   },
   "devDependencies": {
     "@mondomob/gae-js-core": "6.4.0",
