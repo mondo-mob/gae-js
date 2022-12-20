@@ -1,5 +1,11 @@
 # @mondomob/gae-js-google-auth
 
+## 1.2.0
+
+### Minor Changes
+
+- 1c8afcf: Add requiresIapJwt middleware for validating Identity Aware Proxy signed headers
+
 ## 1.1.1
 
 ### Patch Changes
