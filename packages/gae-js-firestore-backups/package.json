@@ -23,7 +23,7 @@
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
     "lodash": "^4.17.21",
-    "luxon": "^3.1.1",
+    "luxon": "^3.2.1",
     "uuid": "^9.0.0"
   },
   "peerDependencies": {
