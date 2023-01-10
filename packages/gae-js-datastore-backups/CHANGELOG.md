@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore-backups
 
+## 0.2.2
+
+### Patch Changes
+
+- 0084fad: Update dependencies
+
 ## 0.2.1
 
 ### Patch Changes

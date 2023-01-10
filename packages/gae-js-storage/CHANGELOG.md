@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 7.3.2
+
+### Patch Changes
+
+- 0084fad: Update dependencies
+
 ## 7.3.1
 
 ### Patch Changes

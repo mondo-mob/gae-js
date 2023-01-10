@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firebase-auth
 
+## 7.2.2
+
+### Patch Changes
+
+- 0084fad: Update dependencies
+
 ## 7.2.1
 
 ### Patch Changes

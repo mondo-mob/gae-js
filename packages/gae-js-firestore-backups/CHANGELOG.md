@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore-backups
 
+## 2.0.2
+
+### Patch Changes
+
+- 0084fad: Update dependencies
+
 ## 2.0.1
 
 ### Patch Changes

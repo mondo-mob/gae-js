@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 12.0.2
+
+### Patch Changes
+
+- 0084fad: Update dependencies
+
 ## 12.0.1
 
 ### Patch Changes
