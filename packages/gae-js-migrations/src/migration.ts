@@ -3,7 +3,6 @@ import {
   FirestoreLoader,
   firestoreLoaderRequestStorage,
   firestoreProvider,
-  MutexUnavailableError,
   newTimestampedEntity,
 } from "@mondomob/gae-js-firestore";
 import { AutoMigration } from "./auto-migration";

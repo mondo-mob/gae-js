@@ -33,6 +33,6 @@
     "@mondomob/gae-js-core": "6.4.1",
     "@google-cloud/tasks": "3.0.5",
     "@types/node-fetch": "2.6.2",
-    "nock": "13.2.9"
+    "nock": "13.3.0"
   }
 }
