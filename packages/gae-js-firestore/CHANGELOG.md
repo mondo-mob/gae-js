@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 12.1.0
+
+### Minor Changes
+
+- 16ea678: Allow valueTransformers to be read from sub-classes of FirestoreRepository
+
 ## 12.0.2
 
 ### Patch Changes
