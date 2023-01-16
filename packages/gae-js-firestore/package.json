@@ -31,7 +31,7 @@
     "@google-cloud/firestore": ">= 4.15.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.4.1",
+    "@mondomob/gae-js-core": "6.5.0",
     "@google-cloud/firestore": "6.4.2"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"

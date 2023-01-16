@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-core",
-  "version": "6.4.1",
+  "version": "6.5.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

@@ -31,7 +31,7 @@
     "@google-cloud/datastore": ">= 6.6.0"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.4.1",
+    "@mondomob/gae-js-core": "6.5.0",
     "@google-cloud/datastore": "7.0.0",
     "google-datastore-emulator": "6.0.1"
   },

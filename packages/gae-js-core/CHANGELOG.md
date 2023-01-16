@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 6.5.0
+
+### Minor Changes
+
+- 2a31a00: Add option to boostrap() to allow running as a specific user. Always starts a unique request storage context so the parent context is not altered.
+
 ## 6.4.1
 
 ### Patch Changes

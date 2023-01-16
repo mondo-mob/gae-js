@@ -30,7 +30,7 @@
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.4.1",
+    "@mondomob/gae-js-core": "6.5.0",
     "@google-cloud/tasks": "3.0.5",
     "@types/node-fetch": "2.6.2",
     "nock": "13.3.0"

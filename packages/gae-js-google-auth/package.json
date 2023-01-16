@@ -29,6 +29,6 @@
     "@mondomob/gae-js-core": "^6.0.0"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.4.1"
+    "@mondomob/gae-js-core": "6.5.0"
   }
 }
