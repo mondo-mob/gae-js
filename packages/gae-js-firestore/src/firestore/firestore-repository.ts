@@ -52,7 +52,7 @@ export class FirestoreRepository<T extends BaseEntity> {
   private readonly validator?: DataValidator<T>;
   private readonly firestore?: Firestore;
   protected readonly searchOptions?: RepositorySearchOptions<T>;
-  private readonly valueTransformers: ValueTransformers<T>;
+  protected readonly valueTransformers: ValueTransformers<T>;
 
   constructor(
     protected readonly collectionPath: string,
