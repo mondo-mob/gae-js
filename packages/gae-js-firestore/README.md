@@ -136,6 +136,19 @@ const item = await repository.get("id123");
 await repository.save({ ...item, name: "updated item" });
 ```
 
+**Note:** you can disable updating `updatedAt` for existing entities if required by doing the following (e.g. for data migrations). For newly created entities, 
+the `createdAt` and `updatedAt` fields will _always_ be set to the current date, regardless of this setting (unless these fields have a valid `Date` already set on them).
+
+```typescript
+import { DISABLE_TIMESTAMP_UPDATE } from "./timestamped-repository";
+import { runWithRequestStorage, setRequestStorageValue } from "@mondomob/gae-js-core";
+
+await runWithRequestStorage(async () => {
+  setRequestStorageValue(DISABLE_TIMESTAMP_UPDATE, true);
+  return repository.save(item);
+});
+```
+
 ### @Transactional
 
 Annotate functions to make them transactional.

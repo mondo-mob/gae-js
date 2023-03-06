@@ -31,17 +31,20 @@ export class TimestampedRepository<T extends TimestampedEntity> extends Firestor
   }
 
   private updateTimestamps(entity: T) {
-    if (getRequestStorageValueOrDefault(DISABLE_TIMESTAMP_UPDATE, false)) {
+    const isTimestampUpdateDisabled = getRequestStorageValueOrDefault(DISABLE_TIMESTAMP_UPDATE, false);
+    if (isTimestampUpdateDisabled) {
       logger.debug("Timestamp update disabled by request storage flag");
-      return entity;
     }
 
-    const updatedAt = new Date();
+    const updatedAt =
+      isTimestampUpdateDisabled && isValidExistingDate(entity.updatedAt) ? entity.updatedAt : new Date();
     const { createdAt } = entity;
     return {
       ...entity,
       updatedAt,
-      createdAt: createdAt && createdAt !== GENERATE_FLAG ? createdAt : updatedAt,
+      createdAt: isValidExistingDate(createdAt) ? createdAt : updatedAt,
     };
   }
 }
+
+const isValidExistingDate = (src?: Date) => !!src && src !== GENERATE_FLAG;

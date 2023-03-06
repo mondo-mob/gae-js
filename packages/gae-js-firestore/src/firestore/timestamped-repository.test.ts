@@ -124,5 +124,19 @@ describe("TimestampedRepository", () => {
       expect(updated.createdAt).toEqual(fixedTime);
       expect(updated.updatedAt).toEqual(fixedTime);
     });
+
+    it("sets createdAt and updatedAt on new entity when flag set", async () => {
+      await runWithRequestStorage(async () => {
+        setRequestStorageValue(DISABLE_TIMESTAMP_UPDATE, true);
+        return repository.save({
+          ...newTimestampedEntity("123"),
+          name: `Test Item 123`,
+        });
+      });
+
+      const created = await repository.getRequired("123");
+      expectNewDate(created.createdAt);
+      expectNewDate(created.updatedAt);
+    });
   });
 });
