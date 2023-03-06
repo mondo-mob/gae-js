@@ -1,5 +1,11 @@
 # @mondomob/gae-js-migrations
 
+## 12.1.0
+
+### Minor Changes
+
+- fd6f4fb: Migrations support optional global, and per-migration options with the latter taking preference. Currenty only disableTimestampUpdate option to disable automatic setting of timestamps on timestamped entities. See library readme for details.
+
 ## 12.0.2
 
 ### Patch Changes
