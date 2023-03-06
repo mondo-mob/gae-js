@@ -1,10 +1,12 @@
-import { Bootstrapper, createLogger, runWithRequestStorage } from "@mondomob/gae-js-core";
+import { Bootstrapper, createLogger, runWithRequestStorage, setRequestStorageValue } from "@mondomob/gae-js-core";
 import {
+  DISABLE_TIMESTAMP_UPDATE,
   FirestoreLoader,
   firestoreLoaderRequestStorage,
   firestoreProvider,
   newTimestampedEntity,
 } from "@mondomob/gae-js-firestore";
+import { merge } from "lodash";
 import { AutoMigration } from "./auto-migration";
 import { migrationResultsRepository } from "./migration-results.repository";
 import { mutexServiceProvider } from "./mutex";
@@ -27,25 +29,39 @@ const getMigrationsToRun = async (migrations: AutoMigration[]) => {
   });
 };
 
-const runMigration = async (migration: AutoMigration) => {
+const runMigration = async ({ id: migrationId, migrate, options }: AutoMigration, defaultOptions: MigrationOptions) => {
+  const { disableTimestampUpdate } = merge({}, defaultOptions, options);
+  const createdAt = new Date();
   try {
-    logger.info(`Running migration: ${migration.id}`);
-    await migration.migrate({
-      logger: createLogger(migration.id),
-    });
-    logger.info(`Migration completed: ${migration.id}`);
-    await migrationResultsRepository.insert({ ...newTimestampedEntity(migration.id), result: "COMPLETE" });
+    const migrationLogger = createLogger(migrationId);
+    if (disableTimestampUpdate) {
+      await runWithRequestStorage(async () => {
+        logger.info(`Running migration with disabled timestamp update: ${migrationId}`);
+        setRequestStorageValue(DISABLE_TIMESTAMP_UPDATE, true);
+        return migrate({
+          logger: migrationLogger,
+        });
+      });
+    } else {
+      logger.info(`Running migration: ${migrationId}`);
+      await migrate({
+        logger: migrationLogger,
+      });
+    }
+    logger.info(`Migration completed: ${migrationId}`);
+    await migrationResultsRepository.insert({ ...newTimestampedEntity(migrationId), result: "COMPLETE", createdAt });
   } catch (e) {
-    logger.warn(e, `Error running migration: ${migration.id}`);
+    logger.warn(e, `Error running migration: ${migrationId}`);
     await migrationResultsRepository.insert({
-      ...newTimestampedEntity(migration.id),
+      ...newTimestampedEntity(migrationId),
       result: "ERROR",
       error: (e as Error).message || "Unknown",
+      createdAt,
     });
   }
 };
 
-export const runMigrations = async (migrations: AutoMigration[]) => {
+export const runMigrations = async (migrations: AutoMigration[], options: MigrationOptions = {}) => {
   if (migrations.length === 0) {
     logger.debug(`No migrations configured to run`);
     return;
@@ -60,7 +76,7 @@ export const runMigrations = async (migrations: AutoMigration[]) => {
         `${migrationsToRun.length} migrations to run, ${migrations.length - migrationsToRun.length} skipped.`
       );
       for (const migration of migrationsToRun) {
-        await runMigration(migration);
+        await runMigration(migration, options);
       }
     },
     {
@@ -69,12 +85,20 @@ export const runMigrations = async (migrations: AutoMigration[]) => {
   );
 };
 
-export const bootstrapMigrations: (migrations: AutoMigration[]) => Bootstrapper =
-  (migrations: AutoMigration[]) => async () => {
+export const bootstrapMigrations =
+  (migrations: AutoMigration[], options?: MigrationOptions): Bootstrapper =>
+  async () => {
     await runWithRequestStorage(async () => {
       // We need firestore loader in request storage if we want to use gae-js transactions
       firestoreLoaderRequestStorage.set(new FirestoreLoader(firestoreProvider.get()));
 
-      await runMigrations(migrations);
+      await runMigrations(migrations, options);
     });
   };
+
+export interface MigrationOptions {
+  /**
+   * If set to true, then timestamps will not be automatically set via TimestampedRepository instances.
+   */
+  disableTimestampUpdate?: boolean;
+}

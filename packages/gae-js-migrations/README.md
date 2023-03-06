@@ -17,15 +17,17 @@ Run Migrations as a function e.g /migrate route handler
 Bootstrap Migrations to be run before application starts
 
 #### Migration Files
+The [AutoMigration](./src/auto-migration.ts) interface 
 
 Use naming convention with date and index number to version migrations
-\
-`migrations/v_20220122_001_addUsers.ts`
+
+   `migrations/v_20220122_001_addUsers.ts`
+
 ```
 const userRepository = new TimestampedRepository<User>("users");
 
 export const v_20220122_001_addUsers: AutoMigration = {
-    id: "v_20220122_001_addUsers",
+    id: "v_20220122_001_addUsers",   
     migrate: async ({ logger }) => {
       logger.info("Adding users");
     
@@ -41,6 +43,13 @@ export const v_20220122_001_addUsers: AutoMigration = {
       ]);
       logger.info(`Creating ${createdUsers.length} new users`);
     },
+    
+    
+    // Optional function that skips if returning true. For example to skip in a certain environment.
+    // skip: () => true,
+    
+    // Optional options to override from defaults, or those defined globally
+    // options: { disableTimestampUpdate: false },
 }
 ```
 
@@ -61,4 +70,16 @@ const migrations: AutoMigration[] = [
 ];
 
 await bootstrap([bootstrapMigrations(migrations)]);
+// OR with options
+// await bootstrap([bootstrapMigrations(migrations, { disableTimestampUpdate: true })]);
 ```
+
+
+### Migration options (either global or per migration)
+
+All properties are optional. These options can be specified globally (via the `bootstrapMigrations` or `runMigrations` functions) or overridden for an individual
+migration file (via the `AutoMigration` interface with the `options` property). Any options set via `AutoMigration` options will take preference over global settings or defaults.
+
+| Property               | Type      | Default | Description                                                                                                                   |
+|------------------------|-----------|---------|-------------------------------------------------------------------------------------------------------------------------------|
+| disableTimestampUpdate | `boolean` | `false` | If enabled, this will skip automatically updating timestamp values via [TimestampedRepository](../gae-js-firestore/README.md) |

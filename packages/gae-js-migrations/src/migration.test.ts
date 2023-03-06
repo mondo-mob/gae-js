@@ -1,20 +1,31 @@
-import { runMigrations } from "./migration";
-import { AutoMigration } from "./auto-migration";
-import { migrationResultsRepository } from "./migration-results.repository";
-import { mutexesRepository, newTimestampedEntity } from "@mondomob/gae-js-firestore";
+import {
+  FirestoreRepository,
+  mutexesRepository,
+  newTimestampedEntity,
+  TimestampedEntity,
+  TimestampedRepository,
+} from "@mondomob/gae-js-firestore";
 import { transactional, useFirestoreTest } from "./__test/test-utils";
+import { AutoMigration } from "./auto-migration";
+import { runMigrations } from "./migration";
+import { migrationResultsRepository } from "./migration-results.repository";
 import { mutexServiceProvider } from "./mutex";
 
+const dummyEntityCollectionName = "migrations-dummy-entities";
+const ORIG_CREATED_AT = new Date("1999-01-01T00:00:00");
+
 describe("runMigrations", () => {
-  useFirestoreTest(["mutexes", "migrations"]);
+  useFirestoreTest(["mutexes", "migrations", dummyEntityCollectionName]);
 
   let migrationCount = 0;
-  const migrations: AutoMigration[] = [];
+  let migrations: AutoMigration[] = [];
 
   const testMigration1: AutoMigration = {
     id: "test-migration-1",
     migrate: async ({ logger }) => {
-      logger.info("Running migration");
+      logger.info("Running migration to update entity names");
+      const existing = await testDummyEntityRepository.query();
+      await testDummyEntityRepository.save(existing.map(({ name, ...rest }) => ({ name: `${name} UPDATED`, ...rest })));
       migrationCount++;
     },
   };
@@ -40,76 +51,184 @@ describe("runMigrations", () => {
   };
 
   beforeEach(async () => {
-    migrations.splice(0);
-    migrations.push(testMigration1);
-    migrations.push(testMigration2);
-    migrations.push(testMigration3);
+    await nonAutoTimestampRepository.save({
+      ...newTimestampedEntity("entity-1"),
+      name: "name",
+      createdAt: ORIG_CREATED_AT,
+      updatedAt: ORIG_CREATED_AT,
+    });
+    migrations = [testMigration1, testMigration2, testMigration3];
     migrationCount = 0;
   });
 
-  describe("runMigrations", () => {
-    it("runs configured migrations, skips configured ones, and records results in firestore", async () => {
-      await transactional(async () => {
-        await runMigrations(migrations);
+  it(
+    "runs configured migrations, skips configured ones, and records results in firestore",
+    transactional(async () => {
+      await runMigrations(migrations);
 
-        expect(migrationCount).toBe(2);
+      expect(migrationCount).toBe(2);
 
-        const result1 = await migrationResultsRepository.getRequired(testMigration1.id);
-        expect(result1.result).toBe("COMPLETE");
+      const results = await getMigrationResults();
+      expect(results).toMatchObject([
+        { id: "test-migration-1", result: "COMPLETE" },
+        { id: "test-migration-2", result: "ERROR", error: "i failed" },
+      ]);
 
-        const result2 = await migrationResultsRepository.getRequired(testMigration2.id);
-        expect(result2.result).toBe("ERROR");
-        expect(result2.error).toBe("i failed");
-
-        expect(await migrationResultsRepository.exists(testMigration3.id)).toBe(false);
+      // First migration updated entities
+      const [entity] = await testDummyEntityRepository.query();
+      expect(entity).toMatchObject({
+        id: "entity-1",
+        name: "name UPDATED",
+        createdAt: ORIG_CREATED_AT,
       });
-    });
+      expectUpdatedAtAfterCreatedAt(entity);
+    })
+  );
 
-    it("skips migrations that have already been run successfully", async () => {
-      await transactional(async () => {
-        await migrationResultsRepository.insert({
-          ...newTimestampedEntity("test-migration-1"),
-          result: "COMPLETE",
+  it(
+    "skips migrations that have already been run successfully",
+    transactional(async () => {
+      await migrationResultsRepository.insert({
+        ...newTimestampedEntity("test-migration-1"),
+        result: "COMPLETE",
+      });
+
+      await runMigrations(migrations);
+
+      expect(migrationCount).toBe(1);
+    })
+  );
+
+  it(
+    "skips migrations that have already been run with error",
+    transactional(async () => {
+      await migrationResultsRepository.insert({
+        ...newTimestampedEntity("test-migration-1"),
+        result: "ERROR",
+      });
+
+      await runMigrations(migrations);
+
+      expect(migrationCount).toBe(1);
+    })
+  );
+
+  it(
+    "skips all migrations if mutex unavailable",
+    transactional(async () => {
+      await mutexServiceProvider.get().obtain("migrations");
+
+      await runMigrations(migrations);
+
+      expect(migrationCount).toBe(0);
+    })
+  );
+
+  it(
+    "releases mutex after migrations run",
+    transactional(async () => {
+      await runMigrations(migrations);
+
+      const mutex = await mutexesRepository.getRequired("migrations");
+
+      expect(migrationCount).toBe(2);
+      expect(mutex.locked).toBe(false);
+    })
+  );
+
+  describe("disableTimestampUpdate option", () => {
+    it(
+      "does not update timestamps when disableTimestampUpdate is enabled globally",
+      transactional(async () => {
+        await runMigrations([testMigration1], {
+          disableTimestampUpdate: true,
         });
 
-        await runMigrations(migrations);
+        const results = await getMigrationResults();
+        expect(results).toMatchObject([{ id: "test-migration-1", result: "COMPLETE" }]);
 
-        expect(migrationCount).toBe(1);
-      });
-    });
-
-    it("skips migrations that have already been run with error", async () => {
-      await transactional(async () => {
-        await migrationResultsRepository.insert({
-          ...newTimestampedEntity("test-migration-1"),
-          result: "ERROR",
+        // First migration updated entities
+        const [entity] = await testDummyEntityRepository.query();
+        expect(entity).toMatchObject({
+          id: "entity-1",
+          name: "name UPDATED",
+          createdAt: ORIG_CREATED_AT,
+          updatedAt: ORIG_CREATED_AT,
         });
+      })
+    );
 
-        await runMigrations(migrations);
+    it(
+      "does not update timestamps when disableTimestampUpdate is disabled globally, but enabled for individual migration",
+      transactional(async () => {
+        await runMigrations(
+          [
+            {
+              ...testMigration1,
+              options: {
+                disableTimestampUpdate: true,
+              },
+            },
+          ],
+          {
+            disableTimestampUpdate: false,
+          }
+        );
 
-        expect(migrationCount).toBe(1);
-      });
-    });
+        const results = await getMigrationResults();
+        expect(results).toMatchObject([{ id: "test-migration-1", result: "COMPLETE" }]);
 
-    it("skips all migrations if mutex unavailable", async () => {
-      await transactional(async () => {
-        await mutexServiceProvider.get().obtain("migration-bootstrapper");
+        // First migration updated entities
+        const [entity] = await testDummyEntityRepository.query();
+        expect(entity).toMatchObject({
+          id: "entity-1",
+          name: "name UPDATED",
+          createdAt: ORIG_CREATED_AT,
+          updatedAt: ORIG_CREATED_AT,
+        });
+      })
+    );
 
-        await runMigrations(migrations);
+    it(
+      "updates timestamps when disableTimestampUpdate is enabled globally, but disabled for individual migration",
+      transactional(async () => {
+        await runMigrations(
+          [
+            {
+              ...testMigration1,
+              options: {
+                disableTimestampUpdate: false,
+              },
+            },
+          ],
+          {
+            disableTimestampUpdate: true,
+          }
+        );
 
-        expect(migrationCount).toBe(0);
-      });
-    });
+        const results = await getMigrationResults();
+        expect(results).toMatchObject([{ id: "test-migration-1", result: "COMPLETE" }]);
 
-    it("releases mutex after migrations run", async () => {
-      await transactional(async () => {
-        await runMigrations(migrations);
-
-        const mutex = await mutexesRepository.getRequired("migration-bootstrapper");
-
-        expect(migrationCount).toBe(2);
-        expect(mutex.locked).toBe(false);
-      });
-    });
+        // First migration updated entities
+        const [entity] = await testDummyEntityRepository.query();
+        expect(entity).toMatchObject({
+          id: "entity-1",
+          name: "name UPDATED",
+          createdAt: ORIG_CREATED_AT,
+        });
+        expectUpdatedAtAfterCreatedAt(entity);
+      })
+    );
   });
 });
+
+interface DummyEntity extends TimestampedEntity {
+  name: string;
+}
+
+const expectUpdatedAtAfterCreatedAt = ({ createdAt, updatedAt }: TimestampedEntity) =>
+  expect(updatedAt > createdAt).toBe(true);
+
+const getMigrationResults = () => migrationResultsRepository.query({ sort: [{ fieldPath: "id" }] });
+const nonAutoTimestampRepository = new FirestoreRepository<DummyEntity>(dummyEntityCollectionName);
+const testDummyEntityRepository = new TimestampedRepository<DummyEntity>(dummyEntityCollectionName);
