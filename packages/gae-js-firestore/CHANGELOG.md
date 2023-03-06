@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 12.1.1
+
+### Patch Changes
+
+- 454fc54: Fix an issue where our option to skip timestamp updates with DISABLE_TIMESTAMP_UPDATE would fail by not setting createdAt and updatedAt on newly created entities. This flag now only disables overwriting existing updatedAt values. We always need to set these fields for new entities where they don't already have a valid date set for both fields.
+
 ## 12.1.0
 
 ### Minor Changes
