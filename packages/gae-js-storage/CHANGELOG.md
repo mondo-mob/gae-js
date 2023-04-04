@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 7.4.0
+
+### Minor Changes
+
+- 7a70b3b: Updated getDefaultBucketResumableUploadUrl to support optional FileOptions parameter
+
 ## 7.3.2
 
 ### Patch Changes
