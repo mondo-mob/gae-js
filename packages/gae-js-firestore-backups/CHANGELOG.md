@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore-backups
 
+## 2.0.3
+
+### Patch Changes
+
+- b8da039: Update internal libs to non-breaking latest where applicable
+
 ## 2.0.2
 
 ### Patch Changes

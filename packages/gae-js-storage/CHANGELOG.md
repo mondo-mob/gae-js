@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 7.4.1
+
+### Patch Changes
+
+- b8da039: Update internal libs to non-breaking latest where applicable
+
 ## 7.4.0
 
 ### Minor Changes

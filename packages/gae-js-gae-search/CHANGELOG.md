@@ -1,5 +1,11 @@
 # @mondomob/gae-js-gae-search
 
+## 6.1.3
+
+### Patch Changes
+
+- b8da039: Update internal libs to non-breaking latest where applicable
+
 ## 6.1.2
 
 ### Patch Changes

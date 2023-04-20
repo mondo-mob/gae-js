@@ -1,5 +1,11 @@
 # @mondomob/gae-js-bigquery
 
+## 0.3.2
+
+### Patch Changes
+
+- b8da039: Update internal libs to non-breaking latest where applicable
+
 ## 0.3.1
 
 ### Patch Changes

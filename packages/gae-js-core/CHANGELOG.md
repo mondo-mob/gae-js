@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 6.5.1
+
+### Patch Changes
+
+- b8da039: Update internal libs to non-breaking latest where applicable
+
 ## 6.5.0
 
 ### Minor Changes

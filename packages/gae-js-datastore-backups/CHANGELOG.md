@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore-backups
 
+## 0.2.3
+
+### Patch Changes
+
+- b8da039: Update internal libs to non-breaking latest where applicable
+
 ## 0.2.2
 
 ### Patch Changes

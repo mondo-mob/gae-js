@@ -1,5 +1,11 @@
 # @mondomob/gae-js-migrations
 
+## 12.1.1
+
+### Patch Changes
+
+- b8da039: Update internal libs to non-breaking latest where applicable
+
 ## 12.1.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @mondomob/gae-js-google-auth
 
+## 1.2.1
+
+### Patch Changes
+
+- b8da039: Update internal libs to non-breaking latest where applicable
+
 ## 1.2.0
 
 ### Minor Changes

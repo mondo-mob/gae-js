@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 9.3.2
+
+### Patch Changes
+
+- b8da039: Update internal libs to non-breaking latest where applicable
+
 ## 9.3.1
 
 ### Patch Changes
