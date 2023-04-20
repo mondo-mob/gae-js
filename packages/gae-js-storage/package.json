@@ -28,7 +28,7 @@
     "express": ">= 4.17.1"
   },
   "devDependencies": {
-    "@mondomob/gae-js-core": "6.5.1",
+    "@mondomob/gae-js-core": "6.5.2",
     "@google-cloud/storage": "6.9.5"
   }
 }

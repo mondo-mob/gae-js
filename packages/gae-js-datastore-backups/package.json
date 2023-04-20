@@ -39,7 +39,7 @@
     "@google-cloud/storage": "6.9.5",
     "@google-cloud/tasks": "3.1.2",
     "@mondomob/gae-js-bigquery": "0.3.2",
-    "@mondomob/gae-js-core": "6.5.1",
+    "@mondomob/gae-js-core": "6.5.2",
     "@mondomob/gae-js-datastore": "9.2.3",
     "@mondomob/gae-js-storage": "7.4.1",
     "@mondomob/gae-js-tasks": "9.3.2",

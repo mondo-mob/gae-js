@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 6.5.2
+
+### Patch Changes
+
+- 8355a17: Revert zod to 3.21.0 internally to avoid unknown issue merging schemas
+
 ## 6.5.1
 
 ### Patch Changes
