@@ -23,14 +23,14 @@
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
     "@google-cloud/logging-bunyan": "^4.2.2",
-    "@google-cloud/secret-manager": "^4.1.4",
+    "@google-cloud/secret-manager": "^4.2.2",
     "@types/bunyan": "^1.8.8",
     "bunyan": "^1.8.15",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "express": ">= 4.17.1",
-    "zod": "^3.19.1"
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "zod": "3.20.2"

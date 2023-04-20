@@ -22,17 +22,17 @@
   "license": "MIT",
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.9"
   },
   "peerDependencies": {
-    "@mondomob/gae-js-core": "^6.0.0",
     "@google-cloud/tasks": "^3.0.0",
+    "@mondomob/gae-js-core": "^6.0.0",
     "express": ">= 4.17.1"
   },
   "devDependencies": {
+    "@google-cloud/tasks": "3.1.2",
     "@mondomob/gae-js-core": "6.5.0",
-    "@google-cloud/tasks": "3.0.5",
-    "@types/node-fetch": "2.6.2",
+    "@types/node-fetch": "2.6.3",
     "nock": "13.3.0"
   }
 }

@@ -27,7 +27,7 @@
     "@mondomob/gae-js-storage": "^7.1.0"
   },
   "devDependencies": {
-    "@google-cloud/bigquery": "6.0.3",
+    "@google-cloud/bigquery": "6.2.0",
     "@mondomob/gae-js-core": "6.5.0",
     "@mondomob/gae-js-storage": "7.4.0"
   }

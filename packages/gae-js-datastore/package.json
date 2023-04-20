@@ -23,16 +23,16 @@
   "license": "MIT",
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
-    "dataloader": "^2.1.0",
+    "dataloader": "^2.2.2",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
-    "@mondomob/gae-js-core": "^6.0.0",
-    "@google-cloud/datastore": ">= 6.6.0"
+    "@google-cloud/datastore": ">=7.0.0",
+    "@mondomob/gae-js-core": "^6.0.0"
   },
   "devDependencies": {
+    "@google-cloud/datastore": "^7.5.0",
     "@mondomob/gae-js-core": "6.5.0",
-    "@google-cloud/datastore": "7.0.0",
     "google-datastore-emulator": "6.0.1"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"
