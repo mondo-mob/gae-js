@@ -19,7 +19,7 @@ All relevant configuration is within the _required_ `storage` object.
 - `storage.credentials`: (optional) User/Service Account Credentials - mainly used for local development (see Local Development below)
 - `storage.emulatorHost`: (optional) The emulator host to connect to (only if using emulator)
 - `storage.origin`: (optional) specific origin to use for upload urls. Defaults to core `host` configuration.
-- `storage.skipDefaultBucketValidation`: (optional) skips checkint the default bucket exists. By default, in the background, a check is done with `bucket.exists()` and logs 
+- `storage.skipDefaultBucketValidation`: (optional) skips checking the default bucket exists. By default, in the background, a check is done with `bucket.exists()` and logs 
   an error if it does not exist, so that we get proactive log notification. This action requires read permissions, however, and there are cases where the application has write
   access to a bucket, without read access. If this is the case, simply use this option to skip the validation.
 
