@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 7.5.0
+
+### Minor Changes
+
+- c61a49a: Add option to skip default bucket validation. In some cases you may have a bucket where you only have write access. Validating a bucket with exists() requires read. Option allows this check to be skipped.
+
 ## 7.4.2
 
 ### Patch Changes
