@@ -25,11 +25,18 @@ export class StorageService {
       this.logger.info(`No default bucket configured - falling back to project bucket: ${defaultBucket}`);
     }
     this._defaultBucket = this.storage.bucket(defaultBucket);
-    this._defaultBucket.exists().then((exists) => {
-      if (!exists) {
-        this.logger.error(`Default bucket ${defaultBucket} doesn't exist - please create it or configure valid bucket`);
-      }
-    });
+    this._defaultBucket
+      .exists()
+      .then((exists) => {
+        if (exists) {
+          this.logger.info(`Default bucket ${defaultBucket} validated successfully.`);
+        } else {
+          this.logger.error(
+            `Default bucket ${defaultBucket} doesn't exist - please create it or configure valid bucket.`
+          );
+        }
+      })
+      .catch((err) => this.logger.error(`Error checking if bucket ${defaultBucket} exists.`, err));
   }
 
   get storage(): Storage {
