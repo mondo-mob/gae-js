@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 7.4.2
+
+### Patch Changes
+
+- 3df9b6b: FIX: Catch any errors in dangling promise that validates default bucket exists in background. This is meant to be informative in the logs only. Also log info if bucket was validated successfully.
+
 ## 7.4.1
 
 ### Patch Changes
