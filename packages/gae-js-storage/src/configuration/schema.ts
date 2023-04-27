@@ -18,6 +18,8 @@ export const gaeJsStorageConfigurationSchema = gaeJsCoreConfigurationSchema.exte
       origin: z.string().optional(),
       // Buckets are global but the sdk requires a default project - which may not be set when running locally
       projectId: z.string().optional(),
+      // Skip checking if the default bucket exists. In some cases you may only have write access to a bucket and checking it exists requires read.
+      skipDefaultBucketValidation: z.boolean().optional(),
     })
     .optional(),
 });

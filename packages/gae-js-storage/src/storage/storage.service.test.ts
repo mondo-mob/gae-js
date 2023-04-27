@@ -1,3 +1,5 @@
+import { configurationProvider } from "@mondomob/gae-js-core";
+import { GaeJsStorageConfiguration } from "../configuration";
 import { StorageService } from "./storage.service";
 import { storageProvider } from "./storage-provider";
 import { initTestConfig } from "../__test/test-utils";
@@ -21,7 +23,7 @@ describe("StorageService", () => {
     expect(service.defaultBucket.name).toEqual("test-bucket");
   });
 
-  describe('getDefaultBucketResumableUploadUrl', () => {
+  describe("getDefaultBucketResumableUploadUrl", () => {
     it("creates resumable upload url", async () => {
       const uploadUrl = await service.getDefaultBucketResumableUploadUrl("12345");
       expect(uploadUrl.includes("upload/storage/v1/b/test-bucket/o")).toBeTruthy();
@@ -36,7 +38,9 @@ describe("StorageService", () => {
 
     it("creates resumable upload url with encryption key set", async () => {
       const fileSpy = jest.spyOn(service.defaultBucket, "file");
-      const uploadUrl = await service.getDefaultBucketResumableUploadUrl("12345", undefined, {kmsKeyName: "test-key"});
+      const uploadUrl = await service.getDefaultBucketResumableUploadUrl("12345", undefined, {
+        kmsKeyName: "test-key",
+      });
       expect(uploadUrl.includes("upload/storage/v1/b/test-bucket/o")).toBeTruthy();
       expect(fileSpy).toBeCalledTimes(1);
       expect(fileSpy).toBeCalledWith("12345", { kmsKeyName: "test-key" });

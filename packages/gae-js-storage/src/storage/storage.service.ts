@@ -14,9 +14,9 @@ export class StorageService {
   private readonly logger = createLogger("storageService");
   private readonly configuration: GaeJsStorageConfiguration;
 
-  constructor(options?: StorageServiceOptions) {
-    this._storage = options?.storage || storageProvider.get();
-    this.configuration = options?.configuration || configurationProvider.get<GaeJsStorageConfiguration>();
+  constructor({ storage, configuration }: StorageServiceOptions = {}) {
+    this._storage = storage || storageProvider.get();
+    this.configuration = configuration || configurationProvider.get<GaeJsStorageConfiguration>();
     let defaultBucket = this.configuration.storage?.defaultBucket;
     if (defaultBucket) {
       this.logger.info(`Using default Google Cloud Storage bucket: ${defaultBucket}`);
@@ -25,18 +25,22 @@ export class StorageService {
       this.logger.info(`No default bucket configured - falling back to project bucket: ${defaultBucket}`);
     }
     this._defaultBucket = this.storage.bucket(defaultBucket);
-    this._defaultBucket
-      .exists()
-      .then((exists) => {
-        if (exists) {
-          this.logger.info(`Default bucket ${defaultBucket} validated successfully.`);
-        } else {
-          this.logger.error(
-            `Default bucket ${defaultBucket} doesn't exist - please create it or configure valid bucket.`
-          );
-        }
-      })
-      .catch((err) => this.logger.error(`Error checking if bucket ${defaultBucket} exists.`, err));
+    if (configuration?.storage?.skipDefaultBucketValidation) {
+      this.logger.info(`Skipping default bucket validation for ${defaultBucket}.`);
+    } else {
+      this._defaultBucket
+        .exists()
+        .then((exists) => {
+          if (exists) {
+            this.logger.info(`Default bucket ${defaultBucket} validated successfully.`);
+          } else {
+            this.logger.error(
+              `Default bucket ${defaultBucket} doesn't exist - please create it or configure valid bucket.`
+            );
+          }
+        })
+        .catch((err) => this.logger.error(`Error checking if bucket ${defaultBucket} exists.`, err));
+    }
   }
 
   get storage(): Storage {
