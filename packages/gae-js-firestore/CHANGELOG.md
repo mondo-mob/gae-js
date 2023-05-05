@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 12.2.0
+
+### Minor Changes
+
+- 2a11a90: Firestore repository queryForIds() returns an array of ids (strings) for the given query using a project query for efficiency. Readme updated with example.
+
 ## 12.1.2
 
 ### Patch Changes
