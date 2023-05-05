@@ -114,6 +114,15 @@ const results = await repository.query({
   startAfter: ["user2"],
 });
 
+// Query only the ids using a projection query
+const results = await repository.queryForIds({
+  sort: { property: "owner" },
+  startAfter: ["user2"],
+  // All query options supported, except for the "select" prop
+});
+// Results would just be an array of the id strings
+
+
 ```
 
 ### TimestampedRepository

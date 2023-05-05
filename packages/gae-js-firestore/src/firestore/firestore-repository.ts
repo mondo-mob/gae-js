@@ -16,6 +16,7 @@ import {
 } from "@mondomob/gae-js-core";
 import assert from "assert";
 import { castArray, first } from "lodash";
+import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
 import { QueryOptions, QueryResponse } from "./firestore-query";
@@ -25,8 +26,11 @@ import { DateTransformers, transformDeep, ValueTransformer } from "./value-trans
 
 const SEARCH_NOT_ENABLED_MSG = "Search is not configured for this repository";
 
+// Keep this generic so we don't hardcode "string" everywhere, in case this ever changes
+type IdType = string;
+
 export interface BaseEntity {
-  id: string;
+  id: IdType;
 }
 
 export interface ValueTransformers<T> {
@@ -120,6 +124,14 @@ export class FirestoreRepository<T extends BaseEntity> {
       const entity = this.createEntity(snapshot.ref.id, snapshot.data());
       return this.validateLoad(entity);
     });
+  }
+
+  async queryForIds(options: Partial<Omit<QueryOptions<T>, "select">> = {}): Promise<QueryResponse<IdType>> {
+    const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, {
+      ...options,
+      select: [], // the __name__ prop always comes back
+    });
+    return querySnapshot.docs.map(({ ref }) => ref.id);
   }
 
   /**

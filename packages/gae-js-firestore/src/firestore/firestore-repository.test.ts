@@ -10,17 +10,17 @@ import {
   Sort,
   zodValidator,
 } from "@mondomob/gae-js-core";
+import { toUpper } from "lodash";
 import { z } from "zod";
+import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { isFirestoreError } from "./firestore-errors";
 import { FirestoreLoader } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
 import { FirestoreRepository } from "./firestore-repository";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
-import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import { RepositoryNotFoundError } from "./repository-error";
 import { runInTransaction } from "./transactional";
-import { toUpper } from "lodash";
 import { DateTransformers } from "./value-transformers";
 
 const repositoryItemSchema = z.object({
@@ -829,6 +829,32 @@ describe("FirestoreRepository", () => {
         expect(results[0].id).toEqual("345");
         expect(results[1].id).toEqual("456");
       });
+    });
+  });
+
+  describe("queryForIds", () => {
+    it("returns all matching id strings default sorted by id string value when no filters applied", async () => {
+      await repository.save([createItem("1"), createItem("2"), createItem("3"), createItem("11")]);
+
+      const ids = await repository.queryForIds();
+
+      expect(ids).toEqual(["1", "11", "2", "3"]);
+    });
+
+    it("returns matching id strings matching filter and sorted by custom", async () => {
+      await repository.save([
+        createItem("1", { name: "ccc" }),
+        createItem("2", { name: "bbb" }),
+        createItem("3", { name: "excluded" }),
+        createItem("11", { name: "aaa" }),
+      ]);
+
+      const ids = await repository.queryForIds({
+        filters: [{ fieldPath: "name", opStr: "in", value: ["aaa", "bbb", "ccc"] }],
+        sort: [{ fieldPath: "name" }],
+      });
+
+      expect(ids).toEqual(["11", "2", "1"]);
     });
   });
 
