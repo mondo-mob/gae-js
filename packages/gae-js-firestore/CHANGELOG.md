@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 12.3.0
+
+### Minor Changes
+
+- 65cfed8: FirestoreRepository count() function uses aggregation query to get a count efficiently. See https://firebase.google.com/docs/firestore/query-data/aggregation-queries
+
 ## 12.2.0
 
 ### Minor Changes
