@@ -498,6 +498,38 @@ describe("FirestoreLoader", () => {
     });
   });
 
+  describe("execCount", () => {
+    describe("empty collection", () => {
+      it("returns 0 when collection is empty", async () => {
+        expect(await loader.execCount("users", {})).toBe(0);
+      });
+    });
+
+    describe("with data", () => {
+      beforeEach(async () => {
+        await loader.create([
+          createUserPayload("123", { message: "msg1" }),
+          createUserPayload("234", { message: "msg2" }),
+          createUserPayload("345", { message: "msg1" }),
+          createUserPayload("456", { message: "msg2" }),
+          createUserPayload("567", { message: "msg1" }),
+        ]);
+      });
+
+      it("counts all items in a collection by default", async () => {
+        expect(await loader.execCount("users", {})).toBe(5);
+      });
+
+      it("counts all items matching filter", async () => {
+        expect(
+          await loader.execCount("users", {
+            filters: [{ fieldPath: "message", opStr: "==", value: "msg1" }],
+          })
+        ).toBe(3);
+      });
+    });
+  });
+
   describe("inTransaction", () => {
     const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 

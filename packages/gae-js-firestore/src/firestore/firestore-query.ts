@@ -13,16 +13,19 @@ export interface FieldSort {
   direction?: OrderByDirection;
 }
 
-export interface QueryOptions<T> {
-  filters: WhereFilter[];
-  select: OneOrMany<(keyof T & string) | typeof FIRESTORE_ID_FIELD>;
-  sort: OneOrMany<FieldSort>;
-  startAfter: any[];
-  startAt: any[];
-  endBefore: any[];
-  endAt: any[];
-  offset: number;
-  limit: number;
+export interface FilterOptions {
+  filters?: WhereFilter[];
+}
+
+export interface QueryOptions<T> extends FilterOptions {
+  select?: OneOrMany<(keyof T & string) | typeof FIRESTORE_ID_FIELD>;
+  sort?: OneOrMany<FieldSort>;
+  startAfter?: any[];
+  startAt?: any[];
+  endBefore?: any[];
+  endAt?: any[];
+  offset?: number;
+  limit?: number;
 }
 
 export type QueryResponse<T> = ReadonlyArray<T>;

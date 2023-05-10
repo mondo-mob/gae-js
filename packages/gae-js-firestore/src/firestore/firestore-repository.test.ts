@@ -858,6 +858,38 @@ describe("FirestoreRepository", () => {
     });
   });
 
+  describe("count", () => {
+    describe("empty collection", () => {
+      it("returns 0 when collection is empty", async () => {
+        expect(await repository.count()).toBe(0);
+      });
+    });
+
+    describe("with data", () => {
+      beforeEach(async () => {
+        await repository.save([
+          createItem("1", { name: "aaa" }),
+          createItem("2", { name: "aaa" }),
+          createItem("3", { name: "aaa" }),
+          createItem("4", { name: "zzz1" }),
+          createItem("5", { name: "zzz2" }),
+        ]);
+      });
+
+      it("counts all items in a collection by default", async () => {
+        expect(await repository.count()).toBe(5);
+      });
+
+      it("counts all items matching filter", async () => {
+        expect(
+          await repository.count({
+            filters: [{ fieldPath: "name", opStr: "==", value: "aaa" }],
+          })
+        ).toBe(3);
+      });
+    });
+  });
+
   describe("with search enabled", () => {
     const searchService: SearchService = {
       index: jest.fn(),

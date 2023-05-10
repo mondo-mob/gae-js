@@ -10,7 +10,7 @@ import {
   Transaction,
   WriteBatch,
 } from "@google-cloud/firestore";
-import { QueryOptions } from "./firestore-query";
+import { FilterOptions, QueryOptions } from "./firestore-query";
 
 export interface FirestorePayload {
   ref: DocumentReference;
@@ -93,15 +93,16 @@ export class FirestoreLoader {
     );
   }
 
-  public async executeQuery<T>(collectionPath: string, options: Partial<QueryOptions<T>>): Promise<QuerySnapshot> {
-    let query = this.firestore.collection(collectionPath) as Query;
+  async execCount(collectionPath: string, options: FilterOptions): Promise<number> {
+    const query = this.buildFilterQuery(collectionPath, options).count();
+    const querySnapshot = this.transaction ? await this.transaction.get(query) : await query.get();
+    return querySnapshot.data().count;
+  }
 
+  public async executeQuery<T>(collectionPath: string, options: QueryOptions<T>): Promise<QuerySnapshot> {
+    let query = this.buildFilterQuery(collectionPath, options);
     if (options.select) {
       query = query.select(...options.select);
-    }
-
-    if (options.filters) {
-      options.filters.forEach((filter) => (query = query.where(filter.fieldPath, filter.opStr, filter.value)));
     }
 
     if (options.sort) {
@@ -149,6 +150,14 @@ export class FirestoreLoader {
 
   public isTransaction(): boolean {
     return !!this.transaction;
+  }
+
+  private buildFilterQuery(collectionPath: string, options: FilterOptions): Query {
+    let query = this.firestore.collection(collectionPath) as Query;
+    if (options.filters) {
+      options.filters.forEach((filter) => (query = query.where(filter.fieldPath, filter.opStr, filter.value)));
+    }
+    return query;
   }
 
   private async applyOperation<T>(

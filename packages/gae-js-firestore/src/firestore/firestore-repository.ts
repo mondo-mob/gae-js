@@ -16,10 +16,9 @@ import {
 } from "@mondomob/gae-js-core";
 import assert from "assert";
 import { castArray, first } from "lodash";
-import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
-import { QueryOptions, QueryResponse } from "./firestore-query";
+import { FilterOptions, QueryOptions, QueryResponse } from "./firestore-query";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { RepositoryError, RepositoryNotFoundError } from "./repository-error";
 import { DateTransformers, transformDeep, ValueTransformer } from "./value-transformers";
@@ -117,7 +116,11 @@ export class FirestoreRepository<T extends BaseEntity> {
     }
   }
 
-  async query(options: Partial<QueryOptions<T>> = {}): Promise<QueryResponse<T>> {
+  async count(options: Partial<FilterOptions> = {}): Promise<number> {
+    return this.getLoader().execCount(this.collectionPath, options);
+  }
+
+  async query(options: QueryOptions<T> = {}): Promise<QueryResponse<T>> {
     const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, options);
 
     return querySnapshot.docs.map((snapshot) => {
@@ -126,7 +129,7 @@ export class FirestoreRepository<T extends BaseEntity> {
     });
   }
 
-  async queryForIds(options: Partial<Omit<QueryOptions<T>, "select">> = {}): Promise<QueryResponse<IdType>> {
+  async queryForIds(options: Omit<QueryOptions<T>, "select"> = {}): Promise<QueryResponse<IdType>> {
     const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, {
       ...options,
       select: [], // the __name__ prop always comes back

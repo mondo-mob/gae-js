@@ -6,7 +6,9 @@
     "clean": "npm run clean --workspaces",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest",
-    "test:ci": "npm run test:ci --workspaces"
+    "test:ci": "npm run test:ci --workspaces",
+    "prepublish-libs": "(npm run clean && npm run build) || (echo 'ERROR running build. Check logs above. Error not necessarily at bottom.' && exit -1)",
+    "publish-libs": "npx changeset publish && git push --follow-tags"
   },
   "workspaces": [
     "./packages/*"

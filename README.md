@@ -196,10 +196,7 @@ Would be nice if this was done from CI but for now we do this locally.
 - Build and publish
 
 ```
-npm run clean
-npm run build
-npx changeset publish
-git push --follow-tags
+npm run publish-libs
 ```
 
 ### Adding new packages

@@ -114,6 +114,20 @@ const results = await repository.query({
   startAfter: ["user2"],
 });
 
+// Count items in a collection using aggregation query https://firebase.google.com/docs/firestore/query-data/aggregation-queries
+const count = await repository.count();
+
+// Count items matching filter (only "filters" property may be supplied)
+const countWithFilter = await repository.count({
+ filters: [
+     {
+       fieldPath: "owner",
+       opStr: "==",
+       value: "user1",
+     },
+   ],
+});
+
 // Query only the ids using a projection query
 const results = await repository.queryForIds({
   sort: { property: "owner" },
