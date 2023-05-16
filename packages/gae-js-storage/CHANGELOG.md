@@ -1,5 +1,12 @@
 # @mondomob/gae-js-storage
 
+## 8.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @mondomob/gae-js-core@7.0.0
+
 ## 7.5.0
 
 ### Minor Changes

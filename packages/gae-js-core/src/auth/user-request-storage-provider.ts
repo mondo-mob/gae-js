@@ -1,8 +1,8 @@
 import { RequestStorageStore } from "../request-storage";
-import { BaseUser } from "./user";
+import { AuthUser } from "./auth-user";
 import { Provider } from "../util";
 
-export class UserRequestStorageProvider<U extends BaseUser, T extends RequestStorageStore<U>> extends Provider<T> {}
+export class UserRequestStorageProvider<U extends AuthUser, T extends RequestStorageStore<U>> extends Provider<T> {}
 
 export const userRequestStorageProvider = new UserRequestStorageProvider(
   undefined,

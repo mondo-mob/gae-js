@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 7.0.0
+
+### Major Changes
+
+- Breaking: Firebase authenticated user renamed and updated to only contain relevant/minimal fields. Update references to BaseUser => AuthUser. If you need display name simply extend AuthUser in your app. Null values are no longer supported for AuthUser properties. If you need to support null bvalues in your app then have a different type for your user Entity from the AuthUser.
+
 ## 6.5.2
 
 ### Patch Changes

@@ -1,16 +1,18 @@
 import { Handler } from "express";
 import { App } from "firebase-admin/app";
 import { DecodedIdToken, getAuth } from "firebase-admin/auth";
-import { BaseUser, createLogger, UnauthorisedError, userRequestStorageProvider } from "@mondomob/gae-js-core";
+import { AuthUser, createLogger, UnauthorisedError, userRequestStorageProvider } from "@mondomob/gae-js-core";
 
-const convertIdTokenToUser = async (idToken: DecodedIdToken): Promise<BaseUser> => ({
+const convertIdTokenToUser = async (
+  idToken: DecodedIdToken
+): Promise<AuthUser & Required<Pick<AuthUser, "roles">>> => ({
   id: idToken.uid,
   email: idToken.email,
-  roles: idToken.roles || [],
+  roles: idToken.roles ?? [],
 });
 
 export interface VerifyOptions {
-  userConverter?: (idToken: DecodedIdToken) => Promise<BaseUser>;
+  userConverter?: (idToken: DecodedIdToken) => Promise<AuthUser>;
 }
 
 export const verifyFirebaseUser = (firebaseAdmin: App, options?: VerifyOptions): Handler => {

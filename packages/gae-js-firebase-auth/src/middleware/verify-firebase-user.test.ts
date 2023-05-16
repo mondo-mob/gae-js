@@ -3,7 +3,7 @@ import { initializeApp } from "firebase-admin/app";
 import { verifyFirebaseUser, VerifyOptions } from "./verify-firebase-user";
 import request from "supertest";
 import {
-  BaseUser,
+  AuthUser,
   getRequestStore,
   requestAsyncStorage,
   RequestStorageStore,
@@ -32,7 +32,7 @@ const firebaseAdmin = initializeApp({ projectId: "auth-tests" });
 
 const initApp = (mwOptions?: VerifyOptions) => {
   process.env.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099";
-  userRequestStorageProvider.set(new RequestStorageStore<BaseUser>("_USER"));
+  userRequestStorageProvider.set(new RequestStorageStore<AuthUser>("_USER"));
   const app = express();
   app.use(requestAsyncStorage);
   app.use(verifyFirebaseUser(firebaseAdmin, mwOptions));
@@ -43,7 +43,7 @@ const initApp = (mwOptions?: VerifyOptions) => {
 };
 
 describe("verifyFirebaseUser", () => {
-  let userRequestStorage: RequestStorageStore<BaseUser>;
+  let userRequestStorage: RequestStorageStore<AuthUser>;
   beforeEach(() => {
     error = undefined;
     userRequestStorage = userRequestStorageProvider.get();

@@ -1,5 +1,12 @@
 # @mondomob/gae-js-google-auth
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @mondomob/gae-js-core@7.0.0
+
 ## 1.2.1
 
 ### Patch Changes

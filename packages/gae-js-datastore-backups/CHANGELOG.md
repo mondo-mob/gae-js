@@ -1,5 +1,16 @@
 # @mondomob/gae-js-datastore-backups
 
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @mondomob/gae-js-core@7.0.0
+  - @mondomob/gae-js-bigquery@1.0.0
+  - @mondomob/gae-js-datastore@10.0.0
+  - @mondomob/gae-js-storage@8.0.0
+  - @mondomob/gae-js-tasks@10.0.0
+
 ## 0.2.3
 
 ### Patch Changes

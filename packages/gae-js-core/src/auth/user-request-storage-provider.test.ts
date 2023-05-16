@@ -1,5 +1,5 @@
 import { UserRequestStorageProvider } from "./user-request-storage-provider";
-import { BaseUser } from "./user";
+import { AuthUser } from "./auth-user";
 import { RequestStorageStore, runWithRequestStorage } from "../request-storage";
 
 describe("UserRequestStorageProvider", () => {
@@ -18,7 +18,7 @@ describe("UserRequestStorageProvider", () => {
   });
 
   it("supports custom user storage type", async () => {
-    interface MyUser extends BaseUser {
+    interface MyUser extends AuthUser {
       preferredName: string;
     }
     const user1: MyUser = { id: "user1", preferredName: "person1" };

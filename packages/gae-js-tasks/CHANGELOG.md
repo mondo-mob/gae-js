@@ -1,5 +1,12 @@
 # @mondomob/gae-js-tasks
 
+## 10.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @mondomob/gae-js-core@7.0.0
+
 ## 9.3.2
 
 ### Patch Changes

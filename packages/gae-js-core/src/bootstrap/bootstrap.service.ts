@@ -1,4 +1,4 @@
-import { BaseUser, userRequestStorageProvider } from "../auth";
+import { AuthUser, userRequestStorageProvider } from "../auth";
 import { createLogger } from "../logging";
 import { runWithRequestStorage } from "../request-storage";
 import { Bootstrapper } from "./bootstrapper";
@@ -25,5 +25,5 @@ interface BoostrapOptions {
   /**
    * Run bootstrappers as the specified user so all downstream code will operate under that user's context.
    */
-  user?: BaseUser;
+  user?: AuthUser;
 }

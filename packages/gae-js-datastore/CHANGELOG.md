@@ -1,5 +1,12 @@
 # @mondomob/gae-js-datastore
 
+## 10.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @mondomob/gae-js-core@7.0.0
+
 ## 9.2.3
 
 ### Patch Changes

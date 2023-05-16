@@ -1,5 +1,12 @@
 # @mondomob/gae-js-gae-search
 
+## 7.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @mondomob/gae-js-core@7.0.0
+
 ## 6.1.3
 
 ### Patch Changes

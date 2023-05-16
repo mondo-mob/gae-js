@@ -1,5 +1,13 @@
 # @mondomob/gae-js-bigquery
 
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @mondomob/gae-js-core@7.0.0
+  - @mondomob/gae-js-storage@8.0.0
+
 ## 0.3.2
 
 ### Patch Changes

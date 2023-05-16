@@ -1,4 +1,4 @@
-import { BaseUser, userRequestStorageProvider } from "../auth";
+import { AuthUser, userRequestStorageProvider } from "../auth";
 import { RequestStorageStore, runWithRequestStorage } from "../request-storage";
 import { bootstrap } from "./bootstrap.service";
 
@@ -23,7 +23,7 @@ describe("boostrap-service", () => {
     });
 
     it("executes bootstrappers with supplied user", async () => {
-      const testUser: BaseUser = { id: "test-1" };
+      const testUser: AuthUser = { id: "test-1" };
       const testFunction = jest.fn();
       userRequestStorageProvider.set(new RequestStorageStore("__TEST_USER"));
 
@@ -35,8 +35,8 @@ describe("boostrap-service", () => {
     });
 
     it("executes bootstrappers with supplied user and does not affect existing request context user after running", async () => {
-      const existingContextUser: BaseUser = { id: "existing-context-user" };
-      const testUser: BaseUser = { id: "test-1" };
+      const existingContextUser: AuthUser = { id: "existing-context-user" };
+      const testUser: AuthUser = { id: "test-1" };
       const testFunction = jest.fn();
       userRequestStorageProvider.set(new RequestStorageStore("__TEST_USER"));
 

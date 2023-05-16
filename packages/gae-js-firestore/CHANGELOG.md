@@ -1,5 +1,12 @@
 # @mondomob/gae-js-firestore
 
+## 13.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @mondomob/gae-js-core@7.0.0
+
 ## 12.3.0
 
 ### Minor Changes
