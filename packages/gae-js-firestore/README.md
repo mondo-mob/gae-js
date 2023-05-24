@@ -57,6 +57,13 @@ await repository.save({ id: "id123", name: "test item" });
 // Get an item
 const item = await repository.get("id123");
 
+// Delete items with varags of ids
+await repository.delete("id123", "id234");
+
+// Delete all items in collecitons and recursively delete decendants. Uses https://cloud.google.com/nodejs/docs/reference/firestore/latest/firestore/firestore#_google_cloud_firestore_Firestore_recursiveDelete_member_1_
+await repository.delete("id123", "id234");
+// Delete all will FAIL when inside a transaction because it does not work within transactions. The underlying node lib streams batches of queries and deletions. Transactions requrie all reads before writes and have volume limitations.
+
 // Query items
 const list = await repository.query();
 

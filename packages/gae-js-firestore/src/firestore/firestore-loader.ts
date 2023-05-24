@@ -11,6 +11,7 @@ import {
   WriteBatch,
 } from "@google-cloud/firestore";
 import { FilterOptions, QueryOptions } from "./firestore-query";
+import { FirestoreRepositoryError } from "./repository-error";
 
 export interface FirestorePayload {
   ref: DocumentReference;
@@ -56,7 +57,7 @@ export class FirestoreLoader {
     });
   }
 
-  public async get(ids: DocumentReference[]): Promise<Array<DocumentData | null>> {
+  async get(ids: DocumentReference[]): Promise<Array<DocumentData | null>> {
     const results = await this.loader.loadMany(ids);
     const firstError = results.find((r): r is Error => r instanceof Error);
     if (firstError) {
@@ -66,7 +67,7 @@ export class FirestoreLoader {
     return results?.map(cloneDocument);
   }
 
-  public async create(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
+  async create(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
     await this.applyOperation(
       entities,
       (transaction, entity) => transaction.create(entity.ref, entity.data),
@@ -75,7 +76,7 @@ export class FirestoreLoader {
     );
   }
 
-  public async set(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
+  async set(entities: ReadonlyArray<FirestorePayload>): Promise<void> {
     await this.applyOperation(
       entities,
       (transaction, entity) => transaction.set(entity.ref, entity.data),
@@ -84,7 +85,7 @@ export class FirestoreLoader {
     );
   }
 
-  public async delete(refs: ReadonlyArray<DocumentReference>): Promise<void> {
+  async delete(refs: ReadonlyArray<DocumentReference>): Promise<void> {
     await this.applyOperation(
       refs,
       (transaction, ref) => transaction.delete(ref),
@@ -93,13 +94,24 @@ export class FirestoreLoader {
     );
   }
 
+  async deleteAll(collectionPath: string, { ignoreTransaction = false }: DeleteAllOptions = {}): Promise<void> {
+    if (this.transaction && !ignoreTransaction) {
+      throw new FirestoreRepositoryError(
+        "deleteAll.transaction.repository.error",
+        "deleteAll is not supported from within a transaction"
+      );
+    }
+    await this.firestore.recursiveDelete(this.firestore.collection(collectionPath));
+    this.loader.clearAll();
+  }
+
   async execCount(collectionPath: string, options: FilterOptions): Promise<number> {
     const query = this.buildFilterQuery(collectionPath, options).count();
     const querySnapshot = this.transaction ? await this.transaction.get(query) : await query.get();
     return querySnapshot.data().count;
   }
 
-  public async executeQuery<T>(collectionPath: string, options: QueryOptions<T>): Promise<QuerySnapshot> {
+  async executeQuery<T>(collectionPath: string, options: QueryOptions<T>): Promise<QuerySnapshot> {
     let query = this.buildFilterQuery(collectionPath, options);
     if (options.select) {
       query = query.select(...options.select);
@@ -130,7 +142,7 @@ export class FirestoreLoader {
     return querySnapshot;
   }
 
-  public async inTransaction<T>(updateFunction: (loader: FirestoreLoader) => Promise<T>): Promise<T> {
+  async inTransaction<T>(updateFunction: (loader: FirestoreLoader) => Promise<T>): Promise<T> {
     if (this.isTransaction()) {
       return updateFunction(this);
     } else {
@@ -193,4 +205,8 @@ export class FirestoreLoader {
       return new Error(`No snapshot for ref: ${ref.path}`);
     });
   };
+}
+
+export interface DeleteAllOptions {
+  ignoreTransaction?: boolean;
 }

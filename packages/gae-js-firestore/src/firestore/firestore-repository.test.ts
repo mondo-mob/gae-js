@@ -552,29 +552,57 @@ describe("FirestoreRepository", () => {
   });
 
   describe("deleteAll", () => {
-    it("deletes all documents within a collection outside of transaction", async () => {
+    it("deletes all documents within a collection outside of transaction and clears loader state", async () => {
       await firestore.doc(`${collection}/123`).create({ name: "test123" });
       await firestore.doc(`${collection}/234`).create({ name: "test234" });
 
-      expect((await firestore.collection(collection).get()).size).toBe(2);
+      await runWithRequestStorage(async () => {
+        firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
+        expect((await firestore.collection(collection).get()).size).toBe(2);
+        expect(await repository.get("123")).not.toBeNull();
 
-      await repository.deleteAll();
+        await repository.deleteAll();
+
+        expect(await repository.get("123")).toBeNull();
+      });
 
       expect((await firestore.collection(collection).get()).size).toBe(0);
     });
 
-    it("deletes all documents within a collection in transaction", async () => {
+    it("throws error when within a transaction", async () => {
       await firestore.doc(`${collection}/123`).create({ name: "test123" });
       await firestore.doc(`${collection}/234`).create({ name: "test234" });
 
       expect((await firestore.collection(collection).get()).size).toBe(2);
 
-      await runWithRequestStorage(async () => {
-        firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
-        return runInTransaction(() => repository.deleteAll());
-      });
+      await expect(
+        runWithRequestStorage(async () => {
+          firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
+          return runInTransaction(() => repository.deleteAll());
+        })
+      ).rejects.toThrow("deleteAll is not supported from within a transaction");
+    });
 
+    it("ignores transaction and executes deleteAll outside transaction context when ignoreTransaction option is true", async () => {
+      await firestore.doc(`${collection}/123`).create({ name: "test123" });
+      await firestore.doc(`${collection}/234`).create({ name: "test234" });
+
+      expect((await firestore.collection(collection).get()).size).toBe(2);
+
+      await expect(
+        runWithRequestStorage(async () => {
+          firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
+          return runInTransaction(async () => {
+            await repository.deleteAll({ ignoreTransaction: true });
+            await repository.save({ id: "999", name: "this should be rolled back" });
+            throw new Error("Error to force rollback");
+          });
+        })
+      ).rejects.toThrow("Error to force rollback");
+
+      // Delete not rolled back, but the save of new entity waas
       expect((await firestore.collection(collection).get()).size).toBe(0);
+      expect(await repository.get("999")).toBeNull();
     });
   });
 

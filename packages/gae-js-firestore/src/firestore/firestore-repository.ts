@@ -16,7 +16,7 @@ import {
 } from "@mondomob/gae-js-core";
 import assert from "assert";
 import { castArray, first } from "lodash";
-import { FirestoreLoader, FirestorePayload } from "./firestore-loader";
+import { DeleteAllOptions, FirestoreLoader, FirestorePayload } from "./firestore-loader";
 import { firestoreProvider } from "./firestore-provider";
 import { FilterOptions, QueryOptions, QueryResponse } from "./firestore-query";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
@@ -192,9 +192,8 @@ export class FirestoreRepository<T extends BaseEntity> {
     }
   }
 
-  async deleteAll(): Promise<void> {
-    const collectionRef = this.getFirestore().collection(this.collectionPath);
-    await this.getFirestore().recursiveDelete(collectionRef);
+  async deleteAll(options?: DeleteAllOptions): Promise<void> {
+    await this.getLoader().deleteAll(this.collectionPath, options);
     if (this.searchOptions) {
       await this.getSearchService().deleteAll(this.searchOptions.indexName);
     }

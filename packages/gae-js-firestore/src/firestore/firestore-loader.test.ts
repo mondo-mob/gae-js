@@ -1,8 +1,11 @@
+import { runWithRequestStorage } from "@mondomob/gae-js-core";
 import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { FirestoreLoader } from "./firestore-loader";
 import { Firestore } from "@google-cloud/firestore";
 import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import assert from "assert";
+import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
+import { runInTransaction } from "./transactional";
 
 describe("FirestoreLoader", () => {
   let firestore: Firestore;
@@ -215,6 +218,47 @@ describe("FirestoreLoader", () => {
 
       const fetchedLoader = await loader.get([firestore.doc("/users/123")]);
       expect(fetchedLoader).toEqual([null]);
+    });
+  });
+
+  describe("deleteAll", () => {
+    it("deletes all documents within a collection outside of transaction and clears loader state", async () => {
+      await loader.create([createUserPayload("123")]);
+      await loader.create([createUserPayload("234")]);
+
+      await loader.deleteAll("users");
+
+      expect(await loader.get([firestore.doc("/users/123"), firestore.doc("/users/234")])).toEqual([null, null]);
+    });
+
+    it("throws error when within a transaction", async () => {
+      await loader.create([createUserPayload("123")]);
+      await loader.create([createUserPayload("234")]);
+
+      await expect(
+        loader.inTransaction(async (txnLoader) => {
+          await txnLoader.deleteAll("users");
+        })
+      ).rejects.toThrow("deleteAll is not supported from within a transaction");
+    });
+
+    it("ignores transaction and executes deleteAll outside transaction context when ignoreTransaction option is true", async () => {
+      await loader.create([createUserPayload("123")]);
+      await loader.create([createUserPayload("234")]);
+
+      await expect(
+        loader.inTransaction(async (txnLoader) => {
+          await txnLoader.deleteAll("users", { ignoreTransaction: true });
+          await txnLoader.create([createUserPayload("999")]);
+          throw new Error("Error to force rollback");
+        })
+      ).rejects.toThrow("Error to force rollback");
+
+      (loader as any).loader.clearAll();
+      // Delete not rolled back
+      expect(await loader.get([firestore.doc("/users/123"), firestore.doc("/users/234")])).toEqual([null, null]);
+      // Create Rolled back
+      expect(await loader.get([firestore.doc("/users/999")])).toEqual([null]);
     });
   });
 
