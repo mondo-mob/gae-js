@@ -101,8 +101,8 @@ export class FirestoreLoader {
         "deleteAll is not supported from within a transaction"
       );
     }
-    await this.firestore.recursiveDelete(this.firestore.collection(collectionPath));
     this.loader.clearAll();
+    await this.firestore.recursiveDelete(this.firestore.collection(collectionPath));
   }
 
   async execCount(collectionPath: string, options: FilterOptions): Promise<number> {
