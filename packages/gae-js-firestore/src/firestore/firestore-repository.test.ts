@@ -600,7 +600,7 @@ describe("FirestoreRepository", () => {
         })
       ).rejects.toThrow("Error to force rollback");
 
-      // Delete not rolled back, but the save of new entity waas
+      // Delete not rolled back, but the save of new entity was
       expect((await firestore.collection(collection).get()).size).toBe(0);
       expect(await repository.get("999")).toBeNull();
     });
