@@ -90,9 +90,10 @@ export class DatastoreExportService {
   }
 
   async queueUpdateExportStatus(exportCheck: DatastoreExportCheckRequest): Promise<void> {
-    await backupTaskServiceProvider
-      .get()
-      .enqueue<DatastoreExportCheckRequest>(TASK_DATASTORE_EXPORT_CHECK, exportCheck, UPDATE_STATUS_DELAY_SECONDS);
+    await backupTaskServiceProvider.get().enqueue<DatastoreExportCheckRequest>(TASK_DATASTORE_EXPORT_CHECK, {
+      data: exportCheck,
+      inSeconds: UPDATE_STATUS_DELAY_SECONDS,
+    });
   }
 
   private formatOutputBucket(exportName: string): string {

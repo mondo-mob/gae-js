@@ -1,12 +1,9 @@
 import { z } from "zod";
 import { configurationProvider } from "@mondomob/gae-js-core";
-import { gaeJsTasksConfigurationSchema } from "@mondomob/gae-js-tasks";
 import { gaeJsBigQueryConfigurationSchema } from "@mondomob/gae-js-bigquery";
 import { gaeJsStorageConfigurationSchema } from "@mondomob/gae-js-storage";
 
-const libraryConfig = gaeJsBigQueryConfigurationSchema
-  .merge(gaeJsTasksConfigurationSchema)
-  .merge(gaeJsStorageConfigurationSchema);
+const libraryConfig = gaeJsBigQueryConfigurationSchema.merge(gaeJsStorageConfigurationSchema);
 
 export const coreBackupConfigSchema = libraryConfig.extend({
   firestoreBackup: z

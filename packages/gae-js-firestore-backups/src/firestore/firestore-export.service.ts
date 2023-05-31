@@ -91,9 +91,10 @@ export class FirestoreExportService {
   }
 
   async queueUpdateExportStatus(exportCheck: FirestoreExportCheckRequest): Promise<void> {
-    await backupTaskServiceProvider
-      .get()
-      .enqueue<FirestoreExportCheckRequest>(TASK_FIRESTORE_EXPORT_CHECK, exportCheck, UPDATE_STATUS_DELAY_SECONDS);
+    await backupTaskServiceProvider.get().enqueue(TASK_FIRESTORE_EXPORT_CHECK, {
+      data: exportCheck,
+      inSeconds: UPDATE_STATUS_DELAY_SECONDS,
+    });
   }
 
   private formatOutputBucket(exportName: string): string {

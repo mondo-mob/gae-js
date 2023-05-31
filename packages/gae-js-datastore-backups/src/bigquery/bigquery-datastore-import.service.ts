@@ -32,9 +32,11 @@ class BigQueryDatastoreImportService {
     this.logger.info(`Queue importing kind ${kind} from GCS: ${gcsObjectPath}`);
 
     return backupTaskServiceProvider.get().enqueue<BigQueryLoadRequest>(TASK_BIGQUERY_LOAD_KIND, {
-      gcsObjectPath,
-      targetDataset,
-      targetTable: kind,
+      data: {
+        gcsObjectPath,
+        targetDataset,
+        targetTable: kind,
+      },
     });
   }
 

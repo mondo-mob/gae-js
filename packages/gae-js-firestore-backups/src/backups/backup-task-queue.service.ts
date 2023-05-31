@@ -11,10 +11,7 @@ export class BackupTaskQueueService extends TaskQueueService {
     super({
       queueName: backupConfig?.queue || DEFAULT_BACKUP_QUEUE,
       pathPrefix: backupConfig?.taskPrefix,
-      configuration: {
-        ...config,
-        ...(backupConfig?.taskService ? { tasksRoutingService: backupConfig.taskService } : undefined),
-      },
+      tasksRoutingService: backupConfig?.taskService,
     });
   }
 }

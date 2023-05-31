@@ -31,9 +31,11 @@ class BigQueryFirestoreImportService {
     const gcsObjectPath = `${gcsPrefix}/all_namespaces/kind_${collectionId}/all_namespaces_kind_${collectionId}.export_metadata`;
     this.logger.info(`Queue importing collection ${collectionId} from GCS: ${gcsObjectPath}`);
     return backupTaskServiceProvider.get().enqueue<BigQueryLoadRequest>(TASK_BIGQUERY_LOAD_COLLECTION, {
-      gcsObjectPath,
-      targetDataset,
-      targetTable: collectionId,
+      data: {
+        gcsObjectPath,
+        targetDataset,
+        targetTable: collectionId,
+      },
     });
   }
 
