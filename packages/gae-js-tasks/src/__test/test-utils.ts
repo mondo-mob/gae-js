@@ -1,16 +1,19 @@
-import { configurationProvider, gaeJsCoreConfigurationSchema, zodValidator } from "@mondomob/gae-js-core";
-import { GaeJsTasksConfiguration, gaeJsTasksConfigurationSchema } from "../configuration";
+import {
+  configurationProvider,
+  GaeJsCoreConfiguration,
+  gaeJsCoreConfigurationSchema,
+  zodValidator,
+} from "@mondomob/gae-js-core";
 
-export const initTestConfig = async (config?: Partial<GaeJsTasksConfiguration>): Promise<GaeJsTasksConfiguration> => {
-  const schema = gaeJsCoreConfigurationSchema.merge(gaeJsTasksConfigurationSchema);
+export const initTestConfig = async (config?: Partial<GaeJsCoreConfiguration>): Promise<GaeJsCoreConfiguration> => {
   process.env.GAEJS_PROJECT = "tasks-tests";
   process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
     host: "http://localhost",
     location: "local",
     ...config,
   });
-  await configurationProvider.init({ validator: zodValidator<GaeJsTasksConfiguration>(schema) });
-  return configurationProvider.get<GaeJsTasksConfiguration>();
+  await configurationProvider.init({ validator: zodValidator<GaeJsCoreConfiguration>(gaeJsCoreConfigurationSchema) });
+  return configurationProvider.get<GaeJsCoreConfiguration>();
 };
 
 /**

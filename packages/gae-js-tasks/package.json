@@ -32,7 +32,7 @@
   "devDependencies": {
     "@google-cloud/tasks": "3.1.2",
     "@mondomob/gae-js-core": "7.0.0",
-    "@types/node-fetch": "2.6.3",
-    "nock": "13.3.0"
+    "@types/node-fetch": "2.6.4",
+    "nock": "13.3.1"
   }
 }

@@ -1,80 +1,58 @@
 import { CloudTasksClient } from "@google-cloud/tasks";
 import fetch from "node-fetch";
 import { configurationProvider, createLogger, runningOnGcp } from "@mondomob/gae-js-core";
-import { GaeJsTasksConfiguration } from "../configuration";
-
-export interface TaskQueueServiceOptions {
-  configuration?: GaeJsTasksConfiguration;
-  queueName?: string;
-  pathPrefix?: string;
-}
+import { CreateTaskQueueServiceOptions, CreateTaskRequest, TaskOptions, TaskQueueServiceOptions } from "./types";
+import { tasksProvider } from "./tasks-provider";
 
 export class TaskQueueService {
   private logger = createLogger("taskQueueService");
-  private readonly queueName: string;
-  private readonly pathPrefix: string;
-  private readonly configuration: GaeJsTasksConfiguration;
+  private readonly options: TaskQueueServiceOptions;
 
-  constructor(options?: TaskQueueServiceOptions) {
-    this.configuration = options?.configuration || configurationProvider.get<GaeJsTasksConfiguration>();
-    this.queueName = options?.queueName || "default";
-    this.pathPrefix = options?.pathPrefix || "/tasks";
-    this.logger.info(`Initialised task queue ${this.queueName} with target path prefix ${this.pathPrefix}`);
-  }
-
-  async enqueue<P extends object = object>(taskName: string, payload?: P, inSeconds?: number) {
-    if (runningOnGcp()) {
-      await this.appEngineQueue(taskName, payload, inSeconds);
-    } else {
-      await this.localQueue(taskName, payload, inSeconds);
-    }
-  }
-
-  private async appEngineQueue(taskName: string, payload: object = {}, inSeconds?: number) {
-    const client = new CloudTasksClient();
-
-    const projectId = this.configuration.tasksProjectId || this.configuration.projectId;
-    const location = this.configuration.tasksLocation || this.configuration.location;
+  constructor(options?: CreateTaskQueueServiceOptions) {
+    const projectId = options?.projectId || configurationProvider.get().projectId;
+    const location = options?.location || configurationProvider.get().location;
     if (!location) {
-      throw new Error('Cannot resolve queue location - please configure "tasksLocation" or "location"');
+      throw new Error(
+        'Cannot resolve queue location - please configure "location" for application or supply "location" option when creating service'
+      );
     }
 
-    const body = JSON.stringify(payload);
-    const requestPayload = Buffer.from(body).toString("base64");
-
-    const parent = client.queuePath(projectId, location, this.queueName);
-    this.logger.info(`Using queue path: ${parent}`);
-
-    const task = {
-      appEngineHttpRequest: {
-        relativeUri: `${this.fullTaskName(taskName)}`,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: requestPayload,
-        ...this.taskRouting(),
-      },
-      ...(inSeconds
-        ? {
-            scheduleTime: {
-              seconds: inSeconds + Math.floor(Date.now() / 1000),
-            },
-          }
-        : {}),
+    this.options = {
+      ...options,
+      projectId,
+      location,
+      queueName: options?.queueName || "default",
+      pathPrefix: options?.pathPrefix || "/tasks",
     };
-
-    this.logger.info("Creating task with payload: ", task);
-    await client.createTask({
-      parent,
-      task,
-    });
+    const { queueName, pathPrefix } = this.options;
+    this.logger.info(
+      `Initialised task queue ${projectId}/${location}/${queueName} with target path prefix ${pathPrefix}`
+    );
   }
 
-  private async localQueue(taskName: string, payload: object = {}, inSeconds = 0) {
-    if (!this.configuration.host) {
-      throw new Error('Cannot resolve local queue path - please configure "host"');
+  async enqueue<P extends object = object>(path: string, options: TaskOptions<P> = {}) {
+    if (runningOnGcp()) {
+      await this.appEngineQueue(path, options);
+    } else {
+      await this.localQueue(path, options);
     }
-    const endpoint = `${this.configuration.host}${this.fullTaskName(taskName)}`;
+  }
+
+  private async appEngineQueue(path: string, options: TaskOptions) {
+    const client = this.getTasksClient();
+
+    const { projectId, location, queueName } = this.options;
+    const parent = client.queuePath(projectId, location, queueName);
+
+    const createTaskRequest = this.buildTask(parent, path, options);
+
+    this.logger.info("Creating task with payload: ", createTaskRequest.task);
+    await client.createTask(createTaskRequest);
+  }
+
+  private async localQueue(path: string, options: TaskOptions) {
+    const { data = {}, inSeconds = 0 } = options;
+    const endpoint = `${this.getLocalBaseUrl()}${this.fullTaskPath(path)}`;
     this.logger.info(`Dispatching local task to ${endpoint} with delay ${inSeconds}s`);
 
     // Intentionally don't return this promise because we want the task to be executed
@@ -84,10 +62,10 @@ export class TaskQueueService {
       .then(() => {
         return fetch(endpoint, {
           method: "POST",
-          body: JSON.stringify(payload),
+          body: JSON.stringify(data),
           headers: {
             "content-type": "application/json",
-            "x-appengine-taskname": taskName,
+            "x-appengine-taskname": path,
           },
         });
       })
@@ -103,8 +81,39 @@ export class TaskQueueService {
       });
   }
 
+  private buildTask(queuePath: string, path: string, options: TaskOptions): CreateTaskRequest {
+    this.logger.info(`Using queue path: ${queuePath}`);
+    const { data = {}, inSeconds } = options;
+    const body = JSON.stringify(data);
+    const requestPayload = Buffer.from(body).toString("base64");
+    return {
+      parent: queuePath,
+      task: {
+        appEngineHttpRequest: {
+          relativeUri: `${this.fullTaskPath(path)}`,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: requestPayload,
+          ...this.taskRouting(),
+        },
+        ...this.taskSchedule(inSeconds),
+      },
+    };
+  }
+
+  private taskSchedule(inSeconds?: number) {
+    return inSeconds
+      ? {
+          scheduleTime: {
+            seconds: inSeconds + Math.floor(Date.now() / 1000),
+          },
+        }
+      : {};
+  }
+
   private taskRouting() {
-    const { tasksRoutingService, tasksRoutingVersion } = this.configuration;
+    const { tasksRoutingService, tasksRoutingVersion } = this.options;
     if (tasksRoutingVersion || tasksRoutingService) {
       return {
         appEngineRouting: {
@@ -116,8 +125,22 @@ export class TaskQueueService {
     return {};
   }
 
-  private fullTaskName(taskName: string): string {
-    const noLeadingSlash = taskName.startsWith("/") ? taskName.slice(1) : taskName;
-    return `${this.pathPrefix}/${noLeadingSlash}`;
+  private fullTaskPath(targetTask: string): string {
+    const noLeadingSlash = targetTask.startsWith("/") ? targetTask.slice(1) : targetTask;
+    return `${this.options.pathPrefix}/${noLeadingSlash}`;
   }
+
+  private getTasksClient = (): CloudTasksClient => {
+    return this.options.tasksClient ?? tasksProvider.get();
+  };
+
+  private getLocalBaseUrl = (): string => {
+    const url = this.options.localBaseUrl || configurationProvider.get().host;
+    if (!url) {
+      throw new Error(
+        'Cannot resolve local base url - please configure "host" for application or supply "localBaseUrl" option when creating service'
+      );
+    }
+    return url;
+  };
 }

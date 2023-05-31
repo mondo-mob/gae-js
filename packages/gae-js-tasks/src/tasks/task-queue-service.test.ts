@@ -3,9 +3,8 @@ import { initTestConfig, waitUntil } from "../__test/test-utils";
 import { TaskQueueService } from "./task-queue-service";
 import { CloudTasksClient } from "@google-cloud/tasks";
 import { withEnvVars } from "@mondomob/gae-js-core/dist/__test/test-utils";
-import { ENV_VAR_RUNTIME_ENVIRONMENT } from "@mondomob/gae-js-core/dist/configuration/variables";
-import { configurationProvider } from "@mondomob/gae-js-core";
-import { GaeJsTasksConfiguration } from "../configuration";
+import { ENV_VAR_RUNTIME_ENVIRONMENT } from "@mondomob/gae-js-core";
+import { tasksProvider } from "./tasks-provider";
 
 jest.mock("@google-cloud/tasks");
 
@@ -32,6 +31,7 @@ describe("TaskQueueService", () => {
       it(
         "creates task params for default config",
         withEnvVars({ [ENV_VAR_RUNTIME_ENVIRONMENT]: "appengine" }, async () => {
+          tasksProvider.init();
           taskQueueService = new TaskQueueService();
 
           await taskQueueService.enqueue("test-task");
@@ -49,10 +49,11 @@ describe("TaskQueueService", () => {
       it(
         "creates task params for delayed task",
         withEnvVars({ [ENV_VAR_RUNTIME_ENVIRONMENT]: "appengine" }, async () => {
+          tasksProvider.init();
           taskQueueService = new TaskQueueService();
 
           const timeIn60Seconds = 60 + Math.floor(Date.now() / 1000);
-          await taskQueueService.enqueue("test-task", { key: "value1" }, 60);
+          await taskQueueService.enqueue("test-task", { data: { key: "value1" }, inSeconds: 60 });
 
           expectTaskParams({
             appEngineHttpRequest: {
@@ -68,14 +69,12 @@ describe("TaskQueueService", () => {
       it(
         "creates task params for specific service routing",
         withEnvVars({ [ENV_VAR_RUNTIME_ENVIRONMENT]: "appengine" }, async () => {
+          tasksProvider.init();
           taskQueueService = new TaskQueueService({
-            configuration: {
-              ...configurationProvider.get<GaeJsTasksConfiguration>(),
-              tasksRoutingService: "backend",
-            },
+            tasksRoutingService: "backend",
           });
 
-          await taskQueueService.enqueue("test-task", { key: "value1" });
+          await taskQueueService.enqueue("test-task", { data: { key: "value1" } });
 
           expectTaskParams({
             appEngineHttpRequest: {
@@ -105,13 +104,13 @@ describe("TaskQueueService", () => {
 
       it("posts to local task service with body", async () => {
         const scope = nock("http://localhost").post("/tasks/local-task", { some: "data" }).reply(204);
-        await taskQueueService.enqueue<TestPayload>("local-task", { some: "data" });
+        await taskQueueService.enqueue<TestPayload>("local-task", { data: { some: "data" } });
         await waitUntil(() => scope.isDone());
       });
 
       it("local task enqueues even if downstream execution fails", async () => {
         const scope = nock("http://localhost").post("/tasks/local-task", { some: "data" }).reply(500);
-        await taskQueueService.enqueue<TestPayload>("local-task", { some: "data" });
+        await taskQueueService.enqueue<TestPayload>("local-task", { data: { some: "data" } });
         await waitUntil(() => scope.isDone());
       });
 
@@ -140,7 +139,7 @@ describe("TaskQueueService", () => {
 
       it("posts to local task service with body", async () => {
         const scope = nock("http://localhost").post("/admin/tasks/local-task", { some: "data" }).reply(204);
-        await taskQueueService.enqueue("local-task", { some: "data" });
+        await taskQueueService.enqueue("local-task", { data: { some: "data" } });
         await waitUntil(() => scope.isDone());
       });
 
