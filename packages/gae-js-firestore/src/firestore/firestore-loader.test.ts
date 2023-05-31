@@ -210,6 +210,19 @@ describe("FirestoreLoader", () => {
       expect(fetchedCache).toEqual([null]);
     });
 
+    it("does not fail when document does not exist", async () => {
+      await loader.delete([firestore.doc("/users/123")]);
+
+      const fetchedCache = await loader.get([firestore.doc("/users/123")]);
+      expect(fetchedCache).toEqual([null]);
+    });
+
+    it("fails when document does not exist, when precondition is specified", async () => {
+      await expect(loader.delete([firestore.doc("/users/123")], { exists: true })).rejects.toThrow(
+        `NOT_FOUND: no entity to update: app: "dev~firestore-tests"`
+      );
+    });
+
     it("clears stale cache value after transaction completes", async () => {
       await loader.create([createUserPayload("123")]);
       await loader.inTransaction(async (txnLoader) => {

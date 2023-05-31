@@ -57,8 +57,14 @@ await repository.save({ id: "id123", name: "test item" });
 // Get an item
 const item = await repository.get("id123");
 
-// Delete items with varags of ids
-await repository.delete("id123", "id234");
+// Delete item with single id
+await repository.delete("id123");
+
+// Delete items with array of ids
+await repository.delete(["id123", "id234"]);
+
+// Supply options to delete (documents MUST exist)
+await repository.delete(["id123", "id234"], { exists: true });
 
 // Delete all items in collecitons and recursively delete decendants. Uses https://cloud.google.com/nodejs/docs/reference/firestore/latest/firestore/firestore#_google_cloud_firestore_Firestore_recursiveDelete_member_1_
 await repository.delete("id123", "id234");

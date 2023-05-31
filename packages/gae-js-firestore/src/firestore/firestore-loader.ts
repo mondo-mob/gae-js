@@ -5,6 +5,7 @@ import {
   DocumentReference,
   DocumentSnapshot,
   Firestore,
+  Precondition,
   Query,
   QuerySnapshot,
   Transaction,
@@ -85,11 +86,11 @@ export class FirestoreLoader {
     );
   }
 
-  async delete(refs: ReadonlyArray<DocumentReference>): Promise<void> {
+  async delete(refs: ReadonlyArray<DocumentReference>, precondition?: Precondition): Promise<void> {
     await this.applyOperation(
       refs,
-      (transaction, ref) => transaction.delete(ref),
-      (batch, ref) => batch.delete(ref),
+      (transaction, ref) => transaction.delete(ref, precondition),
+      (batch, ref) => batch.delete(ref, precondition),
       (loader, key) => loader.clear(key)
     );
   }

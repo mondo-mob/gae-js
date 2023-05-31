@@ -541,13 +541,37 @@ describe("FirestoreRepository", () => {
 
       await runWithRequestStorage(async () => {
         firestoreLoaderRequestStorage.set(new FirestoreLoader(firestore));
-        return runInTransaction(() => repository.delete("123", "234"));
+        return runInTransaction(() => repository.delete(["123", "234"]));
       });
 
       const doc123 = await firestore.doc(`${collection}/123`).get();
       expect(doc123.exists).toBe(false);
       const doc234 = await firestore.doc(`${collection}/234`).get();
       expect(doc234.exists).toBe(false);
+    });
+
+    it("does not fail when document does not exist", async () => {
+      await repository.delete("123");
+
+      const doc = await firestore.doc(`${collection}/123`).get();
+      expect(doc.exists).toBe(false);
+    });
+
+    it("fails when document does not exist, when precondition is specified", async () => {
+      await expect(repository.delete("123", { exists: true })).rejects.toThrow(
+        `NOT_FOUND: no entity to update: app: "dev~firestore-tests"`
+      );
+    });
+
+    it("fails atomically when one document does not exist, when precondition is specified", async () => {
+      await firestore.doc(`${collection}/123`).create({ name: "test123" });
+
+      await expect(repository.delete(["123", "234"], { exists: true })).rejects.toThrow(
+        `NOT_FOUND: no entity to update: app: "dev~firestore-tests"`
+      );
+
+      const doc = await firestore.doc(`${collection}/123`).get();
+      expect(doc.exists).toBe(true);
     });
   });
 
@@ -1041,7 +1065,7 @@ describe("FirestoreRepository", () => {
       });
 
       it("requests index deletion (multiple items)", async () => {
-        await repository.delete("item1", "item2");
+        await repository.delete(["item1", "item2"]);
 
         expect(searchService.delete).toHaveBeenCalledWith("item", "item1", "item2");
       });

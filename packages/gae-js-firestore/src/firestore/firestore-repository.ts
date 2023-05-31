@@ -1,4 +1,4 @@
-import { DocumentReference, Firestore } from "@google-cloud/firestore";
+import { DocumentReference, Firestore, Precondition } from "@google-cloud/firestore";
 import {
   createLogger,
   DataValidator,
@@ -184,11 +184,12 @@ export class FirestoreRepository<T extends BaseEntity> {
     return mapOneOrMany(entities, (e) => this.beforePersist(e));
   }
 
-  async delete(...ids: string[]): Promise<void> {
-    const allIds = ids.map((id) => this.documentRef(id));
-    await this.getLoader().delete(allIds);
+  async delete(ids: OneOrMany<string>, precondition?: Precondition): Promise<void> {
+    const idArray = castArray(ids);
+    const allIds = idArray.map((id) => this.documentRef(id));
+    await this.getLoader().delete(allIds, precondition);
     if (this.searchOptions) {
-      await this.getSearchService().delete(this.searchOptions.indexName, ...ids);
+      await this.getSearchService().delete(this.searchOptions.indexName, ...idArray);
     }
   }
 
