@@ -1,5 +1,12 @@
 # @mondomob/gae-js-firestore-backups
 
+## 5.0.0
+
+### Patch Changes
+
+- Updated dependencies [be28a96]
+  - @mondomob/gae-js-firestore@15.0.0
+
 ## 4.0.0
 
 ### Patch Changes
