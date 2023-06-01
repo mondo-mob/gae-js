@@ -1,5 +1,13 @@
 # @mondomob/gae-js-firestore-backups
 
+## 6.0.0
+
+### Patch Changes
+
+- 6c57256: Update for upstream breaking changes in gae-js-tasks
+- Updated dependencies [2fe4b19]
+  - @mondomob/gae-js-tasks@11.0.0
+
 ## 5.0.0
 
 ### Patch Changes
