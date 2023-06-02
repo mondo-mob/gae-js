@@ -1,4 +1,4 @@
-import { ZodType } from "zod/lib/types";
+import { ZodType } from "zod";
 import { DataValidator } from "./data";
 
 export const zodValidator =
