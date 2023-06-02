@@ -1,26 +1,26 @@
-import { StatusCode } from "@google-cloud/firestore/build/src/status-code";
+import { GrpcStatus } from "@google-cloud/firestore";
 import { isFirestoreError } from "./firestore-errors";
 
 describe("firestore-errors", () => {
   describe("isFirestoreError", () => {
     it("returns true if for ALREADY_EXISTS", () => {
-      expect(isFirestoreError(ALREADY_EXISTS_ERROR, StatusCode.ALREADY_EXISTS)).toBe(true);
+      expect(isFirestoreError(ALREADY_EXISTS_ERROR, GrpcStatus.ALREADY_EXISTS)).toBe(true);
     });
 
     it("returns false if code does not match in error", () => {
-      expect(isFirestoreError(ALREADY_EXISTS_ERROR, StatusCode.NOT_FOUND)).toBe(false);
+      expect(isFirestoreError(ALREADY_EXISTS_ERROR, GrpcStatus.NOT_FOUND)).toBe(false);
     });
 
     it("returns false if shape of object does not match expected firestore error", () => {
-      expect(isFirestoreError({ code: ALREADY_EXISTS_ERROR.code }, StatusCode.ALREADY_EXISTS)).toBe(false);
+      expect(isFirestoreError({ code: ALREADY_EXISTS_ERROR.code }, GrpcStatus.ALREADY_EXISTS)).toBe(false);
     });
 
     it("returns false if error is string", () => {
-      expect(isFirestoreError("some error", StatusCode.ALREADY_EXISTS)).toBe(false);
+      expect(isFirestoreError("some error", GrpcStatus.ALREADY_EXISTS)).toBe(false);
     });
 
     it("returns false if error is undefined", () => {
-      expect(isFirestoreError(undefined, StatusCode.ALREADY_EXISTS)).toBe(false);
+      expect(isFirestoreError(undefined, GrpcStatus.ALREADY_EXISTS)).toBe(false);
     });
   });
 });

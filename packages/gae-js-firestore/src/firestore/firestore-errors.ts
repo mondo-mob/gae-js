@@ -1,7 +1,7 @@
-import { StatusCode } from "@google-cloud/firestore/build/src/status-code";
+import { GrpcStatus } from "@google-cloud/firestore";
 
 export interface FirestoreError {
-  code: StatusCode;
+  code: GrpcStatus;
   details: string;
 }
 
@@ -14,7 +14,7 @@ export interface FirestoreError {
  *
  * Also tells compile to assume the error is now of type FirestoreError.
  */
-export const isFirestoreError = (err: unknown, code: StatusCode): err is FirestoreError => {
+export const isFirestoreError = (err: unknown, code: GrpcStatus): err is FirestoreError => {
   if (!isFirestoreErrorShape(err)) {
     return false;
   }

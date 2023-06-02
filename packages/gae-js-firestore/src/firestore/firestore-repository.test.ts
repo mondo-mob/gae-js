@@ -1,5 +1,4 @@
-import { Firestore, Timestamp } from "@google-cloud/firestore";
-import { StatusCode } from "@google-cloud/firestore/build/src/status-code";
+import { Firestore, GrpcStatus, Timestamp } from "@google-cloud/firestore";
 import {
   IndexConfig,
   IndexEntry,
@@ -496,7 +495,7 @@ describe("FirestoreRepository", () => {
         await repository.insert(createItem("123", { message: "insert again" }));
         fail("Expected error");
       } catch (err) {
-        expect(isFirestoreError(err, StatusCode.ALREADY_EXISTS)).toBe(true);
+        expect(isFirestoreError(err, GrpcStatus.ALREADY_EXISTS)).toBe(true);
       }
     });
 
