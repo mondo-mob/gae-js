@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 7.0.1
+
+### Patch Changes
+
+- 7aadc66: Fix invalid zod import from "zod/lib/types" to "zod"
+
 ## 7.0.0
 
 ### Major Changes
