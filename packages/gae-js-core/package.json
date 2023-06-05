@@ -30,10 +30,10 @@
   },
   "peerDependencies": {
     "express": ">= 4.17.1",
-    "zod": "3.21.0"
+    "zod": "^3.21.0"
   },
   "devDependencies": {
-    "zod": "3.21.0"
+    "zod": "3.21.4"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"
 }
