@@ -18,12 +18,17 @@ export const connectStorage = (options?: StorageConnectOptions): Storage => {
     ...options?.storageOptions,
   };
 
-  if (configuration?.credentials) {
-    logger.info(`Using custom storage credentials`);
-    storageSettings.credentials = {
-      client_email: configuration.credentials.clientEmail,
-      private_key: configuration.credentials.privateKey,
-    };
+  if (configuration?.credentials || configuration?.serviceAccountKey) {
+    if (configuration.serviceAccountKey) {
+      logger.info(`Using custom storage service account from config`);
+      storageSettings.credentials = JSON.parse(configuration.serviceAccountKey);
+    } else if (configuration.credentials) {
+      logger.info(`Using custom storage credentials from config`);
+      storageSettings.credentials = {
+        client_email: configuration.credentials.clientEmail,
+        private_key: configuration.credentials.privateKey,
+      };
+    }
   }
 
   const emulatorHost = configuration?.emulatorHost;

@@ -9,6 +9,9 @@ export const gaeJsStorageConfigurationSchema = gaeJsCoreConfigurationSchema.exte
       // Emulator host is separate from the api endpoint because to connect to Firebase storage emulator
       // you need to set the STORAGE_EMULATOR_HOST environment variable instead
       emulatorHost: z.string().optional(),
+      /** Specific service account key (in JSON format). */
+      serviceAccountKey: z.string().optional(),
+      /** Specific account credentials to use. Will be ignored if serviceAccountKey also specified. */
       credentials: z
         .object({
           clientEmail: z.string(),
