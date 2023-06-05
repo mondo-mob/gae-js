@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-bigquery",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tools for Google BigQuery",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@google-cloud/bigquery": "6.2.0",
-    "@mondomob/gae-js-core": "7.0.1",
-    "@mondomob/gae-js-storage": "8.0.0"
+    "@mondomob/gae-js-core": "7.0.2",
+    "@mondomob/gae-js-storage": "8.0.1"
   }
 }

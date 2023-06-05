@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore-backups
 
+## 7.0.1
+
+### Patch Changes
+
+- 410f9b5: Unpin zod version and patch release all libs to force schema regeneration.
+
 ## 7.0.0
 
 ### Patch Changes

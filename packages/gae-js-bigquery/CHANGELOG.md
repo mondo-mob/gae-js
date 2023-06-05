@@ -1,5 +1,11 @@
 # @mondomob/gae-js-bigquery
 
+## 1.0.1
+
+### Patch Changes
+
+- 410f9b5: Unpin zod version and patch release all libs to force schema regeneration.
+
 ## 1.0.0
 
 ### Patch Changes

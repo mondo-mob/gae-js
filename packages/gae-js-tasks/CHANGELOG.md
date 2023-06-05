@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 11.0.1
+
+### Patch Changes
+
+- 410f9b5: Unpin zod version and patch release all libs to force schema regeneration.
+
 ## 11.0.0
 
 ### Major Changes
@@ -7,29 +13,31 @@
 - 2fe4b19: Service refactored to simplify usage and allow for future enhancements
 
   - Configuration schema removed. Often multiple task queue service instances are created for an application so providing
-  application level config for these settings didn't make sense. All options provided by the old schema can be passed when
-  creating the tasks service instances.
+    application level config for these settings didn't make sense. All options provided by the old schema can be passed when
+    creating the tasks service instances.
 
   - Service creation no longer relies on passing `GaeJsCoreConfiguration` instance when overriding settings. All options can be overridden individually.
-  
+
   - `enqueue` method signature has changed to accept a single string and optional options object. This will allow additional
-  options to be added without affecting signature in future releases.
+    options to be added without affecting signature in future releases.
 
   Upgrade Instructions:
 
-  - Remove any references to `gaeJsTasksConfigurationSchema` or `GaeJsTasksConfiguration`. 
+  - Remove any references to `gaeJsTasksConfigurationSchema` or `GaeJsTasksConfiguration`.
     Any properties used should be added to application's config schema and passed as options when constructing the Tasks service instance.
     e.g. to override service project and location:
+
     ```typescript
     const taskQueueService = new TaskQueueService({
       projectId: appConfig.tasksProjectId,
       location: appConfig.tasksLocation,
     });
     ```
-  
+
   - Update constructor calls to use new signature:
 
     e.g. Change from
+
     ```typescript
     const taskQueueService = new TaskQueueService({
       pathPrefix: "/admin-tasks",
@@ -39,7 +47,9 @@
       },
     });
     ```
+
     to this:
+
     ```typescript
     const taskQueueService = new TaskQueueService({
       pathPrefix: "/admin-tasks",
@@ -49,11 +59,13 @@
 
     Calls to enqueue should be updated to use the new signature
     e.g.
+
     ```typescript
     enqueue("my-task", { id: "123" }, 60);
     ```
-  
+
     Should now be:
+
     ```typescript
     enqueue("my-task", {
       data: { id: "123" },
