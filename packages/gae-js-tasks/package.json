@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-tasks",
-  "version": "11.0.1",
+  "version": "11.0.2",
   "description": "Tools for Google Cloud Tasks",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

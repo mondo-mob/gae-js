@@ -1,5 +1,11 @@
 # @mondomob/gae-js-tasks
 
+## 11.0.2
+
+### Patch Changes
+
+- 3385b9f: Export missing types added in last major release
+
 ## 11.0.1
 
 ### Patch Changes
