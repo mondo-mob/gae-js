@@ -41,7 +41,7 @@
     "@mondomob/gae-js-bigquery": "1.0.1",
     "@mondomob/gae-js-core": "7.0.2",
     "@mondomob/gae-js-firestore": "16.0.1",
-    "@mondomob/gae-js-storage": "8.0.1",
+    "@mondomob/gae-js-storage": "8.1.0",
     "@mondomob/gae-js-tasks": "11.0.2",
     "@types/luxon": "3.3.0",
     "@types/uuid": "9.0.1"

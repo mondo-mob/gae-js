@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 8.1.0
+
+### Minor Changes
+
+- 1f2c09b: Support entire JSON service account key file as storage credentials
+
 ## 8.0.1
 
 ### Patch Changes
