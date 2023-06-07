@@ -1,5 +1,15 @@
 # @mondomob/gae-js-datastore-backups
 
+## 3.0.0
+
+### Patch Changes
+
+- 896667b: Update for breaking upstream changes
+- Updated dependencies [896667b]
+- Updated dependencies [07d88ae]
+  - @mondomob/gae-js-bigquery@2.0.0
+  - @mondomob/gae-js-storage@9.0.0
+
 ## 2.0.1
 
 ### Patch Changes

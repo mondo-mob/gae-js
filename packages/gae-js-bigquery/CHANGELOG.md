@@ -1,5 +1,13 @@
 # @mondomob/gae-js-bigquery
 
+## 2.0.0
+
+### Patch Changes
+
+- 896667b: Update for breaking upstream changes
+- Updated dependencies [07d88ae]
+  - @mondomob/gae-js-storage@9.0.0
+
 ## 1.0.1
 
 ### Patch Changes
