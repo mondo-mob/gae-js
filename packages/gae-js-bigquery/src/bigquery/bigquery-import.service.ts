@@ -1,7 +1,7 @@
 import { BigQuery } from "@google-cloud/bigquery";
 import { Storage } from "@google-cloud/storage";
 import { createLogger } from "@mondomob/gae-js-core";
-import { parseStorageUri, storageProvider } from "@mondomob/gae-js-storage";
+import { parseGcsUri, storageProvider } from "@mondomob/gae-js-storage";
 import { bigQueryProvider } from "./bigquery-provider";
 
 export interface BigQueryImportServiceOptions {
@@ -29,9 +29,9 @@ export class BigQueryImportService {
   async importDatastoreExport(gcsObjectPath: string, targetDataset: string, targetTable: string): Promise<string> {
     this.logger.info(`Start datastore/firestore export into BigQuery table ${targetDataset}.${targetTable}`);
 
-    const { bucket, objectName } = parseStorageUri(gcsObjectPath);
+    const { bucket, name } = parseGcsUri(gcsObjectPath);
     const table = await this.getBigQuery().dataset(targetDataset).table(targetTable);
-    const [job] = await table.load(this.getStorage().bucket(bucket).file(objectName), {
+    const [job] = await table.load(this.getStorage().bucket(bucket).file(name), {
       autodetect: false,
       sourceFormat: "DATASTORE_BACKUP",
       writeDisposition: "WRITE_TRUNCATE",
