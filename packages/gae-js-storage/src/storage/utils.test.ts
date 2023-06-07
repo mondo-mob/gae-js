@@ -1,22 +1,36 @@
 import { BadRequestError } from "@mondomob/gae-js-core";
-import { parseStorageUri } from "./utils";
+import { gcsPathJoin, parseGcsUri } from "./utils";
 
 describe("Storage Utils", () => {
-  describe("parseStorageUri", () => {
+  describe("parseGcsUri", () => {
     it("parses root level object", () => {
-      expect(parseStorageUri("gs://my-bucket/my-object")).toEqual({ bucket: "my-bucket", objectName: "my-object" });
+      expect(parseGcsUri("gs://my-bucket/my-object")).toEqual({ bucket: "my-bucket", name: "my-object" });
     });
 
     it("parses nested object", () => {
-      expect(parseStorageUri("gs://my-bucket/my-folder1/my-folder2/my-object")).toEqual({
+      expect(parseGcsUri("gs://my-bucket/my-folder1/my-folder2/my-object")).toEqual({
         bucket: "my-bucket",
-        objectName: "my-folder1/my-folder2/my-object",
+        name: "my-folder1/my-folder2/my-object",
       });
     });
 
     it("throws for invalid uri", () => {
-      expect(() => parseStorageUri("https://my-bucket/my-folder")).toThrow(BadRequestError);
-      expect(() => parseStorageUri("gs://my$bucket/my-object")).toThrow(BadRequestError);
+      expect(() => parseGcsUri("https://my-bucket/my-folder")).toThrow(BadRequestError);
+      expect(() => parseGcsUri("gs://my$bucket/my-object")).toThrow(BadRequestError);
+    });
+  });
+
+  describe("gcsPathJoin", () => {
+    it("joins elements together with forward slash", () => {
+      expect(gcsPathJoin("one", "two", "three.jpg")).toBe("one/two/three.jpg");
+    });
+
+    it("excludes empty string elements", () => {
+      expect(gcsPathJoin("", "", "three.jpg")).toBe("three.jpg");
+    });
+
+    it("removes redundant slashes", () => {
+      expect(gcsPathJoin("/one/", "/two", "/", "three.jpg")).toBe("one/two/three.jpg");
     });
   });
 });

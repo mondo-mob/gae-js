@@ -27,8 +27,11 @@
     "@google-cloud/storage": "^6.0.0",
     "express": ">= 4.17.1"
   },
+  "dependencies": {
+    "p-limit": "^3.1.0"
+  },
   "devDependencies": {
     "@mondomob/gae-js-core": "7.0.2",
-    "@google-cloud/storage": "6.9.5"
+    "@google-cloud/storage": "6.11.0"
   }
 }

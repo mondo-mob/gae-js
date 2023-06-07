@@ -4,25 +4,27 @@ import { z } from "zod";
 export const gaeJsStorageConfigurationSchema = gaeJsCoreConfigurationSchema.extend({
   storage: z
     .object({
-      defaultBucket: z.string().optional(),
+      /**
+       * Storage api endpoint. Not usually required to be set.
+       */
       apiEndpoint: z.string().optional(),
-      // Emulator host is separate from the api endpoint because to connect to Firebase storage emulator
-      // you need to set the STORAGE_EMULATOR_HOST environment variable instead
+      /**
+       * Emulator host url.
+       * This is separate from the api endpoint because to connect to Firebase storage emulator
+       * you additionally need to set the STORAGE_EMULATOR_HOST environment variable
+       */
       emulatorHost: z.string().optional(),
-      /** Specific service account key (in JSON format). */
-      serviceAccountKey: z.string().optional(),
-      /** Specific account credentials to use. Will be ignored if serviceAccountKey also specified. */
-      credentials: z
-        .object({
-          clientEmail: z.string(),
-          privateKey: z.string(),
-        })
-        .optional(),
-      origin: z.string().optional(),
-      // Buckets are global but the sdk requires a default project - which may not be set when running locally
+      /**
+       * Storage projectId.
+       * Buckets are global but the SDK Client requires a project - which may not be set when running locally
+       */
       projectId: z.string().optional(),
-      // Skip checking if the default bucket exists. In some cases you may only have write access to a bucket and checking it exists requires read.
-      skipDefaultBucketValidation: z.boolean().optional(),
+      /**
+       * Specific service account key (in JSON format).
+       * Useful for local development where Application Default Credentials don't work for signing urls, etc.
+       * This should be fetched from Cloud Secrets.
+       */
+      serviceAccountKey: z.string().optional(),
     })
     .optional(),
 });

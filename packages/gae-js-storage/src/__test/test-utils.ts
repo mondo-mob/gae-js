@@ -9,8 +9,6 @@ export const initTestConfig = async (
   process.env.GAEJS_PROJECT = "storage-tests";
   process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
     storage: {
-      origin: "localhost",
-      defaultBucket: "test-bucket",
       emulatorHost: "http://localhost:9199",
     },
     ...config,
