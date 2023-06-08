@@ -1,4 +1,4 @@
-import { Firestore, GrpcStatus, Timestamp } from "@google-cloud/firestore";
+import { Filter, Firestore, GrpcStatus, Timestamp } from "@google-cloud/firestore";
 import {
   IndexConfig,
   IndexEntry,
@@ -630,22 +630,52 @@ describe("FirestoreRepository", () => {
   });
 
   describe("query", () => {
-    it("filters by exact match", async () => {
-      await repository.save([createItem("123"), createItem("234")]);
 
-      const results = await repository.query({
-        filters: [
-          {
-            fieldPath: "name",
-            opStr: "==",
-            value: "Test Item 234",
-          },
-        ],
-      });
+    describe('filters', () => {
 
-      expect(results.length).toBe(1);
-      expect(results[0].name).toEqual("Test Item 234");
-    });
+      describe('filters specified by array', () => {
+        it("filters by exact match", async () => {
+          await repository.save([createItem("123"), createItem("234")]);
+
+          const results = await repository.query({
+            filters: [
+              {
+                fieldPath: "name",
+                opStr: "==",
+                value: "Test Item 234",
+              },
+            ],
+          });
+
+          expect(results.length).toBe(1);
+          expect(results[0].name).toEqual("Test Item 234");
+        });
+      })
+
+      describe('filters by class type', () => {
+
+        it('filters by exact match', async () => {
+          await repository.save([createItem("123"), createItem("234")]);
+
+          const results = await repository.query({filters: Filter.where("name", "==", "Test Item 234")})
+
+          expect(results.length).toBe(1);
+          expect(results[0].name).toEqual("Test Item 234");
+        })
+
+        it('supports an OR query',  async () => {
+          await repository.save([createItem("123"), createItem("234"), createItem('567')]);
+          const results = await repository.query({filters: Filter.or(Filter.where("id", "==", "123"), Filter.where("id", "==", "567"))})
+
+          expect(results.length).toBe(2);
+          expect(results[0].name).toEqual("Test Item 123");
+          expect(results[1].name).toEqual("Test Item 567");
+        })
+
+      })
+
+
+    })
 
     it("selects specific fields", async () => {
       await repository.save([

@@ -1,11 +1,8 @@
-import { runWithRequestStorage } from "@mondomob/gae-js-core";
 import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { FirestoreLoader } from "./firestore-loader";
 import { Firestore } from "@google-cloud/firestore";
 import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import assert from "assert";
-import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
-import { runInTransaction } from "./transactional";
 
 describe("FirestoreLoader", () => {
   let firestore: Firestore;

@@ -93,6 +93,14 @@ const results = await repository.query({
   select: ["name", "otherProp"],
 });
 
+// Query items using Firebase Filter, allows for OR queries
+const results = await repository.query({
+  filters: Filter.or(
+    Filter.where("id", "==", "123"), 
+    Filter.where("id", "==", "567"))
+  }
+)
+
 // Query items for ids only (empty projection)
 const results = await repository.query({
   filters: [

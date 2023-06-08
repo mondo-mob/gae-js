@@ -3,13 +3,13 @@ import { castArray, chunk, cloneDeep } from "lodash";
 import {
   DocumentData,
   DocumentReference,
-  DocumentSnapshot,
+  DocumentSnapshot, Filter,
   Firestore,
   Precondition,
   Query,
   QuerySnapshot,
   Transaction,
-  WriteBatch,
+  WriteBatch
 } from "@google-cloud/firestore";
 import { FilterOptions, QueryOptions } from "./firestore-query";
 import { FirestoreRepositoryError } from "./repository-error";
@@ -165,10 +165,14 @@ export class FirestoreLoader {
     return !!this.transaction;
   }
 
-  private buildFilterQuery(collectionPath: string, options: FilterOptions): Query {
+  private buildFilterQuery(collectionPath: string, { filters }: FilterOptions): Query {
     let query = this.firestore.collection(collectionPath) as Query;
-    if (options.filters) {
-      options.filters.forEach((filter) => (query = query.where(filter.fieldPath, filter.opStr, filter.value)));
+    if (filters) {
+      if (filters instanceof Filter) {
+        query = query.where(filters)
+      } else {
+        filters.forEach((filter) => (query = query.where(filter.fieldPath, filter.opStr, filter.value)));
+      }
     }
     return query;
   }

@@ -1,4 +1,4 @@
-import { FieldPath, OrderByDirection, WhereFilterOp } from "@google-cloud/firestore";
+import { FieldPath, Filter, OrderByDirection, WhereFilterOp } from "@google-cloud/firestore";
 import { OneOrMany } from "@mondomob/gae-js-core";
 import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 
@@ -14,7 +14,7 @@ export interface FieldSort {
 }
 
 export interface FilterOptions {
-  filters?: WhereFilter[];
+  filters?: WhereFilter[] | Filter;
 }
 
 export interface QueryOptions<T> extends FilterOptions {
