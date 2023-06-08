@@ -1,5 +1,11 @@
 # @mondomob/gae-js-storage
 
+## 9.0.1
+
+### Patch Changes
+
+- a93c5b3: Fix missing options params for static storage methods
+
 ## 9.0.0
 
 ### Major Changes
