@@ -74,13 +74,19 @@ export const generateSignedDownloadUrl = async (
   return url;
 };
 
-export const makePublic = async (file: File | GcsFileIdentifier): Promise<string> => {
-  const src = toGcsFile(file);
+export const makePublic = async (
+  file: File | GcsFileIdentifier,
+  { storage }: { storage?: Storage } = {}
+): Promise<string> => {
+  const src = toGcsFile(file, { storage });
   await src.makePublic();
   return src.publicUrl();
 };
 
-export const makePrivate = async (file: File | GcsFileIdentifier): Promise<void> => {
-  const src = toGcsFile(file);
+export const makePrivate = async (
+  file: File | GcsFileIdentifier,
+  { storage }: { storage?: Storage } = {}
+): Promise<void> => {
+  const src = toGcsFile(file, { storage });
   await src.makePrivate();
 };

@@ -37,6 +37,7 @@
     - toGcsFile
     - toGcsFileIdentifier
     - toGcsUri
+    - parseGcsUri (renamed from parseStorageUri)
     - gcsPathJoin
     - toGcsSaveOptions
     - generateSignedDownloadUrl
