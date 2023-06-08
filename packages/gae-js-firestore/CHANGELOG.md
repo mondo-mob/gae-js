@@ -1,5 +1,11 @@
 # @mondomob/gae-js-firestore
 
+## 16.1.0
+
+### Minor Changes
+
+- ceb06ea: Add support for OR queries by adding support for Firestore Filter style queries. See README for an example.
+
 ## 16.0.1
 
 ### Patch Changes
