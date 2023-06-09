@@ -1,6 +1,7 @@
 import { Firestore } from "@google-cloud/firestore";
-import { connectFirestore, initEmulatorConfig } from "../__test/test-utils";
+import { initEmulatorConfig } from "../__test/test-utils";
 import { FirestoreProvider } from "./firestore-provider";
+import { connectFirestore } from "./connect";
 
 describe("FirestoreProvider", () => {
   beforeAll(async () => {

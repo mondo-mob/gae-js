@@ -1,16 +1,17 @@
+import { Firestore } from "@google-cloud/firestore";
+import assert from "assert";
 import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { FirestoreLoader } from "./firestore-loader";
-import { Firestore } from "@google-cloud/firestore";
-import { connectFirestore, deleteCollection } from "../__test/test-utils";
-import assert from "assert";
+import { useFirestoreTest } from "../__test/useFirestoreTest.hook";
+import { firestoreProvider } from "./firestore-provider";
 
 describe("FirestoreLoader", () => {
+  useFirestoreTest({ clearCollections: ["users"] });
   let firestore: Firestore;
   let loader: FirestoreLoader;
 
-  beforeAll(async () => (firestore = connectFirestore()));
   beforeEach(async () => {
-    await deleteCollection(firestore.collection("users"));
+    firestore = firestoreProvider.get();
     loader = new FirestoreLoader(firestore);
     jest.clearAllMocks();
   });

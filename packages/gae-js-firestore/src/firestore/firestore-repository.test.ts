@@ -11,7 +11,6 @@ import {
 } from "@mondomob/gae-js-core";
 import { toUpper } from "lodash";
 import { z } from "zod";
-import { connectFirestore, deleteCollection } from "../__test/test-utils";
 import { FIRESTORE_ID_FIELD } from "./firestore-constants";
 import { isFirestoreError } from "./firestore-errors";
 import { FirestoreLoader } from "./firestore-loader";
@@ -21,6 +20,7 @@ import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
 import { RepositoryNotFoundError } from "./repository-error";
 import { runInTransaction } from "./transactional";
 import { DateTransformers } from "./value-transformers";
+import { useFirestoreTest } from "../__test/useFirestoreTest.hook";
 
 const repositoryItemSchema = z.object({
   id: z.string(),
@@ -43,12 +43,13 @@ type RepositoryItem = z.infer<typeof repositoryItemSchema>;
 
 describe("FirestoreRepository", () => {
   const collection = "repository-items";
+  useFirestoreTest({ clearCollections: [collection] });
+
   let firestore: Firestore;
   let repository: FirestoreRepository<RepositoryItem>;
 
-  beforeAll(async () => (firestore = connectFirestore()));
   beforeEach(async () => {
-    await deleteCollection(firestore.collection(collection));
+    firestore = firestoreProvider.get();
     repository = new FirestoreRepository<RepositoryItem>(collection, { firestore });
     jest.clearAllMocks();
   });
@@ -630,10 +631,8 @@ describe("FirestoreRepository", () => {
   });
 
   describe("query", () => {
-
-    describe('filters', () => {
-
-      describe('filters specified by array', () => {
+    describe("filters", () => {
+      describe("filters specified by array", () => {
         it("filters by exact match", async () => {
           await repository.save([createItem("123"), createItem("234")]);
 
@@ -650,32 +649,30 @@ describe("FirestoreRepository", () => {
           expect(results.length).toBe(1);
           expect(results[0].name).toEqual("Test Item 234");
         });
-      })
+      });
 
-      describe('filters by class type', () => {
-
-        it('filters by exact match', async () => {
+      describe("filters by class type", () => {
+        it("filters by exact match", async () => {
           await repository.save([createItem("123"), createItem("234")]);
 
-          const results = await repository.query({filters: Filter.where("name", "==", "Test Item 234")})
+          const results = await repository.query({ filters: Filter.where("name", "==", "Test Item 234") });
 
           expect(results.length).toBe(1);
           expect(results[0].name).toEqual("Test Item 234");
-        })
+        });
 
-        it('supports an OR query',  async () => {
-          await repository.save([createItem("123"), createItem("234"), createItem('567')]);
-          const results = await repository.query({filters: Filter.or(Filter.where("id", "==", "123"), Filter.where("id", "==", "567"))})
+        it("supports an OR query", async () => {
+          await repository.save([createItem("123"), createItem("234"), createItem("567")]);
+          const results = await repository.query({
+            filters: Filter.or(Filter.where("id", "==", "123"), Filter.where("id", "==", "567")),
+          });
 
           expect(results.length).toBe(2);
           expect(results[0].name).toEqual("Test Item 123");
           expect(results[1].name).toEqual("Test Item 567");
-        })
-
-      })
-
-
-    })
+        });
+      });
+    });
 
     it("selects specific fields", async () => {
       await repository.save([

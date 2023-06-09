@@ -1,6 +1,6 @@
 import { Firestore } from "@google-cloud/firestore";
 import { runWithRequestStorage } from "@mondomob/gae-js-core";
-import { connectFirestore, deleteCollection, RepositoryItem } from "../__test/test-utils";
+import { RepositoryItem } from "../__test/test-utils";
 import { FirestoreLoader } from "./firestore-loader";
 import { FirestoreRepository } from "./firestore-repository";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
@@ -12,6 +12,8 @@ import {
   runInTransaction,
   Transactional,
 } from "./transactional";
+import { useFirestoreTest } from "../__test/useFirestoreTest.hook";
+import { firestoreProvider } from "./firestore-provider";
 
 class TransactionalService {
   constructor(
@@ -45,15 +47,15 @@ class TransactionalService {
 describe("Transactional", () => {
   const collection1 = "transactional1";
   const collection2 = "transactional2";
+  useFirestoreTest({ clearCollections: [collection1, collection1] });
+
   let firestore: Firestore;
   let repository1: FirestoreRepository<RepositoryItem>;
   let repository2: FirestoreRepository<RepositoryItem>;
   let service: TransactionalService;
 
-  beforeAll(async () => (firestore = connectFirestore()));
   beforeEach(async () => {
-    await deleteCollection(firestore.collection(collection1));
-    await deleteCollection(firestore.collection(collection2));
+    firestore = firestoreProvider.get();
     repository1 = new FirestoreRepository<RepositoryItem>(collection1, { firestore });
     repository2 = new FirestoreRepository<RepositoryItem>(collection2, { firestore });
     service = new TransactionalService(repository1, repository2);

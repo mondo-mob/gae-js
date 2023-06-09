@@ -1,9 +1,10 @@
-import { transactional, useFirestoreTest } from "../__test/test-utils";
+import { transactional } from "../__test/test-utils";
 import { MutexService } from "./mutex.service";
 import { Mutex, mutexesRepository } from "./mutexes.repository";
+import { useFirestoreTest } from "../__test/useFirestoreTest.hook";
 
 describe("MutexService", () => {
-  useFirestoreTest(["mutexes"]);
+  useFirestoreTest({ clearCollections: ["mutexes"] });
   let mutexService: MutexService;
 
   beforeEach(async () => {

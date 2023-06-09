@@ -1,5 +1,5 @@
-import { CollectionReference, Firestore, Settings } from "@google-cloud/firestore";
-import { configurationProvider, zodValidator, runWithRequestStorage } from "@mondomob/gae-js-core";
+import { CollectionReference } from "@google-cloud/firestore";
+import { configurationProvider, runWithRequestStorage, zodValidator } from "@mondomob/gae-js-core";
 import { GaeJsFirestoreConfiguration, gaeJsFirestoreConfigurationSchema } from "../configuration";
 import { FirestoreLoader, firestoreLoaderRequestStorage, firestoreProvider } from "../firestore";
 
@@ -28,41 +28,14 @@ export const initEmulatorConfig = async (
   });
 };
 
-export const connectFirestore = (settings?: Settings): Firestore => {
-  return new Firestore({
-    projectId: "firestore-tests",
-    host: "localhost",
-    port: 9000,
-    ssl: false,
-    credentials: { client_email: "test@example.com", private_key: "{}" },
-    ...settings,
-  });
-};
-
 export const deleteCollection = async (collection: CollectionReference): Promise<void> => {
-  const docs = await collection.limit(100).get();
-  const batch = collection.firestore.batch();
-  docs.forEach((d) => batch.delete(d.ref));
-  await batch.commit();
-
-  if (docs.size === 100) {
-    await deleteCollection(collection);
-  }
+  await firestoreProvider.get().recursiveDelete(collection);
 };
 
 export const deleteCollections = async (collectionNames: string[]): Promise<void> => {
   for (const name of collectionNames) {
     await deleteCollection(firestoreProvider.get().collection(name));
   }
-};
-
-export const useFirestoreTest = (collectionsToClear: string[] = []) => {
-  beforeEach(async () => {
-    await initEmulatorConfig();
-    const firestore = connectFirestore();
-    firestoreProvider.set(firestore);
-    await deleteCollections(collectionsToClear);
-  });
 };
 
 // Helper for standalone tests that require transaction support
