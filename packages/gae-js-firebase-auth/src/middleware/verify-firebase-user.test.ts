@@ -12,7 +12,7 @@ import {
 } from "@mondomob/gae-js-core";
 
 const emulatorSignup = async (email: string): Promise<any> => {
-  const emulatorResponse = await request("http://localhost:9099")
+  const emulatorResponse = await request("http://127.0.0.1:9099")
     .post("/identitytoolkit.googleapis.com/v1/accounts:signUp?key=123")
     .send({ email, password: "password", returnSecureToken: true });
   return emulatorResponse.body;
@@ -31,7 +31,7 @@ const exposeErrors: ErrorRequestHandler = (err, req, res, next) => {
 const firebaseAdmin = initializeApp({ projectId: "auth-tests" });
 
 const initApp = (mwOptions?: VerifyOptions) => {
-  process.env.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099";
+  process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
   userRequestStorageProvider.set(new RequestStorageStore<AuthUser>("_USER"));
   const app = express();
   app.use(requestAsyncStorage);

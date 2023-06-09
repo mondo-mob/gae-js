@@ -8,7 +8,7 @@ import {
 export const initTestConfig = async (config?: Partial<GaeJsCoreConfiguration>): Promise<GaeJsCoreConfiguration> => {
   process.env.GAEJS_PROJECT = "tasks-tests";
   process.env.GAEJS_CONFIG_OVERRIDES = JSON.stringify({
-    host: "http://localhost",
+    host: "http://127.0.0.1",
     location: "local",
     ...config,
   });

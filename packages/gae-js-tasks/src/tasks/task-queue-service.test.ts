@@ -97,25 +97,25 @@ describe("TaskQueueService", () => {
       });
 
       it("posts to local task service", async () => {
-        const scope = nock("http://localhost").post("/tasks/local-task").reply(204);
+        const scope = nock("http://127.0.0.1").post("/tasks/local-task").reply(204);
         await taskQueueService.enqueue("local-task");
         await waitUntil(() => scope.isDone());
       });
 
       it("posts to local task service with body", async () => {
-        const scope = nock("http://localhost").post("/tasks/local-task", { some: "data" }).reply(204);
+        const scope = nock("http://127.0.0.1").post("/tasks/local-task", { some: "data" }).reply(204);
         await taskQueueService.enqueue<TestPayload>("local-task", { data: { some: "data" } });
         await waitUntil(() => scope.isDone());
       });
 
       it("local task enqueues even if downstream execution fails", async () => {
-        const scope = nock("http://localhost").post("/tasks/local-task", { some: "data" }).reply(500);
+        const scope = nock("http://127.0.0.1").post("/tasks/local-task", { some: "data" }).reply(500);
         await taskQueueService.enqueue<TestPayload>("local-task", { data: { some: "data" } });
         await waitUntil(() => scope.isDone());
       });
 
       it("ignores leading slash on task name", async () => {
-        const scope = nock("http://localhost").post("/tasks/local-task").reply(204);
+        const scope = nock("http://127.0.0.1").post("/tasks/local-task").reply(204);
         await taskQueueService.enqueue("/local-task");
         await waitUntil(() => scope.isDone());
       });
@@ -132,19 +132,19 @@ describe("TaskQueueService", () => {
       });
 
       it("posts to local task service", async () => {
-        const scope = nock("http://localhost").post("/admin/tasks/local-task").reply(204);
+        const scope = nock("http://127.0.0.1").post("/admin/tasks/local-task").reply(204);
         await taskQueueService.enqueue("local-task");
         await waitUntil(() => scope.isDone());
       });
 
       it("posts to local task service with body", async () => {
-        const scope = nock("http://localhost").post("/admin/tasks/local-task", { some: "data" }).reply(204);
+        const scope = nock("http://127.0.0.1").post("/admin/tasks/local-task", { some: "data" }).reply(204);
         await taskQueueService.enqueue("local-task", { data: { some: "data" } });
         await waitUntil(() => scope.isDone());
       });
 
       it("ignores leading slash on task name", async () => {
-        const scope = nock("http://localhost").post("/admin/tasks/local-task").reply(204);
+        const scope = nock("http://127.0.0.1").post("/admin/tasks/local-task").reply(204);
         await taskQueueService.enqueue("/local-task");
         await waitUntil(() => scope.isDone());
       });
