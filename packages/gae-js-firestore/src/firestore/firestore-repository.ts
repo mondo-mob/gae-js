@@ -1,4 +1,10 @@
-import { DocumentReference, Firestore, Precondition } from "@google-cloud/firestore";
+import {
+  CollectionReference,
+  DocumentReference,
+  Firestore,
+  Precondition,
+  QuerySnapshot,
+} from "@google-cloud/firestore";
 import {
   createLogger,
   DataValidator,
@@ -28,6 +34,13 @@ const SEARCH_NOT_ENABLED_MSG = "Search is not configured for this repository";
 // Keep this generic so we don't hardcode "string" everywhere, in case this ever changes
 type IdType = string;
 
+interface DocumentIdentifier {
+  id: IdType;
+  parentPath: string;
+}
+
+type IdQueryOptions<T> = Omit<QueryOptions<T>, "select">;
+
 export interface BaseEntity {
   id: IdType;
 }
@@ -50,7 +63,13 @@ export interface RepositoryOptions<T extends BaseEntity> {
   valueTransformers?: ValueTransformers<T>;
 }
 
-export class FirestoreRepository<T extends BaseEntity> {
+export interface CollectionGroupQueryRepository<T> {
+  countGroup(options: Partial<FilterOptions>): Promise<number>;
+  queryGroup(options?: QueryOptions<T>): Promise<QueryResponse<T>>;
+  queryGroupForIds(options?: IdQueryOptions<T>): Promise<QueryResponse<DocumentIdentifier>>;
+}
+
+export class FirestoreRepository<T extends BaseEntity> implements CollectionGroupQueryRepository<T> {
   private readonly logger = createLogger("firestore-repository");
   private readonly validator?: DataValidator<T>;
   private readonly firestore?: Firestore;
@@ -120,21 +139,43 @@ export class FirestoreRepository<T extends BaseEntity> {
     return this.getLoader().execCount(this.collectionPath, options);
   }
 
-  async query(options: QueryOptions<T> = {}): Promise<QueryResponse<T>> {
-    const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, options);
-
-    return querySnapshot.docs.map((snapshot) => {
-      const entity = this.createEntity(snapshot.ref.id, snapshot.data());
-      return this.validateLoad(entity);
-    });
+  /**
+   * Performs a count of all matching documents for a collection group query against the collection id of
+   * this repository.
+   * @param options query options
+   */
+  async countGroup(options: Partial<FilterOptions> = {}): Promise<number> {
+    return this.getLoader().execGroupCount(this.collectionRef().id, options);
   }
 
-  async queryForIds(options: Omit<QueryOptions<T>, "select"> = {}): Promise<QueryResponse<IdType>> {
-    const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, {
-      ...options,
-      select: [], // the __name__ prop always comes back
-    });
+  async query(options: QueryOptions<T> = {}): Promise<QueryResponse<T>> {
+    return this.dataQueryResponse(this.getLoader().executeQuery<T>(this.collectionPath, options));
+  }
+
+  /**
+   * Performs a collection group query against the collection id of this repository.
+   * @param options query options
+   */
+  async queryGroup(options: QueryOptions<T> = {}): Promise<QueryResponse<T>> {
+    return this.dataQueryResponse(this.getLoader().executeGroupQuery<T>(this.collectionRef().id, options));
+  }
+
+  async queryForIds(options: IdQueryOptions<T> = {}): Promise<QueryResponse<IdType>> {
+    const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, this.idOnlyQueryOptions(options));
     return querySnapshot.docs.map(({ ref }) => ref.id);
+  }
+
+  /**
+   * Performs a collection group query against the collection id of this repository and returns
+   * the ids for any matching documents.
+   * @param options query options
+   */
+  async queryGroupForIds(options: IdQueryOptions<T> = {}): Promise<QueryResponse<DocumentIdentifier>> {
+    const querySnapshot = await this.getLoader().executeGroupQuery<T>(
+      this.collectionRef().id,
+      this.idOnlyQueryOptions(options)
+    );
+    return querySnapshot.docs.map(({ ref }) => ({ id: ref.id, parentPath: ref.parent.path }));
   }
 
   /**
@@ -212,6 +253,10 @@ export class FirestoreRepository<T extends BaseEntity> {
     };
   }
 
+  collectionRef = (): CollectionReference => {
+    return this.getFirestore().collection(`${this.collectionPath}`);
+  };
+
   documentRef = (name: string): DocumentReference => {
     return this.getFirestore().doc(`${this.collectionPath}/${name}`);
   };
@@ -220,6 +265,21 @@ export class FirestoreRepository<T extends BaseEntity> {
     const transformed: T = this.afterRead(doc as T);
     return { ...transformed, id } as T;
   };
+
+  private idOnlyQueryOptions = (options: IdQueryOptions<T>): QueryOptions<T> => {
+    return {
+      ...options,
+      select: [], // the __name__ prop always comes back
+    };
+  };
+
+  private async dataQueryResponse(query: Promise<QuerySnapshot>): Promise<QueryResponse<T>> {
+    const querySnapshot = await query;
+    return querySnapshot.docs.map((snapshot) => {
+      const entity = this.createEntity(snapshot.ref.id, snapshot.data());
+      return this.validateLoad(entity);
+    });
+  }
 
   private async applyMutation(
     entities: OneOrMany<T>,

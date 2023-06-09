@@ -3,13 +3,14 @@ import { castArray, chunk, cloneDeep } from "lodash";
 import {
   DocumentData,
   DocumentReference,
-  DocumentSnapshot, Filter,
+  DocumentSnapshot,
+  Filter,
   Firestore,
   Precondition,
   Query,
   QuerySnapshot,
   Transaction,
-  WriteBatch
+  WriteBatch,
 } from "@google-cloud/firestore";
 import { FilterOptions, QueryOptions } from "./firestore-query";
 import { FirestoreRepositoryError } from "./repository-error";
@@ -107,40 +108,23 @@ export class FirestoreLoader {
   }
 
   async execCount(collectionPath: string, options: FilterOptions): Promise<number> {
-    const query = this.buildFilterQuery(collectionPath, options).count();
-    const querySnapshot = this.transaction ? await this.transaction.get(query) : await query.get();
-    return querySnapshot.data().count;
+    const query = this.applyQueryOptions(this.firestore.collection(collectionPath), options);
+    return this.runCountQuery(query);
+  }
+
+  async execGroupCount(collectionId: string, options: FilterOptions): Promise<number> {
+    const query = this.applyQueryOptions(this.firestore.collectionGroup(collectionId), options);
+    return this.runCountQuery(query);
   }
 
   async executeQuery<T>(collectionPath: string, options: QueryOptions<T>): Promise<QuerySnapshot> {
-    let query = this.buildFilterQuery(collectionPath, options);
-    if (options.select) {
-      query = query.select(...options.select);
-    }
+    const query = this.applyQueryOptions(this.firestore.collection(collectionPath), options);
+    return this.runDataQuery(query, options);
+  }
 
-    if (options.sort) {
-      castArray(options.sort).forEach((sort) => (query = query.orderBy(sort.fieldPath, sort.direction)));
-    }
-
-    if (options.limit) {
-      query = query.limit(options.limit);
-    }
-
-    if (options.startAfter) query = query.startAfter(...options.startAfter);
-    if (options.startAt) query = query.startAt(...options.startAt);
-    if (options.endAt) query = query.endAt(...options.endAt);
-    if (options.endBefore) query = query.endBefore(...options.endBefore);
-
-    if (options.offset) {
-      query = query.offset(options.offset);
-    }
-
-    const querySnapshot = this.transaction ? await this.transaction.get(query) : await query.get();
-    if (!options.select) {
-      // Update cache only when query does not select specific fields
-      querySnapshot.forEach((result) => setCacheFromSnapshot(this.loader, result));
-    }
-    return querySnapshot;
+  async executeGroupQuery<T>(collectionId: string, options: QueryOptions<T>): Promise<QuerySnapshot> {
+    const query = this.applyQueryOptions(this.firestore.collectionGroup(collectionId), options);
+    return this.runDataQuery(query, options);
   }
 
   async inTransaction<T>(updateFunction: (loader: FirestoreLoader) => Promise<T>): Promise<T> {
@@ -165,11 +149,53 @@ export class FirestoreLoader {
     return !!this.transaction;
   }
 
-  private buildFilterQuery(collectionPath: string, { filters }: FilterOptions): Query {
-    let query = this.firestore.collection(collectionPath) as Query;
+  private async runCountQuery(query: Query): Promise<number> {
+    const countQuery = query.count();
+    const querySnapshot = this.transaction ? await this.transaction.get(countQuery) : await countQuery.get();
+    return querySnapshot.data().count;
+  }
+
+  private async runDataQuery<T>(query: Query, options: QueryOptions<T>): Promise<QuerySnapshot> {
+    const querySnapshot = this.transaction ? await this.transaction.get(query) : await query.get();
+    if (!options.select) {
+      // Update cache only when query does not select specific fields
+      querySnapshot.forEach((result) => setCacheFromSnapshot(this.loader, result));
+    }
+    return querySnapshot;
+  }
+
+  private applyQueryOptions<T>(baseQuery: Query, options: QueryOptions<T>): Query {
+    let query = this.applyQueryFilters(baseQuery, options);
+
+    if (options.select) {
+      query = query.select(...options.select);
+    }
+
+    if (options.sort) {
+      castArray(options.sort).forEach((sort) => (query = query.orderBy(sort.fieldPath, sort.direction)));
+    }
+
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+
+    if (options.startAfter) query = query.startAfter(...options.startAfter);
+    if (options.startAt) query = query.startAt(...options.startAt);
+    if (options.endAt) query = query.endAt(...options.endAt);
+    if (options.endBefore) query = query.endBefore(...options.endBefore);
+
+    if (options.offset) {
+      query = query.offset(options.offset);
+    }
+
+    return query;
+  }
+
+  private applyQueryFilters(baseQuery: Query, { filters }: FilterOptions): Query {
+    let query = baseQuery;
     if (filters) {
       if (filters instanceof Filter) {
-        query = query.where(filters)
+        query = query.where(filters);
       } else {
         filters.forEach((filter) => (query = query.where(filter.fieldPath, filter.opStr, filter.value)));
       }
