@@ -1,5 +1,18 @@
 # @mondomob/gae-js-firestore
 
+## 16.2.0
+
+### Minor Changes
+
+- 81a9f1f: Add support for collection group queries
+
+  New repository methods `queryGroup`, `queryGroupForIds` and `countGroup` to perform collection group queries against the collection id of the repository.
+
+  e.g. for a repository with collection path of `account/123/transactions`, the collection id is `transactions`. So a collection group query would run against all collections with the id `transactions` - i.e. the transactions from all accounts.
+
+  For this reason it is important to ensure that any collections you wish to use in a collection group query have unique ids.
+
+
 ## 16.1.0
 
 ### Minor Changes
