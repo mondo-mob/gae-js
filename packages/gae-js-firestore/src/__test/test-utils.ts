@@ -2,11 +2,24 @@ import { CollectionReference } from "@google-cloud/firestore";
 import { configurationProvider, runWithRequestStorage, zodValidator } from "@mondomob/gae-js-core";
 import { GaeJsFirestoreConfiguration, gaeJsFirestoreConfigurationSchema } from "../configuration";
 import { FirestoreLoader, firestoreLoaderRequestStorage, firestoreProvider } from "../firestore";
+import { z } from "zod";
 
-export interface RepositoryItem {
-  id: string;
-  name: string;
-}
+export const repositoryItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  prop1: z.string().optional(),
+  prop2: z.string().optional(),
+  prop3: z.string().optional(),
+  date1: z.date().optional(),
+  nested: z
+    .object({
+      prop4: z.string(),
+      date2: z.date(),
+    })
+    .optional(),
+});
+
+export type RepositoryItem = z.infer<typeof repositoryItemSchema>;
 
 export const initTestConfig = async (config: Record<string, unknown> = {}): Promise<GaeJsFirestoreConfiguration> => {
   await configurationProvider.init({

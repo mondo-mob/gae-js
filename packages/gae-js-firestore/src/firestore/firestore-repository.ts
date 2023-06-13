@@ -1,10 +1,4 @@
-import {
-  CollectionReference,
-  DocumentReference,
-  Firestore,
-  Precondition,
-  QuerySnapshot,
-} from "@google-cloud/firestore";
+import { CollectionReference, DocumentReference, Firestore, Precondition } from "@google-cloud/firestore";
 import {
   createLogger,
   DataValidator,
@@ -23,32 +17,13 @@ import {
 import assert from "assert";
 import { castArray, first } from "lodash";
 import { DeleteAllOptions, FirestoreLoader, FirestorePayload } from "./firestore-loader";
-import { firestoreProvider } from "./firestore-provider";
-import { FilterOptions, QueryOptions, QueryResponse } from "./firestore-query";
-import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
-import { RepositoryError, RepositoryNotFoundError } from "./repository-error";
-import { DateTransformers, transformDeep, ValueTransformer } from "./value-transformers";
+import { FilterOptions, idOnlyQueryOptions, IdQueryOptions, QueryOptions, QueryResponse } from "./firestore-query";
+import { RepositoryNotFoundError } from "./repository-error";
+import { transformDeep } from "./value-transformers";
+import { BaseEntity, IdType, ValueTransformers } from "./types";
+import { FirestoreBaseRepository } from "./firestore-base-repository";
 
 const SEARCH_NOT_ENABLED_MSG = "Search is not configured for this repository";
-
-// Keep this generic so we don't hardcode "string" everywhere, in case this ever changes
-type IdType = string;
-
-interface DocumentIdentifier {
-  id: IdType;
-  parentPath: string;
-}
-
-type IdQueryOptions<T> = Omit<QueryOptions<T>, "select">;
-
-export interface BaseEntity {
-  id: IdType;
-}
-
-export interface ValueTransformers<T> {
-  read: ValueTransformer<T>[];
-  write: ValueTransformer<T>[];
-}
 
 export interface RepositorySearchOptions<T extends BaseEntity> {
   indexName: string;
@@ -63,35 +38,13 @@ export interface RepositoryOptions<T extends BaseEntity> {
   valueTransformers?: ValueTransformers<T>;
 }
 
-export interface CollectionGroupQueryRepository<T> {
-  countGroup(options: Partial<FilterOptions>): Promise<number>;
-  queryGroup(options?: QueryOptions<T>): Promise<QueryResponse<T>>;
-  queryGroupForIds(options?: IdQueryOptions<T>): Promise<QueryResponse<DocumentIdentifier>>;
-}
-
-export class FirestoreRepository<T extends BaseEntity> implements CollectionGroupQueryRepository<T> {
+export class FirestoreRepository<T extends BaseEntity> extends FirestoreBaseRepository<T> {
   private readonly logger = createLogger("firestore-repository");
-  private readonly validator?: DataValidator<T>;
-  private readonly firestore?: Firestore;
   protected readonly searchOptions?: RepositorySearchOptions<T>;
-  protected readonly valueTransformers: ValueTransformers<T>;
 
-  constructor(
-    protected readonly collectionPath: string,
-    {
-      validator,
-      firestore,
-      search,
-      valueTransformers = {
-        write: [DateTransformers.write()],
-        read: [DateTransformers.read()],
-      },
-    }: RepositoryOptions<T> = {}
-  ) {
-    this.validator = validator;
-    this.firestore = firestore;
-    this.searchOptions = search;
-    this.valueTransformers = valueTransformers;
+  constructor(protected readonly collectionPath: string, options: RepositoryOptions<T> = {}) {
+    super(collectionPath, options);
+    this.searchOptions = options.search;
   }
 
   async getRequired(id: string): Promise<T>;
@@ -139,54 +92,17 @@ export class FirestoreRepository<T extends BaseEntity> implements CollectionGrou
     return this.getLoader().execCount(this.collectionPath, options);
   }
 
-  /**
-   * Performs a count of all matching documents for a collection group query against the collection id of
-   * this repository.
-   * @param options query options
-   */
-  async countGroup(options: Partial<FilterOptions> = {}): Promise<number> {
-    return this.getLoader().execGroupCount(this.collectionRef().id, options);
-  }
-
   async query(options: QueryOptions<T> = {}): Promise<QueryResponse<T>> {
-    return this.dataQueryResponse(this.getLoader().executeQuery<T>(this.collectionPath, options));
-  }
-
-  /**
-   * Performs a collection group query against the collection id of this repository.
-   * @param options query options
-   */
-  async queryGroup(options: QueryOptions<T> = {}): Promise<QueryResponse<T>> {
-    return this.dataQueryResponse(this.getLoader().executeGroupQuery<T>(this.collectionRef().id, options));
+    const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, options);
+    return querySnapshot.docs.map((snapshot) => {
+      const entity = this.createEntity(snapshot.ref.id, snapshot.data());
+      return this.validateLoad(entity);
+    });
   }
 
   async queryForIds(options: IdQueryOptions<T> = {}): Promise<QueryResponse<IdType>> {
-    const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, this.idOnlyQueryOptions(options));
+    const querySnapshot = await this.getLoader().executeQuery<T>(this.collectionPath, idOnlyQueryOptions(options));
     return querySnapshot.docs.map(({ ref }) => ref.id);
-  }
-
-  /**
-   * Performs a collection group query against the collection id of this repository and returns
-   * the ids for any matching documents.
-   * @param options query options
-   */
-  async queryGroupForIds(options: IdQueryOptions<T> = {}): Promise<QueryResponse<DocumentIdentifier>> {
-    const querySnapshot = await this.getLoader().executeGroupQuery<T>(
-      this.collectionRef().id,
-      this.idOnlyQueryOptions(options)
-    );
-    return querySnapshot.docs.map(({ ref }) => ({ id: ref.id, parentPath: ref.parent.path }));
-  }
-
-  /**
-   * Common hook to allow sub-classes to do any transformations necessary after data is read from Firestore.
-   *
-   * By default, a single transform is executed which will convert all Firestore Timestamps back to Date.
-   *
-   * @param entity The entity read from Firestore.
-   */
-  protected afterRead(entity: T): T {
-    return transformDeep(entity, this.valueTransformers.read);
   }
 
   async save(entities: T): Promise<T>;
@@ -261,26 +177,6 @@ export class FirestoreRepository<T extends BaseEntity> implements CollectionGrou
     return this.getFirestore().doc(`${this.collectionPath}/${name}`);
   };
 
-  createEntity = (id: string, doc: Record<string, unknown>): T => {
-    const transformed: T = this.afterRead(doc as T);
-    return { ...transformed, id } as T;
-  };
-
-  private idOnlyQueryOptions = (options: IdQueryOptions<T>): QueryOptions<T> => {
-    return {
-      ...options,
-      select: [], // the __name__ prop always comes back
-    };
-  };
-
-  private async dataQueryResponse(query: Promise<QuerySnapshot>): Promise<QueryResponse<T>> {
-    const querySnapshot = await query;
-    return querySnapshot.docs.map((snapshot) => {
-      const entity = this.createEntity(snapshot.ref.id, snapshot.data());
-      return this.validateLoad(entity);
-    });
-  }
-
   private async applyMutation(
     entities: OneOrMany<T>,
     mutation: (loader: FirestoreLoader, entities: ReadonlyArray<FirestorePayload>) => Promise<any>
@@ -304,21 +200,7 @@ export class FirestoreRepository<T extends BaseEntity> implements CollectionGrou
     return mapOneOrMany(transformedEntities, (e) => this.afterRead(e));
   }
 
-  private validateLoad = (entity: T) => this.validateEntity(entity, "load");
-
   private validateSave = (entity: T) => this.validateEntity(entity, "save");
-
-  private validateEntity = (entity: T, operation: "load" | "save"): T => {
-    if (!this.validator) {
-      return entity;
-    }
-
-    try {
-      return this.validator(entity);
-    } catch (e) {
-      throw new RepositoryError(operation, this.collectionPath, entity.id, [(e as Error).message]);
-    }
-  };
 
   protected prepareSearchEntry(entity: T): IndexEntry {
     assert.ok(this.searchOptions, SEARCH_NOT_ENABLED_MSG);
@@ -343,15 +225,6 @@ export class FirestoreRepository<T extends BaseEntity> implements CollectionGrou
     }
     return results.filter((result): result is T => !!result);
   }
-
-  private getFirestore = (): Firestore => {
-    return this.firestore ?? firestoreProvider.get();
-  };
-
-  private getLoader = (): FirestoreLoader => {
-    const loader = firestoreLoaderRequestStorage.get();
-    return loader ?? new FirestoreLoader(this.getFirestore());
-  };
 
   private getSearchService = (): SearchService => {
     return this.searchOptions?.searchService ?? searchProvider.get();

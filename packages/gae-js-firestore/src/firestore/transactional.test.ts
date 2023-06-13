@@ -1,6 +1,5 @@
 import { Firestore } from "@google-cloud/firestore";
 import { runWithRequestStorage } from "@mondomob/gae-js-core";
-import { RepositoryItem } from "../__test/test-utils";
 import { FirestoreLoader } from "./firestore-loader";
 import { FirestoreRepository } from "./firestore-repository";
 import { firestoreLoaderRequestStorage } from "./firestore-request-storage";
@@ -14,6 +13,11 @@ import {
 } from "./transactional";
 import { useFirestoreTest } from "../__test/useFirestoreTest.hook";
 import { firestoreProvider } from "./firestore-provider";
+
+interface RepositoryItem {
+  id: string;
+  name: string;
+}
 
 class TransactionalService {
   constructor(

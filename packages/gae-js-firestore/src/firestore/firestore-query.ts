@@ -29,3 +29,12 @@ export interface QueryOptions<T> extends FilterOptions {
 }
 
 export type QueryResponse<T> = ReadonlyArray<T>;
+
+export type IdQueryOptions<T> = Omit<QueryOptions<T>, "select">;
+
+export const idOnlyQueryOptions = <T>(options: IdQueryOptions<T>) => {
+  return {
+    ...options,
+    select: [], // the __name__ prop always comes back
+  };
+};
