@@ -1,6 +1,6 @@
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import { SecretsClient } from "./secrets.client";
-import { BadRequestError } from "../../error";
+import { BadRequestError } from "../../../error";
 import SpyInstance = jest.SpyInstance;
 
 const RESOLVED_SECRET = "-secret-";

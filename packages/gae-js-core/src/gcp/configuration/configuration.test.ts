@@ -1,10 +1,12 @@
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import { z } from "zod";
-import { withEnvVars } from "../__test/test-utils";
-import { zodValidator } from "../util";
-import { ConfigurationOptions, ConfigValidator, initialiseConfiguration } from "./configuration";
+import { withEnvVars } from "../../__test/test-utils";
+import { zodValidator } from "../../util";
+import { ConfigValidator } from "../../configuration/configuration";
 import { gaeJsCoreConfigurationSchema } from "./schema";
-import { ENV_VAR_CONFIG_ENV, ENV_VAR_CONFIG_OVERRIDES, ENV_VAR_PROJECT } from "./variables";
+import { ENV_VAR_CONFIG_OVERRIDES } from "../../configuration/variables";
+import { ConfigurationOptions, initialiseConfiguration } from "./configuration";
+import { ENV_VAR_CONFIG_ENV, ENV_VAR_PROJECT } from "./variables";
 import SpyInstance = jest.SpyInstance;
 
 const configSchema = gaeJsCoreConfigurationSchema.extend({
@@ -23,7 +25,7 @@ const withOptions = (overrides?: Partial<ConfigurationOptions<Config>>): Configu
 
 const fromDir = (dir: string, overrides?: Partial<ConfigurationOptions<Config>>): ConfigurationOptions<Config> =>
   withOptions({
-    configDir: `${__dirname}/__test/${dir}`,
+    configDir: `${__dirname}/../../configuration/__test/${dir}`,
     ...overrides,
   });
 
@@ -31,7 +33,7 @@ describe("configuration", () => {
   let accessSecretVersionSpy: SpyInstance;
   beforeEach(() => {
     const cwdSpy = jest.spyOn(process, "cwd");
-    cwdSpy.mockReturnValue(`${__dirname}/__test`);
+    cwdSpy.mockReturnValue(`${__dirname}/../../configuration/__test`);
     accessSecretVersionSpy = jest.spyOn(SecretManagerServiceClient.prototype, "accessSecretVersion");
   });
 

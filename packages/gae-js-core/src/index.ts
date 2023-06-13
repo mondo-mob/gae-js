@@ -2,6 +2,7 @@ export * from "./auth";
 export * from "./bootstrap";
 export * from "./configuration";
 export * from "./error";
+export * from "./gcp";
 export * from "./logging";
 export * from "./middleware";
 export * from "./request-storage";

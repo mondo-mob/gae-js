@@ -1,4 +1,4 @@
-import { requestTimeoutMinutes } from "../middleware";
+import { requestTimeoutMinutes } from "../../middleware";
 import { verifyCron } from "./verify-cron";
 
 /**

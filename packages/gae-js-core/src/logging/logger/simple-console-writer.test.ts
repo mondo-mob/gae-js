@@ -1,10 +1,19 @@
 import { createLogger } from "../logging";
 import { Logger } from "./logger";
+import { defaultLoggerProvider } from "../default-logger-provider";
+import * as BunyanLogger from "bunyan";
+import { simpleConsoleWriter } from "./simple-console-writer";
 
 describe("simpleConsoleWriter", () => {
   let logger: Logger;
 
   beforeEach(() => {
+    defaultLoggerProvider.set(
+      BunyanLogger.createLogger({
+        name: "test",
+        streams: [{ type: "raw", stream: simpleConsoleWriter }],
+      })
+    );
     logger = createLogger("testing");
   });
 

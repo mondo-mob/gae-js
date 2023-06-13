@@ -1,22 +1,27 @@
-import _, { isString } from "lodash";
-import { createLogger } from "../logging";
-import { GaeJsCoreConfiguration } from "./schema";
-import Path from "path";
 import FileSystem from "fs";
-import { ENV_VAR_CONFIG_DIR, ENV_VAR_CONFIG_ENV, ENV_VAR_CONFIG_OVERRIDES, ENV_VAR_PROJECT } from "./variables";
-import { SecretsResolver } from "./secrets/secrets.resolver";
+import { merge } from "lodash";
+import Path from "path";
+import { createLogger } from "../logging";
+import { ENV_VAR_CONFIG_DIR, ENV_VAR_CONFIG_OVERRIDES } from "./variables";
 import { DataValidator } from "../util/data";
-
-export type EnvironmentStrategy = (projectId?: string) => string | undefined;
 
 export type ConfigValidator<T> = DataValidator<T>;
 
-export interface ConfigurationOptions<T extends GaeJsCoreConfiguration> {
+export type ConfigValueResolver = (config: Record<string, unknown>) => Promise<Record<string, unknown>>;
+
+export type ConfigEnvironment = {
+  defaultProps?: Record<string, unknown>;
+  files?: string[];
+};
+
+export type ConfigEnvironmentResolver = () => ConfigEnvironment | Promise<ConfigEnvironment>;
+
+export interface ConfigurationOptions<T> {
+  environmentResolver: ConfigEnvironmentResolver;
   validator: ConfigValidator<T>;
   configDir?: string;
-  projectId?: string;
-  environment?: string | EnvironmentStrategy;
   overrides?: Record<string, unknown>;
+  valueResolvers?: ConfigValueResolver[];
 }
 
 const readFile = async (file: string) => {
@@ -43,48 +48,16 @@ const parseJsonSource = (source: string, content: string): Record<string, unknow
   }
 };
 
-export const getProjectId = (optionsProjectId?: string): string | undefined => {
-  if (optionsProjectId) return optionsProjectId;
-  if (process.env[ENV_VAR_PROJECT]) return process.env[ENV_VAR_PROJECT];
-  if (process.env.GOOGLE_CLOUD_PROJECT) return process.env.GOOGLE_CLOUD_PROJECT;
-  // TODO: Support metadata lookup - i.e. so we can support cloud functions
-  return undefined;
-};
-
-const projectSuffixEnvironment: EnvironmentStrategy = (projectId?: string) => {
-  if (!projectId) return undefined;
-  return _.last(projectId.split("-"));
-};
-
-const getEnvironment = (
-  projectId: string | undefined,
-  optionsEnvironment?: string | EnvironmentStrategy
-): string | undefined => {
-  if (isString(optionsEnvironment)) return optionsEnvironment;
-  if (process.env[ENV_VAR_CONFIG_ENV]) return process.env[ENV_VAR_CONFIG_ENV];
-
-  const strategy = optionsEnvironment || projectSuffixEnvironment;
-  return strategy(projectId);
-};
-
-const loadRawConfiguration = async <T extends GaeJsCoreConfiguration>(
-  options: ConfigurationOptions<T>
-): Promise<Record<string, unknown>> => {
+const loadRawConfiguration = async <T>(options: ConfigurationOptions<T>): Promise<Record<string, unknown>> => {
   const logger = createLogger("loadConfiguration");
 
-  // 1. Identify project id (if possible)
-  const projectId = getProjectId(options.projectId);
-  logger.info(projectId ? `Loading config for projectId ${projectId}` : "No projectId identified");
+  // 1. Identify environment
+  const environment = await options.environmentResolver();
 
-  // 2. Identify environment (if possible)
-  const environment = getEnvironment(projectId, options.environment);
-  logger.info(environment ? `Loading config for environment ${environment}` : "No config environment identified");
+  // 2. Identify target files
+  const targetFiles = ["default.json", ...(environment.files ?? [])];
 
-  // 3. Identify target files
-  const targetFiles = ["default.json"];
-  if (environment) targetFiles.push(`${environment}.json`);
-
-  // 4. Read file config sources
+  // 3. Read file config sources
   const configDir = options.configDir || process.env[ENV_VAR_CONFIG_DIR] || Path.join(process.cwd(), "config");
   logger.info(`Using config directory ${configDir}`);
   const sources: { name: string; content: Record<string, unknown> }[] = [];
@@ -97,46 +70,35 @@ const loadRawConfiguration = async <T extends GaeJsCoreConfiguration>(
     }
   }
 
-  // 5. Add env var source if set
+  // 4. Add env var source if set
   const envVarContent = process.env[ENV_VAR_CONFIG_OVERRIDES];
   if (envVarContent) {
     const parsedContent = parseJsonSource(ENV_VAR_CONFIG_OVERRIDES, envVarContent);
     sources.push({ name: ENV_VAR_CONFIG_OVERRIDES, content: parsedContent });
   }
 
-  // 6. Add overrides source if set
+  // 5. Add overrides source if set
   if (options.overrides) {
     sources.push({ name: "options.overrides", content: options.overrides });
   }
 
-  // 7. Merge sources in order
+  // 6. Merge sources in order
   logger.info(
     "Merging config sources",
     sources.map((s) => s.name)
   );
-  const mergedConfig: Record<string, unknown> = { projectId, environment };
+  const mergedConfig: Record<string, unknown> = { ...environment.defaultProps };
   sources.forEach((parsedConfig) => {
-    _.merge(mergedConfig, parsedConfig.content);
+    merge(mergedConfig, parsedConfig.content);
   });
 
   return mergedConfig;
 };
 
-const resolveSecrets = async (config: Record<string, unknown>): Promise<Record<string, unknown>> => {
-  const logger = createLogger("resolveSecrets");
-  logger.info("Resolving all secrets ...");
-  const rawProjectId = config.secretsProjectId || config.projectId;
-  const secretsProjectId = typeof rawProjectId === "string" ? rawProjectId : undefined;
-  const secretsResolver = new SecretsResolver({ projectId: secretsProjectId });
-  const configWithSecrets = await secretsResolver.resolveSecrets(config);
-  logger.info("Secrets resolved");
-  return configWithSecrets;
-};
-
-export const initialiseConfiguration = async <T extends GaeJsCoreConfiguration>(
-  options: ConfigurationOptions<T>
-): Promise<T> => {
-  const raw = await loadRawConfiguration(options);
-  const withSecrets = await resolveSecrets(raw);
-  return options.validator(withSecrets);
+export const loadConfiguration = async <T>(options: ConfigurationOptions<T>): Promise<T> => {
+  let config = await loadRawConfiguration(options);
+  for (const resolver of options.valueResolvers ?? []) {
+    config = await resolver(config);
+  }
+  return options.validator(config);
 };

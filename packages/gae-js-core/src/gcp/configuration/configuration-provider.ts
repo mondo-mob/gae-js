@@ -1,5 +1,5 @@
 import { GaeJsCoreConfiguration } from "./schema";
-import { Provider } from "../util";
+import { Provider } from "../../util";
 import { ConfigurationOptions, initialiseConfiguration } from "./configuration";
 
 export class ConfigurationProvider<T extends GaeJsCoreConfiguration = any> extends Provider<T> {

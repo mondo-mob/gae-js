@@ -1,5 +1,5 @@
 import { Handler } from "express";
-import { requiresHeader } from "./requires-header";
+import { requiresHeader } from "../../auth/requires-header";
 
 /**
  * Middleware that verifies request is a valid App Engine Cron request.

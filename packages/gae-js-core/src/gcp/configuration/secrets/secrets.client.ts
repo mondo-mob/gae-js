@@ -1,5 +1,5 @@
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
-import { validateNotNil } from "../../util/validators";
+import { validateNotNil } from "../../../util/validators";
 
 export class SecretsClient {
   private readonly client: SecretManagerServiceClient;

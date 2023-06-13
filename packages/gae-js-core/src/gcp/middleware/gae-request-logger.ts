@@ -1,10 +1,10 @@
 import { Handler } from "express";
 import * as lb from "@google-cloud/logging-bunyan";
-import { defaultLogger } from "../logging/logging";
 import { runningOnGcp } from "../util/environment";
+import { defaultLoggerProvider } from "../../logging/default-logger-provider";
 
 const localLoggingMiddleware = (): Handler => {
-  const localLogger = defaultLogger;
+  const localLogger = defaultLoggerProvider.get();
   return (req, res, next) => {
     localLogger.info(`${req.method} ${req.url}`);
     (req as any).log = localLogger;
