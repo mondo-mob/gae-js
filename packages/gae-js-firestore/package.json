@@ -27,11 +27,11 @@
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
-    "@google-cloud/firestore": ">= 4.15.1",
+    "@google-cloud/firestore": ">= 6.5.0",
     "@mondomob/gae-js-core": "^7.0.0"
   },
   "devDependencies": {
-    "@google-cloud/firestore": "6.5.0",
+    "@google-cloud/firestore": "6.6.1",
     "@mondomob/gae-js-core": "7.0.2"
   },
   "gitHead": "087032afa8903aa576041cdfe4913fe8f115e919"

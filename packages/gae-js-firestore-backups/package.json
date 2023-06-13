@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@google-cloud/bigquery": "6.2.0",
-    "@google-cloud/firestore": "6.5.0",
+    "@google-cloud/firestore": "6.6.1",
     "@google-cloud/storage": "6.11.0",
     "@google-cloud/tasks": "3.1.2",
     "@mondomob/gae-js-bigquery": "2.0.0",
