@@ -119,12 +119,7 @@ const loadRawConfiguration = async <T extends GaeJsCoreConfiguration>(
     _.merge(mergedConfig, parsedConfig.content);
   });
 
-  // 6. Validate final config matches expected schema
-  try {
-    return options.validator(mergedConfig);
-  } catch (e) {
-    throw new Error(`Configuration does not conform to expected format: ${(e as Error).message}`);
-  }
+  return mergedConfig;
 };
 
 const resolveSecrets = async (config: Record<string, unknown>): Promise<Record<string, unknown>> => {

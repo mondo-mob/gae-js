@@ -28,14 +28,14 @@ const fromDir = (dir: string, overrides?: Partial<ConfigurationOptions<Config>>)
   });
 
 describe("configuration", () => {
-  describe("initialiseConfiguration", () => {
-    let accessSecretVersionSpy: SpyInstance;
-    beforeEach(() => {
-      const cwdSpy = jest.spyOn(process, "cwd");
-      cwdSpy.mockReturnValue(`${__dirname}/__test`);
-      accessSecretVersionSpy = jest.spyOn(SecretManagerServiceClient.prototype, "accessSecretVersion");
-    });
+  let accessSecretVersionSpy: SpyInstance;
+  beforeEach(() => {
+    const cwdSpy = jest.spyOn(process, "cwd");
+    cwdSpy.mockReturnValue(`${__dirname}/__test`);
+    accessSecretVersionSpy = jest.spyOn(SecretManagerServiceClient.prototype, "accessSecretVersion");
+  });
 
+  describe("initialiseConfiguration", () => {
     describe("file loading", () => {
       it("defaults to current working directory/config", async () => {
         const config = await initialiseConfiguration(withOptions());
@@ -202,6 +202,30 @@ describe("configuration", () => {
 
     it("throws when validator throws", async () => {
       await expect(() => initialiseConfiguration(withOptions({ validator: alwaysFails }))).rejects.toThrow("invalid");
+    });
+
+    it("should only validate after config fully resolved", async () => {
+      accessSecretVersionSpy.mockImplementationOnce(() =>
+        Promise.resolve([{ payload: { data: "long top secret value" } }])
+      );
+
+      // Raw value SECRET(MY_SECRET) doesn't pass this validation
+      // We only want validation to run after secret has been resolved
+      const secretLengthValidator = zodValidator(
+        gaeJsCoreConfigurationSchema.extend({
+          customString: z.string().min(20),
+        })
+      );
+
+      const config = await initialiseConfiguration(
+        withOptions({ validator: secretLengthValidator, overrides: { customString: "SECRET(MY_SECRET)" } })
+      );
+
+      expect(config).toEqual({
+        projectId: "gae-js-jest",
+        environment: "jest",
+        customString: "long top secret value",
+      });
     });
   });
 
