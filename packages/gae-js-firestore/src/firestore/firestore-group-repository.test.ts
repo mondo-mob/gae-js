@@ -33,7 +33,7 @@ describe("FirestoreGroupRepository", () => {
   };
 
   describe("collection group queries", () => {
-    describe("queryGroup", () => {
+    describe("query", () => {
       describe("filters", () => {
         describe("filters specified by array", () => {
           it("filters by exact match", async () => {
@@ -306,6 +306,9 @@ describe("FirestoreGroupRepository", () => {
         });
 
         it("applies multiple properties", async () => {
+          await groupRepository.query({
+            filters: Filter.where("amount", ">=", 100),
+          });
           const results = await groupRepository.query({
             sort: [{ fieldPath: "prop1" }, { fieldPath: FIRESTORE_ID_FIELD }],
             startAfter: ["msg1", "repository-items/B/sub-items/345"],
@@ -331,7 +334,7 @@ describe("FirestoreGroupRepository", () => {
       });
     });
 
-    describe("queryGroupForIds", () => {
+    describe("queryForIds", () => {
       it("returns all matching id strings default sorted by full path when no filters applied", async () => {
         await subRepositoryB.insert([createItem("1"), createItem("2"), createItem("3")]);
         await subRepositoryA.insert([createItem("3"), createItem("11")]);
@@ -364,7 +367,7 @@ describe("FirestoreGroupRepository", () => {
       });
     });
 
-    describe("countGroup", () => {
+    describe("count", () => {
       describe("empty collection", () => {
         it("returns 0 when collection is empty", async () => {
           expect(await groupRepository.count()).toBe(0);
