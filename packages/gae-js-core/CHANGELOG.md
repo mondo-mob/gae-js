@@ -1,5 +1,11 @@
 # @mondomob/gae-js-core
 
+## 7.0.3
+
+### Patch Changes
+
+- 5bba907: Only run configuration validation after config fully resolved
+
 ## 7.0.2
 
 ### Patch Changes

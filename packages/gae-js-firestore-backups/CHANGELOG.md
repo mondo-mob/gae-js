@@ -1,5 +1,17 @@
 # @mondomob/gae-js-firestore-backups
 
+## 9.0.0
+
+### Major Changes
+
+- 2617aec: Update minimum Firestore client dependency version to 6.5 (for OR query support)
+
+### Patch Changes
+
+- Updated dependencies [fb71179]
+- Updated dependencies [2617aec]
+  - @mondomob/gae-js-firestore@17.0.0
+
 ## 8.0.0
 
 ### Patch Changes

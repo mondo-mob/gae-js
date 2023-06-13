@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-firestore-backups",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "description": "Utils for performing firestore backups",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -29,7 +29,7 @@
   "peerDependencies": {
     "@mondomob/gae-js-bigquery": "^2.0.0",
     "@mondomob/gae-js-core": "^7.0.0",
-    "@mondomob/gae-js-firestore": "^16.0.0",
+    "@mondomob/gae-js-firestore": "^17.0.0",
     "@mondomob/gae-js-storage": "^9.0.0",
     "@mondomob/gae-js-tasks": "^11.0.0"
   },
@@ -39,8 +39,8 @@
     "@google-cloud/storage": "6.11.0",
     "@google-cloud/tasks": "3.1.2",
     "@mondomob/gae-js-bigquery": "2.0.0",
-    "@mondomob/gae-js-core": "7.0.2",
-    "@mondomob/gae-js-firestore": "16.2.0",
+    "@mondomob/gae-js-core": "7.0.3",
+    "@mondomob/gae-js-firestore": "17.0.0",
     "@mondomob/gae-js-storage": "9.0.1",
     "@mondomob/gae-js-tasks": "11.0.2",
     "@types/luxon": "3.3.0",

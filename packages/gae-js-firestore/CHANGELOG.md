@@ -1,5 +1,29 @@
 # @mondomob/gae-js-firestore
 
+## 17.0.0
+
+### Major Changes
+
+- fb71179: BREAKING: Moved collection group query logic into separate repository
+
+  When performing a collection group query - create a group repository using the collection id you wish to query against.
+  e.g. for a collection with path of `account/${accountId}/transactions`, the collection id is `transactions`.
+
+  ```typescript
+    const groupRepository = new FirestoreGroupRepository("transactions");
+
+    // Count all transactions across all accounts
+    const count = await groupRepository.count();
+    
+    // Query for all transactions where amount > 100
+    const results = await groupRepository.query({
+      filters: Filter.where("amount", ">", 100),
+    });
+  ```
+
+- 2617aec: Update minimum Firestore client dependency version to 6.5 (for OR query support)
+
+
 ## 16.2.0
 
 ### Minor Changes
@@ -11,7 +35,6 @@
   e.g. for a repository with collection path of `account/123/transactions`, the collection id is `transactions`. So a collection group query would run against all collections with the id `transactions` - i.e. the transactions from all accounts.
 
   For this reason it is important to ensure that any collections you wish to use in a collection group query have unique ids.
-
 
 ## 16.1.0
 
