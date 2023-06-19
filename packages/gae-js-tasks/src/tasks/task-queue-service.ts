@@ -1,8 +1,17 @@
+import * as crypto from "crypto";
 import { CloudTasksClient } from "@google-cloud/tasks";
-import fetch from "node-fetch";
+import { Status } from "google-gax";
 import { configurationProvider, createLogger, runningOnGcp } from "@mondomob/gae-js-core";
-import { CreateTaskQueueServiceOptions, CreateTaskRequest, TaskOptions, TaskQueueServiceOptions } from "./types";
+import {
+  CreateTaskQueueServiceOptions,
+  CreateTaskRequest,
+  TaskOptions,
+  TaskQueueServiceOptions,
+  TaskThrottle,
+} from "./types";
 import { tasksProvider } from "./tasks-provider";
+import { createLocalTask } from "./local-tasks";
+import { isGoogleGaxError } from "../utils/errors";
 
 export class TaskQueueService {
   private logger = createLogger("taskQueueService");
@@ -30,60 +39,47 @@ export class TaskQueueService {
     );
   }
 
-  async enqueue<P extends object = object>(path: string, options: TaskOptions<P> = {}) {
-    if (runningOnGcp()) {
-      await this.appEngineQueue(path, options);
-    } else {
-      await this.localQueue(path, options);
+  async enqueue<P extends object = object>(path: string, taskOptions: TaskOptions<P> = {}) {
+    if (taskOptions.throttle && taskOptions.inSeconds) {
+      throw new Error("Tasks cannot be created with both 'throttle' and 'inSeconds' options");
+    }
+    if (taskOptions.throttle?.offsetMs && taskOptions.throttle.offsetMs > taskOptions.throttle.periodMs) {
+      throw new Error("Throttle offset must be less than period");
+    }
+
+    const createTaskRequest = this.buildTask(path, taskOptions);
+
+    this.logger.info("Creating task with payload: ", createTaskRequest.task);
+    try {
+      if (runningOnGcp()) {
+        await this.getTasksClient().createTask(createTaskRequest);
+      } else {
+        await createLocalTask(this.getLocalBaseUrl(), createTaskRequest);
+      }
+      this.logger.info("Created task");
+    } catch (e) {
+      if (taskOptions.throttle && isGoogleGaxError(e, Status.ALREADY_EXISTS)) {
+        const scheduled = new Date(Number(createTaskRequest.task?.scheduleTime?.seconds) * 1000);
+        this.logger.info(
+          createTaskRequest.task,
+          `Ignoring ALREADY_EXISTS error for throttled task: ${
+            taskOptions.throttle.suffix
+          } scheduled for ${scheduled.toISOString()}`
+        );
+      } else {
+        throw e;
+      }
     }
   }
 
-  private async appEngineQueue(path: string, options: TaskOptions) {
-    const client = this.getTasksClient();
-
+  private buildTask(path: string, options: TaskOptions): CreateTaskRequest {
     const { projectId, location, queueName } = this.options;
-    const parent = client.queuePath(projectId, location, queueName);
-
-    const createTaskRequest = this.buildTask(parent, path, options);
-
-    this.logger.info("Creating task with payload: ", createTaskRequest.task);
-    await client.createTask(createTaskRequest);
-  }
-
-  private async localQueue(path: string, options: TaskOptions) {
-    const { data = {}, inSeconds = 0 } = options;
-    const endpoint = `${this.getLocalBaseUrl()}${this.fullTaskPath(path)}`;
-    this.logger.info(`Dispatching local task to ${endpoint} with delay ${inSeconds}s`);
-
-    // Intentionally don't return this promise because we want the task to be executed
-    // asynchronously - i.e. a tiny bit like a task queue would work. Otherwise if the caller
-    // awaits this fetch then it will wait for the entire downstream process to complete.
-    new Promise((resolve) => setTimeout(resolve, inSeconds * 1000))
-      .then(() => {
-        return fetch(endpoint, {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: {
-            "content-type": "application/json",
-            "x-appengine-taskname": path,
-          },
-        });
-      })
-      .then(async (result) => {
-        if (result.ok) {
-          this.logger.info(`Task completed with status ${result.status}`);
-        } else {
-          this.logger.error(`Task failed to execute - status ${result.status}: ${await result.text()}`);
-        }
-      })
-      .catch((e) => {
-        this.logger.error(e, `Task failed to execute`);
-      });
-  }
-
-  private buildTask(queuePath: string, path: string, options: TaskOptions): CreateTaskRequest {
+    const queuePath = runningOnGcp()
+      ? this.getTasksClient().queuePath(projectId, location, queueName)
+      : `projects/${projectId}/locations/${location}/queues/${queueName}`;
     this.logger.info(`Using queue path: ${queuePath}`);
-    const { data = {}, inSeconds } = options;
+
+    const { data = {}, inSeconds, throttle } = options;
     const body = JSON.stringify(data);
     const requestPayload = Buffer.from(body).toString("base64");
     return {
@@ -98,6 +94,7 @@ export class TaskQueueService {
           ...this.taskRouting(),
         },
         ...this.taskSchedule(inSeconds),
+        ...this.taskThrottle(queuePath, throttle),
       },
     };
   }
@@ -123,6 +120,33 @@ export class TaskQueueService {
       };
     }
     return {};
+  }
+
+  private taskThrottle(queuePath: string, options?: TaskThrottle) {
+    if (!options) return {};
+
+    // Calculate the time window for this request
+    const now = new Date();
+    const scheduleTime = this.calculateThrottleWindow(now, options);
+    this.logger.info(`Throttling to time window: ${now.toISOString()} => ${new Date(scheduleTime).toISOString()}`);
+
+    // Task name prefix needs to be hashed to prevent performance issues with incremental ids like timestamps
+    const scheduleHash = crypto.createHash("md5").update(`${scheduleTime}`).digest("hex");
+    const name = `${queuePath}/tasks/${scheduleHash}_${options.suffix}`;
+
+    return {
+      name,
+      scheduleTime: {
+        seconds: Math.floor(scheduleTime / 1000),
+      },
+    };
+  }
+
+  private calculateThrottleWindow(now: Date, options: TaskThrottle): number {
+    const { periodMs, bufferMs = 5000, offsetMs = 0 } = options;
+    const nextWindow = now.getTime() + periodMs - (now.getTime() % periodMs) + offsetMs;
+    const withinBuffer = nextWindow - now.getTime() < bufferMs;
+    return withinBuffer ? nextWindow + periodMs : nextWindow;
   }
 
   private fullTaskPath(targetTask: string): string {
