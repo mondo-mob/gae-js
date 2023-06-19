@@ -42,7 +42,7 @@
     "@mondomob/gae-js-core": "7.0.3",
     "@mondomob/gae-js-firestore": "17.0.0",
     "@mondomob/gae-js-storage": "9.0.1",
-    "@mondomob/gae-js-tasks": "11.0.2",
+    "@mondomob/gae-js-tasks": "11.1.0",
     "@types/luxon": "3.3.0",
     "@types/uuid": "9.0.1"
   }
