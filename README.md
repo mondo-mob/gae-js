@@ -6,7 +6,7 @@ Simplify building NodeJS applications on Google App Engine (GAE)
 
 ## Package documentation
 
-- [gae-js](https://mondo-mob.github.io/gae-js-docs/packages/gae-js-core.html)
+- [gae-js-core](https://mondo-mob.github.io/gae-js-docs/packages/gae-js-core.html)
 - [gae-js-firestore](https://mondo-mob.github.io/gae-js-docs/packages/gae-js-firestore.html)
 - [gae-js-firestore-backups](https://mondo-mob.github.io/gae-js-docs/packages/gae-js-firestore-backups.html)
 - [gae-js-datastore](https://mondo-mob.github.io/gae-js-docs/packages/gae-js-datastore.html)
