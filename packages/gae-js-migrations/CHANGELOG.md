@@ -1,5 +1,11 @@
 # @mondomob/gae-js-migrations
 
+## 17.0.1
+
+### Patch Changes
+
+- 43c32bb: Internal performance tweak to filter down existing migration ids upfront before checking each migration
+
 ## 17.0.0
 
 ### Major Changes
