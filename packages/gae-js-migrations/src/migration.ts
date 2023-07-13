@@ -15,9 +15,11 @@ const logger = createLogger("migrations");
 const MUTEX_ID = "migrations";
 
 const getMigrationsToRun = async (migrations: AutoMigration[]) => {
-  const migrationResults = await migrationResultsRepository.get(migrations.map((m) => m.id));
+  const existingMigrationIds: string[] = (await migrationResultsRepository.get(migrations.map((m) => m.id)))
+    .map((migration) => migration?.id)
+    .filter((id) => !!id) as string[];
   return migrations.filter((migration) => {
-    if (migrationResults.some((result) => result && result.id === migration.id)) {
+    if (existingMigrationIds.includes(migration.id)) {
       return false;
     }
 
