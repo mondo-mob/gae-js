@@ -48,6 +48,7 @@
     options to be added without affecting signature in future releases.
 
   Upgrade Instructions:
+  - If you previously did not initialise task provider with `tasksProvider.init()` then you will need to add this to your app startup. 
 
   - Remove any references to `gaeJsTasksConfigurationSchema` or `GaeJsTasksConfiguration`.
     Any properties used should be added to application's config schema and passed as options when constructing the Tasks service instance.
