@@ -158,6 +158,20 @@ describe("DatastoreRepository", () => {
       ]);
     });
 
+    it("has 'quiet' option that does not write logs - REGRESSION test only", async () => {
+      await insertNItems(3);
+
+      const count = await repository.reindexInBatches({ quiet: true });
+
+      expect(count).toBe(3);
+      const [items] = await repository.query();
+      expect(items).toEqual([
+        { id: "1", name: "test1" },
+        { id: "2", name: "test2" },
+        { id: "3", name: "test3" },
+      ]);
+    });
+
     it("applies transformation to all instances in single batch and returns count", async () => {
       await insertNItems(3);
 

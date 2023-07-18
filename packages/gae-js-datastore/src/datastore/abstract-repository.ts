@@ -259,9 +259,12 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
     options: BatchReindexOptions<T>,
     { startCursor, batchIndex = 0 }: { startCursor?: string; batchIndex?: number } = {}
   ): Promise<number> {
-    const { transform = (input) => input, batchSize = 200 } = options;
+    const { transform = (input) => input, batchSize = 200, quiet = false } = options;
     const [entities, { endCursor }] = await this.query({ limit: batchSize, start: startCursor });
     if (entities.length > 0) {
+      if (!quiet) {
+        this.logger.info(`Re-indexing ${this.kind} batch ${batchIndex + 1} of size ${entities.length}`);
+      }
       const updatedEntities = await Promise.all(
         entities.map((entity, index) => operationPromiseLimit(() => transform(entity, index, batchIndex)))
       );
@@ -349,6 +352,7 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
 export interface BatchReindexOptions<T> {
   transform?: (input: T, index: number, batchIndex: number) => T | Promise<T>;
   batchSize?: number;
+  quiet?: boolean;
 }
 
 const operationPromiseLimit = pLimit(20);

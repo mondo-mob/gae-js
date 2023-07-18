@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 10.2.0
+
+### Minor Changes
+
+- datastore repository reindexInBatches() write a log line for every batch of reindex, with option for 'quiet' (no log outputs)
+
 ## 10.1.1
 
 ### Patch Changes
