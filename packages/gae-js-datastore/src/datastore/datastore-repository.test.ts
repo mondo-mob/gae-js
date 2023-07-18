@@ -1,11 +1,8 @@
 import { Datastore, Key } from "@google-cloud/datastore";
-import { z } from "zod";
-import { DatastoreRepository } from "./datastore-repository";
-import { connectDatastoreEmulator, deleteKind } from "../__test/test-utils";
-import { runInTransaction } from "./transactional";
 import {
   IndexConfig,
   IndexEntry,
+  OneOrMany,
   Page,
   runWithRequestStorage,
   SearchFields,
@@ -13,9 +10,14 @@ import {
   Sort,
   zodValidator,
 } from "@mondomob/gae-js-core";
-import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
+import { castArray, chunk, padStart } from "lodash";
+import { z } from "zod";
+import { connectDatastoreEmulator, deleteKind } from "../__test/test-utils";
 import { DatastoreLoader } from "./datastore-loader";
 import { datastoreProvider } from "./datastore-provider";
+import { DatastoreRepository } from "./datastore-repository";
+import { datastoreLoaderRequestStorage } from "./datastore-request-storage";
+import { runInTransaction } from "./transactional";
 
 const repositoryItemSchema = z.object({
   id: z.string(),
@@ -60,13 +62,26 @@ describe("DatastoreRepository", () => {
     };
   };
 
-  const insertItem = async (id: string) => {
-    return datastore.insert({
-      key: itemKey(id),
-      data: {
-        name: `test${id}`,
-      },
-    });
+  const insertItems = async (ids: OneOrMany<string>) => {
+    return datastore.insert(
+      castArray(ids).map((id) => ({
+        key: itemKey(id),
+        data: {
+          name: `test${id}`,
+        },
+      }))
+    );
+  };
+
+  // Ensure natural sorting by padding the id with leading zeros to the string length of the largest number
+  const insertNItems = async (totalItems: number) => {
+    const chunkedIds = chunk(
+      Array.from({ length: totalItems }, (_, i) => padStart(`${i + 1}`, `${totalItems}`.length, "0")),
+      200
+    );
+    for (const ids of chunkedIds) {
+      await insertItems(ids);
+    }
   };
 
   describe("numeric id", () => {
@@ -93,7 +108,7 @@ describe("DatastoreRepository", () => {
 
   describe("exists", () => {
     it("returns true when a document exists", async () => {
-      await insertItem("123");
+      await insertItems("123");
       expect(await repository.exists("123")).toBe(true);
     });
 
@@ -102,9 +117,97 @@ describe("DatastoreRepository", () => {
     });
   });
 
+  describe("reindex", () => {
+    it("saves existing instances unchanged by default", async () => {
+      await insertNItems(3);
+
+      const items = await repository.reindex();
+
+      expect(items).toEqual([
+        { id: "1", name: "test1" },
+        { id: "2", name: "test2" },
+        { id: "3", name: "test3" },
+      ]);
+    });
+
+    it("applies transformation using supplied function and saves all instances", async () => {
+      await insertNItems(3);
+
+      const items = await repository.reindex(({ name, ...rest }) => ({ ...rest, name: `UPDATED ${name}` }));
+
+      expect(items).toEqual([
+        { id: "1", name: "UPDATED test1" },
+        { id: "2", name: "UPDATED test2" },
+        { id: "3", name: "UPDATED test3" },
+      ]);
+    });
+  });
+
+  describe("reindexInBatches", () => {
+    it("saves existing instances unchanged by default", async () => {
+      await insertNItems(3);
+
+      const count = await repository.reindexInBatches();
+
+      expect(count).toBe(3);
+      const [items] = await repository.query();
+      expect(items).toEqual([
+        { id: "1", name: "test1" },
+        { id: "2", name: "test2" },
+        { id: "3", name: "test3" },
+      ]);
+    });
+
+    it("applies transformation to all instances in single batch and returns count", async () => {
+      await insertNItems(3);
+
+      const count = await repository.reindexInBatches({
+        transform: (entity, _, batchIndex) => ({ ...entity, name: `BATCH ${batchIndex}` }),
+      });
+
+      expect(count).toBe(3);
+      const [items] = await repository.query();
+      expect(items).toEqual([
+        { id: "1", name: "BATCH 0" },
+        { id: "2", name: "BATCH 0" },
+        { id: "3", name: "BATCH 0" },
+      ]);
+    });
+
+    it("applies transformation in batches of custom size", async () => {
+      await insertNItems(5);
+
+      const count = await repository.reindexInBatches({
+        transform: (entity, _, batchIndex) => ({ ...entity, name: `BATCH ${batchIndex}` }),
+        batchSize: 2,
+      });
+
+      expect(count).toBe(5);
+      const [items] = await repository.query();
+      expect(items).toEqual([
+        { id: "1", name: "BATCH 0" },
+        { id: "2", name: "BATCH 0" },
+        { id: "3", name: "BATCH 1" },
+        { id: "4", name: "BATCH 1" },
+        { id: "5", name: "BATCH 2" },
+      ]);
+    });
+
+    it("applies transformation in batches of 200 by default", async () => {
+      await insertNItems(201);
+
+      const count = await repository.reindexInBatches({
+        transform: (entity, _, batchIndex) => ({ ...entity, name: `BATCH ${batchIndex}` }),
+      });
+
+      expect(count).toBe(201);
+      expect(await repository.getRequired("201")).toEqual({ id: "201", name: "BATCH 1" });
+    });
+  });
+
   describe("get", () => {
     it("fetches document that exists", async () => {
-      await insertItem("123");
+      await insertItems("123");
 
       const document = await repository.get("123");
 
@@ -129,7 +232,7 @@ describe("DatastoreRepository", () => {
       });
 
       it("fetches document that exists and matches schema", async () => {
-        await insertItem("123");
+        await insertItems("123");
 
         const document = await repository.get("123");
 
@@ -159,7 +262,7 @@ describe("DatastoreRepository", () => {
       });
 
       it("fetches document that exists and matches schema", async () => {
-        await insertItem("123");
+        await insertItems("123");
 
         const document = await repository.get("123");
 
@@ -173,7 +276,7 @@ describe("DatastoreRepository", () => {
 
   describe("getRequired", () => {
     it("fetches document that exists", async () => {
-      await insertItem("123");
+      await insertItems("123");
 
       const document = await repository.getRequired("123");
 
@@ -191,8 +294,8 @@ describe("DatastoreRepository", () => {
 
     describe("with array", () => {
       it("fetches documents that exist", async () => {
-        await insertItem("123");
-        await insertItem("234");
+        await insertItems("123");
+        await insertItems("234");
 
         const results = await repository.getRequired(["123", "234"]);
 
@@ -209,7 +312,7 @@ describe("DatastoreRepository", () => {
       });
 
       it("throws for any document that doesn't exist", async () => {
-        await insertItem("123");
+        await insertItems("123");
 
         await expect(repository.getRequired(["123", "does-not-exist", "also-does-not-exist"])).rejects.toThrow(
           '"repository-items" with id "repository-items|does-not-exist" failed to load'
@@ -226,7 +329,7 @@ describe("DatastoreRepository", () => {
       });
 
       it("fetches document that exists and matches schema", async () => {
-        await insertItem("123");
+        await insertItems("123");
 
         const document = await repository.getRequired("123");
 
@@ -414,7 +517,7 @@ describe("DatastoreRepository", () => {
 
   describe("delete", () => {
     it("deletes a document outside of transaction", async () => {
-      await insertItem("123");
+      await insertItems("123");
 
       await repository.delete("123");
 
@@ -423,8 +526,8 @@ describe("DatastoreRepository", () => {
     });
 
     it("deletes a document in transaction", async () => {
-      await insertItem("123");
-      await insertItem("234");
+      await insertItems("123");
+      await insertItems("234");
 
       await runWithRequestStorage(async () => {
         datastoreLoaderRequestStorage.set(new DatastoreLoader(datastore));
@@ -834,8 +937,8 @@ describe("DatastoreRepository", () => {
 
     describe("update", () => {
       beforeEach(async () => {
-        await insertItem("item1");
-        await insertItem("item2");
+        await insertItems("item1");
+        await insertItems("item2");
       });
       itIndexesEntitiesForOperation("update");
     });

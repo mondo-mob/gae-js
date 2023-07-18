@@ -24,7 +24,8 @@
   "homepage": "https://github.com/mondo-mob/gae-js",
   "dependencies": {
     "dataloader": "^2.2.2",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "p-limit": "^3.1.0"
   },
   "peerDependencies": {
     "@google-cloud/datastore": ">=7.0.0",

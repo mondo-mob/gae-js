@@ -16,6 +16,7 @@ import {
   SearchService,
   Sort,
 } from "@mondomob/gae-js-core";
+import pLimit from "p-limit";
 import {
   DatastoreEntity,
   DatastoreLoader,
@@ -210,9 +211,15 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
   async reindex(operation: (input: T) => T | Promise<T> = (input) => input): Promise<ReadonlyArray<T>> {
     const [allEntities] = await this.query();
 
-    const updatedEntities = await Promise.all(allEntities.map(operation));
+    const updatedEntities = await Promise.all(
+      allEntities.map((entity) => operationPromiseLimit(() => operation(entity)))
+    );
 
     return this.update(updatedEntities);
+  }
+
+  async reindexInBatches(options: BatchReindexOptions<T> = {}): Promise<number> {
+    return this.doReindexInBatches(options);
   }
 
   async deleteByKey(...keys: Key[]): Promise<void> {
@@ -247,6 +254,26 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
   protected validateLoad = (entity: T) => this.validateEntity(entity, LoadError);
 
   protected validateSave = (entity: T) => this.validateEntity(entity, SaveError);
+
+  private async doReindexInBatches(
+    options: BatchReindexOptions<T>,
+    { startCursor, batchIndex = 0 }: { startCursor?: string; batchIndex?: number } = {}
+  ): Promise<number> {
+    const { transform = (input) => input, batchSize = 200 } = options;
+    const [entities, { endCursor }] = await this.query({ limit: batchSize, start: startCursor });
+    if (entities.length > 0) {
+      const updatedEntities = await Promise.all(
+        entities.map((entity, index) => operationPromiseLimit(() => transform(entity, index, batchIndex)))
+      );
+      await this.update(updatedEntities);
+    }
+    return (
+      entities.length +
+      (entities.length === batchSize
+        ? await this.doReindexInBatches(options, { startCursor: endCursor, batchIndex: batchIndex + 1 })
+        : 0)
+    );
+  }
 
   private validateEntity = (entity: T, errorClass: new (kind: string, id: string, message: string) => Error): T => {
     if (!this.validator) {
@@ -318,3 +345,10 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
     return this.searchOptions?.searchService ?? searchProvider.get();
   }
 }
+
+export interface BatchReindexOptions<T> {
+  transform?: (input: T, index: number, batchIndex: number) => T | Promise<T>;
+  batchSize?: number;
+}
+
+const operationPromiseLimit = pLimit(20);
