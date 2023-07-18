@@ -269,9 +269,9 @@ export abstract class AbstractRepository<T> implements Searchable<T> {
     }
     return (
       entities.length +
-      (entities.length === batchSize
-        ? await this.doReindexInBatches(options, { startCursor: endCursor, batchIndex: batchIndex + 1 })
-        : 0)
+      (entities.length < batchSize
+        ? 0
+        : await this.doReindexInBatches(options, { startCursor: endCursor, batchIndex: batchIndex + 1 }))
     );
   }
 
