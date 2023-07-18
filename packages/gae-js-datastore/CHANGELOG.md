@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 10.1.1
+
+### Patch Changes
+
+- 1809bc2: Internal code tidy for reindexInBatches. Should not have material functional effect.
+
 ## 10.1.0
 
 ### Minor Changes
