@@ -51,7 +51,7 @@ class TransactionalService {
 describe("Transactional", () => {
   const collection1 = "transactional1";
   const collection2 = "transactional2";
-  useFirestoreTest({ clearCollections: [collection1, collection1] });
+  useFirestoreTest({ clearCollections: [collection1, collection2] });
 
   let firestore: Firestore;
   let repository1: FirestoreRepository<RepositoryItem>;
