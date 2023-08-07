@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 10.2.1
+
+### Patch Changes
+
+- 2072c07: Update datastore value type to accept an array of values to support IN queries for Firestore in datastore mode
+
 ## 10.2.0
 
 ### Minor Changes
