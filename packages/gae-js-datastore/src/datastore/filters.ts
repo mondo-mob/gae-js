@@ -10,7 +10,7 @@ export type Filter<T> = OneOrMany<T | ComplexFilter<T> | null>;
 
 export interface ComplexFilter<T> {
   op: Operator;
-  value: NotUndefined<T> | null;
+  value: NotUndefined<T> | NotUndefined<T>[] | null;
 }
 
 // This is way more complicated than ideal but required in order to prevent union types
