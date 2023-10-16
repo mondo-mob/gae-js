@@ -1,5 +1,5 @@
 import * as crypto from "crypto";
-import { CloudTasksClient, v2 } from "@google-cloud/tasks";
+import { CloudTasksClient } from "@google-cloud/tasks";
 import { Status } from "google-gax";
 import { configurationProvider, createLogger, runningOnGcp } from "@mondomob/gae-js-core";
 import {
