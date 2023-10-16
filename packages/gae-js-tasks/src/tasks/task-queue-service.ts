@@ -1,5 +1,5 @@
 import * as crypto from "crypto";
-import { CloudTasksClient } from "@google-cloud/tasks";
+import { CloudTasksClient, v2 } from "@google-cloud/tasks";
 import { Status } from "google-gax";
 import { configurationProvider, createLogger, runningOnGcp } from "@mondomob/gae-js-core";
 import {
@@ -12,6 +12,7 @@ import {
 import { tasksProvider } from "./tasks-provider";
 import { createLocalTask } from "./local-tasks";
 import { isGoogleGaxError } from "../utils/errors";
+import { google } from "@google-cloud/tasks/build/protos/protos";
 
 export class TaskQueueService {
   private logger = createLogger("taskQueueService");
@@ -85,14 +86,7 @@ export class TaskQueueService {
     return {
       parent: queuePath,
       task: {
-        appEngineHttpRequest: {
-          relativeUri: `${this.fullTaskPath(path)}`,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: requestPayload,
-          ...this.taskRouting(),
-        },
+        ...this.taskRouting(path, requestPayload),
         ...this.taskSchedule(inSeconds),
         ...this.taskThrottle(queuePath, throttle),
       },
@@ -109,17 +103,47 @@ export class TaskQueueService {
       : {};
   }
 
-  private taskRouting() {
-    const { tasksRoutingService, tasksRoutingVersion } = this.options;
+  private taskRouting(path: string, requestPayload?: string) {
+    const { tasksRoutingService, tasksRoutingVersion, appEngineHost, oidcServiceAccountEmail } = this.options;
+
+    if (appEngineHost) {
+      const httpRequest: google.cloud.tasks.v2.IHttpRequest = {
+        url: `${appEngineHost}${this.fullTaskPath(path)}`,
+        httpMethod: "POST",
+        body: requestPayload,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        ...(oidcServiceAccountEmail ? { oidcToken: { serviceAccountEmail: oidcServiceAccountEmail } } : {}),
+      };
+      return { httpRequest };
+    }
+
     if (tasksRoutingVersion || tasksRoutingService) {
       return {
-        appEngineRouting: {
-          ...(tasksRoutingService ? { service: tasksRoutingService } : {}),
-          ...(tasksRoutingVersion ? { version: tasksRoutingVersion } : {}),
+        appEngineHttpRequest: {
+          relativeUri: `${this.fullTaskPath(path)}`,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: requestPayload,
+          appEngineRouting: {
+            ...(tasksRoutingService ? { service: tasksRoutingService } : {}),
+            ...(tasksRoutingVersion ? { version: tasksRoutingVersion } : {}),
+          },
         },
       };
     }
-    return {};
+
+    return {
+      appEngineHttpRequest: {
+        relativeUri: `${this.fullTaskPath(path)}`,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: requestPayload,
+      },
+    };
   }
 
   private taskThrottle(queuePath: string, options?: TaskThrottle) {

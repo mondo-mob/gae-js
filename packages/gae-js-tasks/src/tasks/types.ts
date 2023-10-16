@@ -4,7 +4,37 @@ type Mandatory<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
 
 export type CreateTaskRequest = Parameters<CloudTasksClient["createTask"]>[0];
 
-export interface CreateTaskQueueServiceOptions {
+export type CreateTaskQueueServiceRouting =
+  | {
+      /**
+       * The specific App Engine version to dispatch requests to.
+       */
+      tasksRoutingVersion?: string;
+      /**
+       * The specific App Engine service to dispatch requests to.
+       */
+      tasksRoutingService?: string;
+      appEngineHost?: never;
+      oidcServiceAccountEmail?: never;
+    }
+  | {
+      tasksRoutingVersion?: never;
+      tasksRoutingService?: never;
+
+      /**
+       * Override the appEngineHost when using a push queue. This will create a task with `httpRequest` params.
+       * Use this when you want the request to be routed to a different host than the default GAE appspot domain.
+       */
+      appEngineHost?: string;
+
+      /**
+       * Should be the email of an existing Service Account in the same project.
+       * Authorizes the request with a Bearer JWT id token.
+       */
+      oidcServiceAccountEmail?: string;
+    };
+
+export type CreateTaskQueueServiceOptions = {
   /**
    * Tasks projectId - most likely the same project as your application.
    * Defaults to application projectId configuration
@@ -32,19 +62,12 @@ export interface CreateTaskQueueServiceOptions {
    * Defaults to application "host" configuration.
    */
   localBaseUrl?: string;
-  /**
-   * The specific App Engine version to dispatch requests to.
-   */
-  tasksRoutingVersion?: string;
-  /**
-   * The specific App Engine service to dispatch requests to.
-   */
-  tasksRoutingService?: string;
+
   /**
    * Tasks client to use (if not using tasksProvider)
    */
   tasksClient?: CloudTasksClient;
-}
+} & CreateTaskQueueServiceRouting;
 
 export type TaskQueueServiceOptions = Mandatory<
   CreateTaskQueueServiceOptions,

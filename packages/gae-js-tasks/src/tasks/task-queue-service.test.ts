@@ -95,6 +95,31 @@ describe("TaskQueueService", () => {
       );
 
       it(
+        "creates task params for host override routing",
+        withEnvVars({ [ENV_VAR_RUNTIME_ENVIRONMENT]: "appengine" }, async () => {
+          tasksProvider.init();
+          taskQueueService = new TaskQueueService({
+            appEngineHost: "https://my-host.com",
+            oidcServiceAccountEmail: "sacount@gnet.com",
+          });
+
+          await taskQueueService.enqueue("test-task", { data: { key: "value1" } });
+
+          expectTaskParams({
+            httpRequest: {
+              url: "https://my-host.com/tasks/test-task",
+              httpMethod: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: Buffer.from(JSON.stringify({ key: "value1" })).toString("base64"),
+              oidcToken: { serviceAccountEmail: "sacount@gnet.com" },
+            },
+          });
+        })
+      );
+
+      it(
         "creates task params for throttling",
         withEnvVars({ [ENV_VAR_RUNTIME_ENVIRONMENT]: "appengine" }, async () => {
           tasksProvider.init();
@@ -183,6 +208,13 @@ describe("TaskQueueService", () => {
 
       it("ignores leading slash on task name", async () => {
         const scope = nock("http://127.0.0.1").post("/tasks/local-task").reply(204);
+        await taskQueueService.enqueue("/local-task");
+        await waitUntil(() => scope.isDone());
+      });
+
+      it("posts to local task service given appEngineHost override", async () => {
+        const scope = nock("http://127.0.0.1").post("/tasks/local-task").reply(204);
+        taskQueueService = new TaskQueueService({ appEngineHost: "https://my-host.com" });
         await taskQueueService.enqueue("/local-task");
         await waitUntil(() => scope.isDone());
       });
