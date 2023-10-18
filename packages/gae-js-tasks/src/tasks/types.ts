@@ -3,38 +3,52 @@ import { CloudTasksClient } from "@google-cloud/tasks";
 type Mandatory<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
 
 export type CreateTaskRequest = Parameters<CloudTasksClient["createTask"]>[0];
+export type ITask = NonNullable<CreateTaskRequest["task"]>;
+export type IHttpRequest = NonNullable<ITask["httpRequest"]>;
+export type IAppEngineHttpRequest = NonNullable<ITask["appEngineHttpRequest"]>;
+export type IOidcToken = NonNullable<IHttpRequest["oidcToken"]>;
 
-export type CreateTaskQueueServiceRouting =
-  | {
-      /**
-       * The specific App Engine version to dispatch requests to.
-       */
-      tasksRoutingVersion?: string;
-      /**
-       * The specific App Engine service to dispatch requests to.
-       */
-      tasksRoutingService?: string;
-      appEngineHost?: never;
-      oidcServiceAccountEmail?: never;
-    }
-  | {
-      tasksRoutingVersion?: never;
-      tasksRoutingService?: never;
+/**
+ * Options specific to creation of App Engine Tasks.
+ */
+export type AppEngineTargetOptions = {
+  /**
+   * The specific App Engine version to dispatch requests to.
+   */
+  tasksRoutingVersion?: string;
+  /**
+   * The specific App Engine service to dispatch requests to.
+   */
+  tasksRoutingService?: string;
 
-      /**
-       * Override the appEngineHost when using a push queue. This will create a task with `httpRequest` params.
-       * Use this when you want the request to be routed to a different host than the default GAE appspot domain.
-       */
-      appEngineHost?: string;
+  httpTargetHost?: never;
+  oidcToken?: never;
+};
 
-      /**
-       * Should be the email of an existing Service Account in the same project.
-       * Authorizes the request with a Bearer JWT id token.
-       */
-      oidcServiceAccountEmail?: string;
-    };
+/**
+ * Options specific to creation of Http Target Tasks
+ * NOTE: When using http targets - there is no built-in authentication and task handlers
+ *       must perform their own auth validation.
+ */
+export type HttpTargetOptions = {
+  /**
+   * Override the httpTargetHost when creating HTTP Target tasks. This will create a task with `httpRequest` params.
+   * Use this when you want the request to be routed to a different host than the default GAE appspot domain.
+   */
+  httpTargetHost: string;
+  /**
+   * Should be the email of an existing Service Account in the same project.
+   * Authorizes the request with a Bearer JWT id token.
+   */
+  oidcToken?: IOidcToken;
 
-export type CreateTaskQueueServiceOptions = {
+  tasksRoutingVersion?: never;
+  tasksRoutingService?: never;
+};
+
+export type TaskQueueTargetOptions = AppEngineTargetOptions | HttpTargetOptions;
+
+export type CommonTaskQueueServiceOptions = {
   /**
    * Tasks projectId - most likely the same project as your application.
    * Defaults to application projectId configuration
@@ -62,17 +76,19 @@ export type CreateTaskQueueServiceOptions = {
    * Defaults to application "host" configuration.
    */
   localBaseUrl?: string;
-
   /**
    * Tasks client to use (if not using tasksProvider)
    */
   tasksClient?: CloudTasksClient;
-} & CreateTaskQueueServiceRouting;
+};
+
+export type CreateTaskQueueServiceOptions = CommonTaskQueueServiceOptions & TaskQueueTargetOptions;
 
 export type TaskQueueServiceOptions = Mandatory<
-  CreateTaskQueueServiceOptions,
+  CommonTaskQueueServiceOptions,
   "projectId" | "location" | "queueName" | "pathPrefix"
->;
+> &
+  TaskQueueTargetOptions;
 
 export interface TaskOptions<P extends object = object> {
   /**

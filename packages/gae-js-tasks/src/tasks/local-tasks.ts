@@ -6,16 +6,16 @@ import { CreateTaskRequest } from "./types";
 const taskNames = new Set<string>();
 const logger = createLogger("LocalTasks");
 
-export const localTasksServiceAccountEmailKey = "x-local-tasks-service-account-email";
 export const createLocalTask = async (targetHost: string, createTaskRequest: CreateTaskRequest) => {
   const { parent, task } = createTaskRequest;
   if (!parent || !task) throw new BadRequestError("parent and task must be supplied");
 
   const { appEngineHttpRequest, httpRequest } = task;
-  if (!appEngineHttpRequest && !httpRequest)
-    throw new BadRequestError("appEngineHttpRequest or httpRequest must be defined");
+  if (!appEngineHttpRequest && !httpRequest) {
+    throw new BadRequestError("appEngineHttpRequest or httpRequest must be supplied");
+  }
 
-  const getEndpoint = () => {
+  const getEndpoint = (): string => {
     if (appEngineHttpRequest) {
       return `${targetHost}${appEngineHttpRequest.relativeUri}`;
     }
@@ -24,13 +24,11 @@ export const createLocalTask = async (targetHost: string, createTaskRequest: Cre
       const url = new URL(httpRequest.url);
       return `${targetHost}${url.pathname}`;
     }
+
+    throw new BadRequestError("endpoint could not be resolved");
   };
 
   const endpoint = getEndpoint();
-
-  if (!endpoint) {
-    throw new BadRequestError("endpoint could not be resolved");
-  }
 
   if (task.name) {
     if (taskNames.has(task.name)) {
@@ -43,15 +41,9 @@ export const createLocalTask = async (targetHost: string, createTaskRequest: Cre
   }
 
   const delayMs = task.scheduleTime?.seconds ? Number(task.scheduleTime?.seconds) * 1000 - new Date().getTime() : 0;
-  const getBody = () => {
-    if (appEngineHttpRequest) {
-      return Buffer.from(appEngineHttpRequest.body as string, "base64").toString("ascii");
-    }
 
-    if (httpRequest) {
-      return Buffer.from(httpRequest.body as string, "base64").toString("ascii");
-    }
-  };
+  const bodyData = appEngineHttpRequest ? appEngineHttpRequest.body : httpRequest?.body;
+  const body = bodyData ? Buffer.from(bodyData as string, "base64").toString("ascii") : undefined;
 
   // Intentionally don't return this promise because we want the task to be executed
   // asynchronously - i.e. a tiny bit like a task queue would work. Otherwise, if the caller
@@ -61,11 +53,16 @@ export const createLocalTask = async (targetHost: string, createTaskRequest: Cre
     .then(() => {
       return fetch(endpoint, {
         method: "POST",
-        body: getBody(),
+        body,
         headers: {
           "content-type": "application/json",
-          "x-appengine-taskname": endpoint,
-          [localTasksServiceAccountEmailKey]: httpRequest?.oidcToken?.serviceAccountEmail || "",
+          ...(appEngineHttpRequest ? { "x-appengine-taskname": appEngineHttpRequest.relativeUri ?? "" } : {}),
+          ...(httpRequest
+            ? {
+                "x-local-tasks-oidc-service-account-email": httpRequest.oidcToken?.serviceAccountEmail ?? "",
+                "x-local-tasks-oidc-audience": httpRequest.oidcToken?.audience ?? "",
+              }
+            : {}),
         },
       });
     })

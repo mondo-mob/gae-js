@@ -95,12 +95,15 @@ describe("TaskQueueService", () => {
       );
 
       it(
-        "creates task params for host override routing",
+        "creates http target task params for host override routing",
         withEnvVars({ [ENV_VAR_RUNTIME_ENVIRONMENT]: "appengine" }, async () => {
           tasksProvider.init();
           taskQueueService = new TaskQueueService({
-            appEngineHost: "https://my-host.com",
-            oidcServiceAccountEmail: "sacount@gnet.com",
+            httpTargetHost: "https://my-host.com",
+            oidcToken: {
+              serviceAccountEmail: "sacount@gnet.com",
+              audience: "my-audience",
+            },
           });
 
           await taskQueueService.enqueue("test-task", { data: { key: "value1" } });
@@ -108,12 +111,31 @@ describe("TaskQueueService", () => {
           expectTaskParams({
             httpRequest: {
               url: "https://my-host.com/tasks/test-task",
-              httpMethod: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: Buffer.from(JSON.stringify({ key: "value1" })).toString("base64"),
-              oidcToken: { serviceAccountEmail: "sacount@gnet.com" },
+              oidcToken: { serviceAccountEmail: "sacount@gnet.com", audience: "my-audience" },
+            },
+          });
+        })
+      );
+
+      it(
+        "creates http target task params for host override routing without auth",
+        withEnvVars({ [ENV_VAR_RUNTIME_ENVIRONMENT]: "appengine" }, async () => {
+          tasksProvider.init();
+          taskQueueService = new TaskQueueService({ httpTargetHost: "https://my-host.com" });
+
+          await taskQueueService.enqueue("test-task", { data: { key: "value1" } });
+
+          expectTaskParams({
+            httpRequest: {
+              url: "https://my-host.com/tasks/test-task",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: Buffer.from(JSON.stringify({ key: "value1" })).toString("base64"),
             },
           });
         })
@@ -212,9 +234,9 @@ describe("TaskQueueService", () => {
         await waitUntil(() => scope.isDone());
       });
 
-      it("posts to local task service given appEngineHost override", async () => {
+      it("posts to local task service given httpTargetHost override", async () => {
         const scope = nock("http://127.0.0.1").post("/tasks/local-task").reply(204);
-        taskQueueService = new TaskQueueService({ appEngineHost: "https://my-host.com" });
+        taskQueueService = new TaskQueueService({ httpTargetHost: "https://my-host.com" });
         await taskQueueService.enqueue("/local-task");
         await waitUntil(() => scope.isDone());
       });
