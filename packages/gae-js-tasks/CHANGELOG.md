@@ -1,5 +1,32 @@
 # @mondomob/gae-js-tasks
 
+## 11.2.0
+
+### Minor Changes
+
+- e207a5c: Add support for creating Http Target tasks (thanks @VivekRajagopal!).
+
+  Use this to target tasks handlers on any http address - i.e. non app engine handlers, app engine
+  handlers hosted in a different project from the task queue or app engine handlers
+  but not via the default appspot domain.
+
+  When creating the task service specify the target host and optional authentication configuration.
+
+  ```typescript
+  // Create service
+  const taskQueueService = new TaskQueueService({
+    httpTargetHost: "https://my-host.com",
+    oidcToken: {
+      serviceAccountEmail: "my-service-account@example.com",
+      audience: "my-audience",
+    },
+  });
+
+  // Create tasks
+  // e.g. this will result in a task request of: POST https://my-host.com/tasks/example-task
+  await taskQueueService.enqueue("example-task", { data: { key: "value1" } });
+  ```
+
 ## 11.1.0
 
 ### Minor Changes
@@ -48,7 +75,8 @@
     options to be added without affecting signature in future releases.
 
   Upgrade Instructions:
-  - If you previously did not initialise task provider with `tasksProvider.init()` then you will need to add this to your app startup. 
+
+  - If you previously did not initialise task provider with `tasksProvider.init()` then you will need to add this to your app startup.
 
   - Remove any references to `gaeJsTasksConfigurationSchema` or `GaeJsTasksConfiguration`.
     Any properties used should be added to application's config schema and passed as options when constructing the Tasks service instance.
