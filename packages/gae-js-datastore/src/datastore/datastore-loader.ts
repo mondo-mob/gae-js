@@ -197,25 +197,42 @@ export class DatastoreLoader {
       const transaction = this.datastore.transaction();
       await transaction.run();
 
+      const result = await this.runCallbackInTransaction(callback, transaction);
+
       try {
-        const result = await callback(new DatastoreLoader(transaction));
-
         await transaction.commit();
-        // Any entities saved in this transaction need to be cleared from the parent cache
-        // now we have committed this transaction. Given it is only a request scope cache
-        // it's simple enough to clear the lot.
-        this.loader.clearAll();
-
-        return result;
       } catch (ex) {
-        if (ex instanceof NonFatalError) {
-          this.logger.warn("Rolling back transaction - non-fatal error encountered", ex);
-        } else {
-          this.logger.error("Rolling back transaction - error encountered", ex);
-        }
-        await transaction.rollback();
+        this.logger.error("Error committing transaction", ex);
         throw ex;
       }
+
+      // Any entities saved in this transaction need to be cleared from the parent cache
+      // now we have committed this transaction. Given it is only a request scope cache
+      // it's simple enough to clear the lot.
+      this.loader.clearAll();
+
+      return result;
+    }
+  }
+
+  private async runCallbackInTransaction<T>(
+    callback: (loader: DatastoreLoader) => Promise<T>,
+    transaction: Transaction
+  ): Promise<T> {
+    try {
+      return await callback(new DatastoreLoader(transaction));
+    } catch (ex) {
+      if (ex instanceof NonFatalError) {
+        this.logger.warn("Rolling back transaction - non-fatal error encountered", ex);
+      } else {
+        this.logger.error("Rolling back transaction - error encountered", ex);
+      }
+      try {
+        await transaction.rollback();
+      } catch (rollbackError) {
+        this.logger.error("Error encountered rolling back transaction", rollbackError);
+      }
+      throw ex;
     }
   }
 

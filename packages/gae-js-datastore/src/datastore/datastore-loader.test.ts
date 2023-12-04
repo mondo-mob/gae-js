@@ -580,13 +580,53 @@ describe("DatastoreLoader", () => {
         return document;
       });
 
-      await expect(txn1).rejects.toThrow("INVALID_ARGUMENT: transaction has expired or is invalid");
+      await expect(txn1).rejects.toThrow("ABORTED: too much contention on these datastore entities. please try again.");
 
       const txn2Result = await txn2;
       expect(txn2Result.data).toEqual({ owner: "txn2" });
 
       const fetched = await fetchDirect(["555"]);
       expect(fetched[0]).toEqual(datastoreEntity("555", { owner: "txn2" }));
+    });
+
+    it("should reject transaction on commit failure", async () => {
+      await loader.insert([
+        createUserPayload("111", { message: "originalUser1" }),
+        createUserPayload("222", { message: "originalUser2" }),
+        ]
+      );
+      const key1 = userKey("111");
+
+
+      // This txn should fail on commit because it is attempting to save a duplicate record (key1)
+      const txn1 = loader.inTransaction(async (txnLoader) => {
+        const document1 = createUserPayload("333", { message: "newUser3" });
+        const document2 = { key:key1, data: { message: "newUser1" } };
+        return txnLoader.insert([document1, document2]);
+      });
+
+      await expect(txn1).rejects.toThrow("ALREADY_EXISTS: entity already exists");
+      const fetched = await fetchDirect(["111", "222", "333"])
+
+      expect(fetched.length).toBe(2);
+      expect(fetched[0]).toEqual(datastoreEntity("111", { name: `Test User 111`, message: "originalUser1" }));
+      expect(fetched[1]).toEqual(datastoreEntity("222", { name: `Test User 222`, message: "originalUser2" }));
+
+    });
+
+    it("should reject on callback failure", async () => {
+      // This txn should fail on commit because it is attempting to save a duplicate record (key1)
+      const txn1 = loader.inTransaction(async (txnLoader) => {
+        const document1 = createUserPayload("111", { message: "newUser1" });
+        await txnLoader.insert([document1]);
+        // force callback error
+        throw new Error("Test Callback Error");
+      });
+
+      await expect(txn1).rejects.toThrow("Test Callback Error");
+      const fetched = await fetchDirect(["111"]);
+
+      expect(fetched.length).toBe(0);
     });
   });
 });
