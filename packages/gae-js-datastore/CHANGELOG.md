@@ -1,5 +1,11 @@
 # @mondomob/gae-js-datastore
 
+## 10.3.0
+
+### Minor Changes
+
+- 17f6a3b: Stop attempting to rollback a transaction that has already been rolledback due to commit error
+
 ## 10.2.1
 
 ### Patch Changes

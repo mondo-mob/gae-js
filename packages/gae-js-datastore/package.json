@@ -1,6 +1,6 @@
 {
   "name": "@mondomob/gae-js-datastore",
-  "version": "10.2.1",
+  "version": "10.3.0",
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
